@@ -1,4 +1,4 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 
 import {
   getAuth,
@@ -9,8 +9,10 @@ import {
 import Router from "next/router";
 import "~/lib/firebase";
 
+type LoggedUser = Pick<User, "displayName" | "uid" | "photoURL" | "email">;
+
 interface IinitialValue {
-  user: User;
+  user: LoggedUser;
   signIn: (email: string, password: string) => void;
   signOut: () => Promise<void>;
 }
@@ -20,18 +22,37 @@ const initialValue = {} as IinitialValue;
 const AuthContext = createContext<IinitialValue>(initialValue);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState(null);
-
   const auth = getAuth();
 
+  const [user, setUser] = useState<LoggedUser>(null);
+
+  useEffect(() => {
+    auth.onAuthStateChanged((session) => {
+      if (session) {
+        const { uid, displayName, photoURL, email } = session;
+        setUser({ uid, displayName, photoURL, email });
+      }
+    });
+  }, []);
+
   async function signIn(email: string, password: string) {
-    const { user: loggedUser } = await signInWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
-    setUser(loggedUser);
-    Router.push("/profile");
+    try {
+      const { user: loggedUser } = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const { uid, displayName, photoURL } = loggedUser;
+      setUser({
+        uid,
+        email: loggedUser.email,
+        displayName,
+        photoURL,
+      });
+      Router.push("/profile");
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   async function signOut() {
@@ -46,7 +67,5 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     </AuthContext.Provider>
   );
 }
-
-export const AuthConsumer = AuthContext.Consumer;
 
 export default AuthContext;
