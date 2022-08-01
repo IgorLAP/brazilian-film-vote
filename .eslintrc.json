@@ -27,6 +27,10 @@
   ],
   "rules": {
     "prettier/prettier": "error",
+    "react/jsx-no-bind": [
+      0
+    ],
+    "react/jsx-no-constructed-context-values": "off",
     "react/jsx-filename-extension": [
       1,
       {
