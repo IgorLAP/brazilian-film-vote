@@ -5,6 +5,10 @@ const customTheme: Partial<ChakraTheme> = {
     initialColorMode: "dark",
     useSystemColorMode: false,
   },
+  fonts: {
+    heading: "Roboto",
+    body: "Roboto",
+  },
   styles: {
     global: {
       body: {
