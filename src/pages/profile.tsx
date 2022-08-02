@@ -2,27 +2,27 @@ import React from "react";
 
 import { GetServerSideProps } from "next";
 
+import { Header } from "~/components/Header";
+import { verifySSRAuth } from "~/helpers/veritySSRAuth";
 import { firebaseAdmin } from "~/lib/firebase-admin";
 
 export default function Profile() {
-  return <h1>Profile</h1>;
+  return (
+    <>
+      <Header />
+      <h1>Profile</h1>
+    </>
+  );
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-  const { token } = req.cookies;
+export const getServerSideProps: GetServerSideProps = verifySSRAuth(
+  async ({ req }) => {
+    // const { token } = req.cookies;
 
-  if (!token) {
+    // const verify = await firebaseAdmin.auth().verifyIdToken(token);
+
     return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
+      props: {},
     };
   }
-
-  const verify = await firebaseAdmin.auth().verifyIdToken(token);
-
-  return {
-    props: {},
-  };
-};
+);
