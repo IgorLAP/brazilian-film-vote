@@ -7,7 +7,9 @@ import {
   User,
 } from "firebase/auth";
 import Router from "next/router";
-import "~/lib/firebase";
+import { destroyCookie, setCookie } from "nookies";
+
+import { getUserByEmail } from "~/helpers/get-user-by-email";
 
 type LoggedUser = Pick<User, "displayName" | "uid" | "photoURL" | "email">;
 
@@ -27,10 +29,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<LoggedUser>(null);
 
   useEffect(() => {
-    auth.onAuthStateChanged((session) => {
-      if (session) {
-        const { uid, displayName, photoURL, email } = session;
+    auth.onIdTokenChanged(async (sessionUser) => {
+      if (sessionUser) {
+        const { uid, displayName, photoURL, email } = sessionUser;
         setUser({ uid, displayName, photoURL, email });
+        const token = await sessionUser.getIdToken();
+        setCookie(undefined, "token", token, { path: "/" });
       }
     });
   }, []);
@@ -49,6 +53,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         displayName,
         photoURL,
       });
+      const token = await loggedUser.getIdToken();
+      setCookie(undefined, "token", token, { path: "/" });
+      const userDoc = await getUserByEmail(loggedUser.email);
+      if (userDoc.role === "ADMIN") {
+        Router.push("/admin");
+        return;
+      }
       Router.push("/profile");
     } catch (err) {
       console.log(err);
@@ -58,6 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function signOut() {
     await firebaseSignOut(auth);
     setUser(null);
+    destroyCookie(undefined, "token");
     Router.push("/");
   }
 
