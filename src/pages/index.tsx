@@ -13,8 +13,10 @@ import {
   Icon,
   Divider,
 } from "@chakra-ui/react";
+import { GetServerSideProps } from "next";
 
 import AuthContext from "~/contexts/AuthContext";
+import { verifySSRAuth } from "~/helpers/veritySSRAuth";
 
 export default function Home() {
   const { signIn } = useContext(AuthContext);
@@ -126,3 +128,11 @@ export default function Home() {
     </Grid>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = verifySSRAuth(
+  async () => {
+    return {
+      props: {},
+    };
+  }
+);
