@@ -19,7 +19,6 @@ import { doc, setDoc } from "firebase/firestore";
 import Head from "next/head";
 import Router from "next/router";
 
-import { Header } from "~/components/Header";
 import { db as webDb } from "~/lib/firebase";
 import { User } from "~/models/User";
 
@@ -58,7 +57,6 @@ export default function singnIn() {
       <Head>
         <title>Complete Signin</title>
       </Head>
-      <Header />
       <Flex
         maxW="1180px"
         my="0"

@@ -16,10 +16,13 @@ import {
   Text,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
+import { useRouter } from "next/router";
 
 import AuthContext from "~/contexts/AuthContext";
 
 export function Header() {
+  const router = useRouter();
+
   const { user, signOut } = useContext(AuthContext);
 
   const [loggedUser, setLoggedUser] = useState<typeof user>();
@@ -29,27 +32,27 @@ export function Header() {
   }, [user]);
 
   return (
-    <Flex
-      as="header"
-      maxW="1280px"
-      my="0"
-      mx="auto"
-      h="100px"
-      display="flex"
-      justify="space-between"
-      align="center"
-    >
-      <Text fontSize="3xl">
-        🎬
-        <Text color="green.500" as="span">
-          b
+    router.pathname !== "/" && (
+      <Flex
+        as="header"
+        maxW="1280px"
+        my="0"
+        mx="auto"
+        h="100px"
+        display="flex"
+        justify="space-between"
+        align="center"
+      >
+        <Text fontSize="3xl">
+          🎬
+          <Text color="green.500" as="span">
+            b
+          </Text>
+          <Text color="yellow.500" as="span">
+            r
+          </Text>
+          azilian film vote
         </Text>
-        <Text color="yellow.500" as="span">
-          r
-        </Text>
-        azilian film vote
-      </Text>
-      {loggedUser && (
         <Flex>
           <Flex
             fontSize="small"
@@ -117,7 +120,7 @@ export function Header() {
             </PopoverContent>
           </Popover>
         </Flex>
-      )}
-    </Flex>
+      </Flex>
+    )
   );
 }
