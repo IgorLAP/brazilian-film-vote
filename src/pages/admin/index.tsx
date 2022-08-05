@@ -28,7 +28,6 @@ import {
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 
-import { Header } from "~/components/Header";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
 import { db as webDb } from "~/lib/firebase";
 import { db, firebaseAdmin } from "~/lib/firebase-admin";
@@ -84,9 +83,8 @@ export default function Admin({ users }: AdminProps) {
       <Head>
         <title>Admin Dashboard</title>
       </Head>
-      <Header />
-      <Flex flexDir="column" maxW="1180" my="0" mx="auto">
-        <Stack spacing="4" py="4" borderRadius="4">
+      <Flex w="100%" flexDir="column">
+        <Stack spacing="4" borderRadius="4">
           <Button
             bg="blue.400"
             alignSelf="flex-start"
@@ -108,11 +106,11 @@ export default function Admin({ users }: AdminProps) {
             />
           </FormControl>
         </Stack>
-        <TableContainer w="100%">
+        <TableContainer mt="8" w="100%">
           <Table variant="striped">
             <Thead>
               <Tr>
-                <Th>Name</Th>
+                <Th>Nome</Th>
                 <Th>Email</Th>
                 <Th>Ações</Th>
               </Tr>
