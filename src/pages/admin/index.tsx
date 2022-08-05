@@ -110,7 +110,7 @@ export default function Admin({ users }: AdminProps) {
           <Table variant="striped">
             <Thead>
               <Tr>
-                <Th>Name</Th>
+                <Th>Nome</Th>
                 <Th>Email</Th>
                 <Th>Ações</Th>
               </Tr>

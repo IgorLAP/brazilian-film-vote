@@ -44,8 +44,10 @@ export default function singnIn() {
         window.location.href
       );
       await updatePassword(user, password);
-      const newUser = new User(email, name);
-      await setDoc(doc(webDb, "users", user.uid), newUser);
+      const newUser = new User({ email, name });
+      await setDoc(doc(webDb, "users", user.uid), {
+        ...newUser,
+      });
       Router.push("/profile");
     } catch (err) {
       console.log(err);
