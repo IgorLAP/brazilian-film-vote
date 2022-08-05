@@ -1,5 +1,12 @@
 type Role = "ADMIN" | "USER";
 
+interface UserI {
+  email: string;
+  name: string;
+  photoURL?: string;
+  role?: Role;
+}
+
 export class User {
   email: string;
 
@@ -9,7 +16,7 @@ export class User {
 
   role: Role;
 
-  constructor(email: string, name: string, photoURL = "", role: Role = "USER") {
+  constructor({ email, name, photoURL = "", role = "USER" }: UserI) {
     this.email = email;
     this.name = name;
     this.photoURL = photoURL;
