@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 import {
   Button,
@@ -17,7 +17,15 @@ import {
   Thead,
   Tr,
 } from "@chakra-ui/react";
-import { doc, setDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  where,
+} from "firebase/firestore";
 import { GetServerSideProps } from "next";
 
 import { db as webDb } from "~/lib/firebase";
@@ -38,29 +46,60 @@ export default function createList({
   listTypes,
 }: createListProps) {
   const [listName, setListName] = useState("");
-  const [decade, setDecade] = useState<number | "">();
+  const decadeSelectRef = useRef<HTMLSelectElement>();
   const [lTypes, setLTypes] = useState(listTypes);
 
   async function handleNewListType() {
     try {
-      if (listName !== "" && !!decade) {
+      if (listName !== "" && !!decadeSelectRef.current.value) {
+        const decade = Number(decadeSelectRef.current.value);
         const newListType = new ListType({ name: listName, decade });
-        await setDoc(doc(webDb, "list_type", String(decade)), {
-          ...newListType,
-        });
+        const listTypeDocRef = doc(webDb, "list_type", `${decade}-0`);
 
-        const listTypeRef = doc(webDb, "list_type", String(decade));
-        const newGeneralList = new GeneralList({ idListType: listTypeRef });
-        await setDoc(doc(webDb, "general_list", String(decade)), {
-          ...newGeneralList,
-        });
+        const listTypeExists = (await getDoc(listTypeDocRef)).exists();
+        if (listTypeExists) {
+          const q = query(
+            collection(webDb, "list_type"),
+            where("decade", "==", decade)
+          );
+          const querySnap = await getDocs(q);
+          const thisDecadeListTypesIds = querySnap.docs.map((item) => item.id);
+          const lastUsedIndex = (thisDecadeListTypesIds.at(-1) as string).split(
+            "-"
+          )[1];
+
+          const newIndex = Number(lastUsedIndex) + 1;
+          await setDoc(doc(webDb, "list_type", `${decade}-${newIndex}`), {
+            ...newListType,
+          });
+
+          const listTypeRef = doc(webDb, "list_type", `${decade}-${newIndex}`);
+          const newGeneralList = new GeneralList({ idListType: listTypeRef });
+          await setDoc(doc(webDb, "general_list", `${decade}-${newIndex}`), {
+            id_list_type: newGeneralList.idListType,
+            movies: newGeneralList.movies,
+            status: newGeneralList.status,
+          });
+        } else {
+          await setDoc(listTypeDocRef, {
+            ...newListType,
+          });
+
+          const listTypeRef = doc(webDb, "list_type", `${decade}-0`);
+          const newGeneralList = new GeneralList({ idListType: listTypeRef });
+          await setDoc(doc(webDb, "general_list", `${decade}-0`), {
+            id_list_type: newGeneralList.idListType,
+            movies: newGeneralList.movies,
+            status: newGeneralList.status,
+          });
+        }
 
         setLTypes((prevState) => [
           ...prevState,
           { name: listName, decade: decade as number },
         ]);
         setListName("");
-        setDecade("");
+        decadeSelectRef.current.value = "";
       }
     } catch (err) {
       console.log(err);
@@ -91,10 +130,7 @@ export default function createList({
           </FormControl>
           <FormControl>
             <FormLabel>Década</FormLabel>
-            <Select
-              onChange={(e) => setDecade(Number(e.target.value))}
-              bg="gray.900"
-            >
+            <Select ref={decadeSelectRef} bg="gray.900">
               <option value="">Selecione</option>
               {validDecades.map((decadeOpt) => (
                 <option value={decadeOpt} key={decadeOpt}>
@@ -126,8 +162,8 @@ export default function createList({
             </Tr>
           </Thead>
           <Tbody>
-            {lTypes.map((listType) => (
-              <Tr key={listType.decade}>
+            {lTypes.map((listType, index) => (
+              <Tr key={`${index + 1}`}>
                 <Td>{listType.name}</Td>
                 <Td>{listType.decade}</Td>
               </Tr>
