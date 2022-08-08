@@ -178,8 +178,7 @@ export default function createList({
 export const getServerSideProps: GetServerSideProps = async () => {
   const decadesRef = db.collection("decades");
   const decadesSnap = await decadesRef.get();
-  const validDecades = decadesSnap.docs.map((year) => year.data())[0]
-    .availables;
+  const [validDecades] = decadesSnap.docs.map((year) => year.data());
 
   const listTypeRef = db.collection("list_type");
   const listTypeSnap = await listTypeRef.get();
@@ -187,7 +186,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
 
   return {
     props: {
-      validDecades,
+      validDecades: validDecades.availables,
       listTypes,
     },
   };

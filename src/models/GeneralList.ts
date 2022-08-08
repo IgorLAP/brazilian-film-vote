@@ -13,7 +13,7 @@ export class GeneralList {
 
   status: boolean;
 
-  constructor({ idListType, movies = [], status = false }: GeneralListI) {
+  constructor({ idListType, movies = [], status = true }: GeneralListI) {
     this.idListType = idListType;
     this.movies = movies;
     this.status = status;
