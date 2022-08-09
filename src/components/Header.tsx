@@ -59,7 +59,7 @@ export function Header() {
             align="flex-end"
             mr="2"
           >
-            <Text>{loggedUser?.displayName || ""}</Text>
+            <Text>{loggedUser?.name || ""}</Text>
             <Text>{loggedUser?.email}</Text>
           </Flex>
           <Popover>
@@ -95,9 +95,9 @@ export function Header() {
                   align="center"
                 >
                   <Icon mr="2" as={BsFillPersonFill} />
-                  <ChakraLink as={NextLink} href="#">
-                    Profile
-                  </ChakraLink>
+                  <NextLink href="/profile">
+                    <ChakraLink>Profile</ChakraLink>
+                  </NextLink>
                 </Flex>
 
                 <Divider />
