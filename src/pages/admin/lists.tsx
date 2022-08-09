@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 import {
   Button,
+  Heading,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -17,21 +18,18 @@ import {
   Tr,
   useDisclosure,
 } from "@chakra-ui/react";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 
+import { Movie } from "~/interfaces/Movie";
 import { db as webDb } from "~/lib/firebase";
 import { db as adminDb } from "~/lib/firebase-admin";
 
-interface Movies {
-  name: string;
-  points: number;
-}
 interface ListsProps {
   generalList: {
     idListType: string;
-    movies: Movies[];
+    movies: Movie[];
     status: boolean;
   }[];
 }
@@ -39,10 +37,10 @@ interface ListsProps {
 export default function Lists({ generalList }: ListsProps) {
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [modalMovieList, setModalMovieList] = useState<Movies[]>();
+  const [modalMovieList, setModalMovieList] = useState<Movie[]>();
   const [gList, setGList] = useState(generalList);
 
-  function handleSeeList(movies: Movies[]) {
+  function handleSeeList(movies: Movie[]) {
     onOpen();
     const orderedByPoints = movies.sort((a, b) => b.points - a.points);
     setModalMovieList(orderedByPoints);
@@ -73,6 +71,7 @@ export default function Lists({ generalList }: ListsProps) {
 
   return (
     <>
+      <Heading as="h1">Listas</Heading>
       <Table variant="striped">
         <Thead>
           <Tr>

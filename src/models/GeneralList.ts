@@ -1,15 +1,17 @@
 import { DocumentData, DocumentReference } from "firebase/firestore";
 
+import { Movie } from "~/interfaces/Movie";
+
 interface GeneralListI {
   idListType: DocumentReference<DocumentData>;
-  movies?: { name: string; points: number }[];
+  movies?: Movie[];
   status?: boolean;
 }
 
 export class GeneralList {
   idListType: DocumentReference<DocumentData>;
 
-  movies: { name: string; points: number }[];
+  movies: Movie[];
 
   status: boolean;
 
