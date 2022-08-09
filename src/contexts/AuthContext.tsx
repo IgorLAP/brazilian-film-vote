@@ -4,14 +4,19 @@ import {
   getAuth,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
-  User,
 } from "firebase/auth";
 import Router from "next/router";
 import { destroyCookie, setCookie } from "nookies";
 
 import { getUserByEmail } from "~/helpers/get-user-by-email";
 
-type LoggedUser = Pick<User, "displayName" | "uid" | "photoURL" | "email">;
+interface LoggedUser {
+  name: string;
+  uid: string;
+  photoURL: string;
+  email: string;
+  role: "USER" | "ADMIN";
+}
 
 interface IinitialValue {
   user: LoggedUser;
@@ -31,8 +36,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     auth.onIdTokenChanged(async (sessionUser) => {
       if (sessionUser) {
+        const { admin } = (await auth.currentUser.getIdTokenResult(true))
+          .claims;
         const { uid, displayName, photoURL, email } = sessionUser;
-        setUser({ uid, displayName, photoURL, email });
+        setUser({
+          uid,
+          name: displayName,
+          photoURL,
+          email,
+          role: admin ? "ADMIN" : "USER",
+        });
         const token = await sessionUser.getIdToken();
         setCookie(undefined, "token", token, { path: "/" });
       }
@@ -46,21 +59,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password
       );
-      const { uid, displayName, photoURL } = loggedUser;
-      setUser({
-        uid,
-        email: loggedUser.email,
-        displayName,
-        photoURL,
-      });
+      const { uid, photoURL } = loggedUser;
       const token = await loggedUser.getIdToken();
       setCookie(undefined, "token", token, { path: "/" });
       const userDoc = await getUserByEmail(loggedUser.email);
+      setUser({
+        uid,
+        email: loggedUser.email,
+        name: userDoc.name,
+        photoURL,
+        role: userDoc.role,
+      });
       if (userDoc.role === "ADMIN") {
         Router.push("/admin");
         return;
       }
-      Router.push("/profile");
+      Router.push("/user");
     } catch (err) {
       console.log(err);
     }

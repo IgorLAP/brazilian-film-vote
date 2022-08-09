@@ -29,7 +29,7 @@ import {
 import { GetServerSideProps } from "next";
 
 import { db as webDb } from "~/lib/firebase";
-import { db } from "~/lib/firebase-admin";
+import { db as adminDb } from "~/lib/firebase-admin";
 import { GeneralList } from "~/models/GeneralList";
 import { ListType } from "~/models/ListType";
 
@@ -176,18 +176,17 @@ export default function createList({
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const decadesRef = db.collection("decades");
+  const decadesRef = adminDb.collection("decades");
   const decadesSnap = await decadesRef.get();
-  const validDecades = decadesSnap.docs.map((year) => year.data())[0]
-    .availables;
+  const [validDecades] = decadesSnap.docs.map((year) => year.data());
 
-  const listTypeRef = db.collection("list_type");
+  const listTypeRef = adminDb.collection("list_type");
   const listTypeSnap = await listTypeRef.get();
   const listTypes = listTypeSnap.docs.map((list) => list.data());
 
   return {
     props: {
-      validDecades,
+      validDecades: validDecades.availables,
       listTypes,
     },
   };
