@@ -18,12 +18,15 @@ import {
   Text,
   UnorderedList,
 } from "@chakra-ui/react";
+import { doc, setDoc } from "firebase/firestore";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
+import { useRouter } from "next/router";
 
 import AuthContext from "~/contexts/AuthContext";
 import useDebounce from "~/hooks/useDebounce";
 import { Movie } from "~/interfaces/Movie";
+import { db as webDb } from "~/lib/firebase";
 import { db as adminDb, firebaseAdmin } from "~/lib/firebase-admin";
 import { tmdbApi } from "~/lib/tmdb";
 
@@ -71,6 +74,7 @@ const movieListPlaceholder: Movie[] = [
 ];
 
 export default function Voting({ generalList }: VotingProps) {
+  const router = useRouter();
   const { user } = useContext(AuthContext);
 
   const inputArrayRef = useRef<HTMLInputElement[]>();
@@ -144,6 +148,10 @@ export default function Voting({ generalList }: VotingProps) {
     if (filterByDecade.length > 0) {
       setTmdbList(filterByDecade);
       setHasResults(true);
+    } else {
+      alert("Nenhum resultado encontrado");
+      setHasResults(false);
+      setTmdbList([]);
     }
   }
 
@@ -157,6 +165,23 @@ export default function Voting({ generalList }: VotingProps) {
       tmp[index].id = "No ID";
       return tmp;
     });
+  }
+
+  async function handleVote() {
+    try {
+      const listsCollectionDocRef = doc(
+        webDb,
+        `users/${user.uid}/lists`,
+        generalList.idListType.split("/")[1]
+      );
+      await setDoc(listsCollectionDocRef, {
+        id_list_type: generalList.idListType,
+        movies: movieList,
+      });
+      router.push("/user");
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   return (
@@ -177,6 +202,7 @@ export default function Voting({ generalList }: VotingProps) {
         </Text>
       </Stack>
       <Flex
+        as="main"
         flexDir="column"
         bg="gray.800"
         pb="4"
@@ -187,7 +213,7 @@ export default function Voting({ generalList }: VotingProps) {
       >
         <Grid
           templateColumns="repeat(4, 1fr)"
-          columnGap="2"
+          columnGap="6"
           rowGap="4"
           mx="auto"
         >
@@ -297,6 +323,7 @@ export default function Voting({ generalList }: VotingProps) {
           alignSelf="flex-end"
           _hover={{ bg: "blue.600" }}
           disabled={!isFullList}
+          onClick={handleVote}
         >
           Votar
         </Button>

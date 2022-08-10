@@ -1,35 +1,82 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { HiPencilAlt } from "react-icons/hi";
 
 import {
   Box,
   Button,
   Flex,
+  FormControl,
   FormLabel,
   Heading,
   Icon,
-  Image,
   Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Stack,
+  useDisclosure,
 } from "@chakra-ui/react";
-import { GetServerSideProps } from "next";
+import { doc, updateDoc } from "firebase/firestore";
 import Head from "next/head";
 
-import { db as adminDb, firebaseAdmin } from "~/lib/firebase-admin";
+import AuthContext from "~/contexts/AuthContext";
+import { db as webDb } from "~/lib/firebase";
 
-interface ProfileProps {
-  user: {
-    name: string;
-    photoURL: string;
-    email: string;
-  };
-}
+export default function Profile() {
+  const { user: loggedUser, onUpdate } = useContext(AuthContext);
 
-export default function Profile({ user }: ProfileProps) {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [photoURL, setPhotoURL] = useState("");
+
+  useEffect(() => {
+    if (loggedUser) {
+      setName(loggedUser?.name);
+      setEmail(loggedUser?.email);
+      setPhotoURL(loggedUser?.photoURL);
+    }
+  }, [loggedUser]);
+
+  const doesImageExist = (url: string) =>
+    new Promise((resolve) => {
+      const img = new Image();
+
+      img.src = url;
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+    });
+
+  async function handleUpdate() {
+    if (photoURL !== "") {
+      if (!(await doesImageExist(photoURL))) {
+        alert("Imagem invalida");
+        return;
+      }
+    }
+
+    try {
+      const userDocRef = doc(webDb, "users", loggedUser.uid);
+      await updateDoc(userDocRef, {
+        name,
+        photoURL,
+      });
+      onUpdate(name, photoURL);
+      onClose();
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   return (
     <>
       <Head>
-        <title>{user.name} - Perfil</title>
+        <title>{name} - Perfil</title>
       </Head>
       <Heading as="h1" textAlign="center">
         Perfil
@@ -45,43 +92,74 @@ export default function Profile({ user }: ProfileProps) {
         >
           <Box>
             <FormLabel>Nome</FormLabel>
-            <Input bg="gray.900" readOnly value={user.name} />
+            <Input bg="gray.900" readOnly value={name} />
           </Box>
           <Box>
             <FormLabel>Email</FormLabel>
-            <Input bg="gray.900" readOnly value={user.email} />
+            <Input bg="gray.900" readOnly value={email} />
           </Box>
-          {user.photoURL ? (
-            <Image src={user.photoURL} />
-          ) : (
-            <Box>
-              <FormLabel>Avatar</FormLabel>
-              <Input bg="gray.900" readOnly value="Sem avatar" />
-            </Box>
-          )}
+          <Box>
+            <FormLabel>Avatar</FormLabel>
+            <Input bg="gray.900" readOnly value={photoURL ?? "Sem avatar"} />
+          </Box>
           <Button
             bg="yellow.500"
             alignSelf="flex-end"
             _hover={{ bg: "yellow.600" }}
+            onClick={onOpen}
           >
             <Icon as={HiPencilAlt} mr="2" />
             Editar
           </Button>
         </Stack>
       </Flex>
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader fontSize="larger">Editar</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Stack spacing="2">
+              <FormControl>
+                <FormLabel>Nome</FormLabel>
+                <Input
+                  type="text"
+                  bg="gray.900"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Avatar</FormLabel>
+                <Input
+                  type="text"
+                  bg="gray.900"
+                  placeholder="URL"
+                  value={photoURL}
+                  onChange={(e) => setPhotoURL(e.target.value)}
+                />
+              </FormControl>
+            </Stack>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" onClick={onClose}>
+              Fechar
+            </Button>
+            <Button
+              disabled={
+                name?.length <= 5 ||
+                (photoURL === loggedUser?.photoURL && name === loggedUser?.name)
+              }
+              ml="2"
+              bg="blue.500"
+              _hover={{ bg: "blue.600" }}
+              onClick={handleUpdate}
+            >
+              Salvar
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </>
   );
 }
-
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-  const { token } = req.cookies;
-  const { email } = await firebaseAdmin.auth().verifyIdToken(token);
-  const userRef = adminDb.collection("users").where("email", "==", email);
-  const user = (await userRef.get()).docs[0].data();
-
-  return {
-    props: {
-      user,
-    },
-  };
-};
