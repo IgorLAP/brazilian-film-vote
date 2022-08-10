@@ -9,9 +9,7 @@ import {
   Input,
   Stack,
   Text,
-  Link,
   Icon,
-  Divider,
 } from "@chakra-ui/react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
@@ -116,19 +114,6 @@ export default function Home() {
                 Entrar
               </Button>
             </Stack>
-            <Divider my="4" />
-            <Text fontSize="small">
-              Não tem uma conta?{" "}
-              <Link
-                as="a"
-                href="/register"
-                fontWeight="bold"
-                color="blue.400"
-                _hover={{ color: "blue.500" }}
-              >
-                Registre-se
-              </Link>
-            </Text>
           </Flex>
         </Flex>
       </Grid>
