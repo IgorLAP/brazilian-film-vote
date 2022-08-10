@@ -4,6 +4,7 @@ import {
   getAuth,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
+  updateProfile,
 } from "firebase/auth";
 import Router from "next/router";
 import { destroyCookie, setCookie } from "nookies";
@@ -22,6 +23,7 @@ interface IinitialValue {
   user: LoggedUser;
   signIn: (email: string, password: string) => void;
   signOut: () => Promise<void>;
+  onUpdate: (name?: string, photoURL?: string) => Promise<void>;
 }
 
 const initialValue = {} as IinitialValue;
@@ -87,8 +89,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     Router.push("/");
   }
 
+  async function onUpdate(name?: string, photoURL?: string) {
+    await updateProfile(auth.currentUser, {
+      displayName: name,
+      photoURL,
+    });
+    const newInfos = { ...user, name, photoURL };
+    setUser(newInfos);
+  }
+
   return (
-    <AuthContext.Provider value={{ user, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, signIn, signOut, onUpdate }}>
       {children}
     </AuthContext.Provider>
   );
