@@ -152,7 +152,7 @@ export default function createList({
       </Flex>
       <TableContainer my="8">
         <Heading as="h1" fontSize="2xl">
-          Décadas cadastradas
+          Listas cadastradas
         </Heading>
         <Table variant="striped">
           <Thead>

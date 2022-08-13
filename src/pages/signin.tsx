@@ -14,6 +14,7 @@ import {
   isSignInWithEmailLink,
   signInWithEmailLink,
   updatePassword,
+  updateProfile,
 } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import Head from "next/head";
@@ -44,6 +45,7 @@ export default function singnIn() {
         window.location.href
       );
       await updatePassword(user, password);
+      await updateProfile(user, { displayName: name });
       const newUser = new User({ email, name });
       await setDoc(doc(webDb, "users", user.uid), {
         ...newUser,

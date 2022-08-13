@@ -77,14 +77,14 @@ export default function Lists({ generalList }: ListsProps) {
           <Tr>
             <Th>ID</Th>
             <Th>Filmes</Th>
-            <Th>Ativa</Th>
+            <Th>Status</Th>
             <Th>Ações</Th>
           </Tr>
         </Thead>
         <Tbody>
           {gList.map((list) => (
             <Tr key={list.idListType}>
-              <Td>{list.idListType}</Td>
+              <Td>{list.idListType.split("/")[1]}</Td>
               <Td>
                 <Button onClick={() => handleSeeList(list.movies)}>
                   Ver lista
@@ -139,7 +139,12 @@ export default function Lists({ generalList }: ListsProps) {
             </Table>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={onClose}>
+            <Button
+              bg="blue.500"
+              _hover={{ bg: "blue.600" }}
+              mr={3}
+              onClick={onClose}
+            >
               Fechar
             </Button>
           </ModalFooter>
