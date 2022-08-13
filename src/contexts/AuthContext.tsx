@@ -6,7 +6,7 @@ import {
   signOut as firebaseSignOut,
   updateProfile,
 } from "firebase/auth";
-import Router from "next/router";
+import Router, { useRouter } from "next/router";
 import { destroyCookie, setCookie } from "nookies";
 
 import { getUserByEmail } from "~/helpers/get-user-by-email";
@@ -32,6 +32,7 @@ const AuthContext = createContext<IinitialValue>(initialValue);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const auth = getAuth();
+  const router = useRouter();
 
   const [user, setUser] = useState<LoggedUser>(null);
 
@@ -50,6 +51,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
         const token = await sessionUser.getIdToken();
         setCookie(undefined, "token", token, { path: "/" });
+      } else {
+        router.push("/");
       }
     });
   }, []);
@@ -61,14 +64,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password
       );
-      const { uid, photoURL } = loggedUser;
+      const { uid, photoURL, displayName } = loggedUser;
       const token = await loggedUser.getIdToken();
       setCookie(undefined, "token", token, { path: "/" });
       const userDoc = await getUserByEmail(loggedUser.email);
       setUser({
         uid,
         email: loggedUser.email,
-        name: userDoc.name,
+        name: displayName,
         photoURL,
         role: userDoc.role,
       });
