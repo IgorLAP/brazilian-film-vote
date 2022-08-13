@@ -85,7 +85,7 @@ export function Header() {
               <PopoverBody
                 display="flex"
                 justifyContent="center"
-                alignItems="center"
+                alignItems="flex-start"
                 flexDir="column"
               >
                 <Flex
@@ -96,7 +96,9 @@ export function Header() {
                 >
                   <Icon mr="2" as={BsFillPersonFill} />
                   <NextLink href="/profile">
-                    <ChakraLink>Profile</ChakraLink>
+                    <ChakraLink _hover={{ textDecoration: "none" }}>
+                      Profile
+                    </ChakraLink>
                   </NextLink>
                 </Flex>
 
@@ -111,7 +113,7 @@ export function Header() {
                   _hover={{ color: "blue.400" }}
                 >
                   <Icon mr="2" as={GoSignOut} />
-                  Sign out
+                  Sair
                 </Button>
               </PopoverBody>
             </PopoverContent>
