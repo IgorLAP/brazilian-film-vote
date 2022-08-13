@@ -53,7 +53,7 @@ export default function Profile() {
     });
 
   async function handleUpdate() {
-    if (photoURL !== "") {
+    if (photoURL) {
       if (!(await doesImageExist(photoURL))) {
         alert("Imagem invalida");
         return;

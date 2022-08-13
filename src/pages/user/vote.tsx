@@ -137,7 +137,7 @@ export default function Voting({ generalList }: VotingProps) {
   }
 
   async function tmdbSearch(query: string) {
-    const { data } = await tmdbApi.get<TmdbSearch>("", {
+    const { data } = await tmdbApi.get<TmdbSearch>("search/movie", {
       params: { query },
     });
     const filterByDecade = data.results.filter(
@@ -337,8 +337,9 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const generalListRef = adminDb
     .collection("general_list")
     .where("status", "==", true);
+  const isVotingConcluded = (await generalListRef.get()).empty;
 
-  if ((await generalListRef.get()).empty) {
+  if (isVotingConcluded) {
     return {
       redirect: {
         destination: "/user",
@@ -347,13 +348,33 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
     };
   }
 
-  const [actualGeneralList] = (await generalListRef.get()).docs;
-  const generalList = {
-    idListType: actualGeneralList.data().id_list_type.path,
-    status: actualGeneralList.data().status,
+  const [activeGList] = (await generalListRef.get()).docs;
+  const activeGListId = activeGList.data().id_list_type.path;
+  const activeGListStatus = activeGList.data().status;
+
+  const actualGeneralList = {
+    idListType: activeGListId,
+    status: activeGListStatus,
   };
 
   const { uid } = await firebaseAdmin.auth().verifyIdToken(token);
+
+  const userActualList = await adminDb
+    .collection("users")
+    .doc(uid)
+    .collection("lists")
+    .doc(activeGListId.split("/")[1] as string)
+    .get();
+
+  if (userActualList.exists) {
+    return {
+      redirect: {
+        destination: "/user",
+        permanent: false,
+      },
+    };
+  }
+
   const user = (await adminDb.collection("users").doc(uid).get()).data();
   await firebaseAdmin.auth().updateUser(uid, {
     displayName: user.name,
@@ -361,7 +382,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 
   return {
     props: {
-      generalList,
+      generalList: actualGeneralList,
     },
   };
 };
