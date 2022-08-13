@@ -27,6 +27,10 @@
   ],
   "rules": {
     "prettier/prettier": "error",
+    "no-restricted-syntax": [
+      "off"
+    ],
+    "react/require-default-props": "off",
     "react/jsx-no-bind": [
       0
     ],
