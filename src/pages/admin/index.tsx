@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { FiTrash2 } from "react-icons/fi";
 
 import {
-  Button,
   Flex,
   FormControl,
   Icon,
@@ -28,6 +27,7 @@ import {
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 
+import { CustomButton } from "~/components/CustomButton";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
 import { db as webDb } from "~/lib/firebase";
 import { db, firebaseAdmin } from "~/lib/firebase-admin";
@@ -85,15 +85,15 @@ export default function Admin({ users }: AdminProps) {
       </Head>
       <Flex w="100%" flexDir="column">
         <Stack spacing="4" borderRadius="4">
-          <Button
-            bg="blue.400"
+          <CustomButton
+            buttonType="primary"
             alignSelf="flex-start"
-            _hover={{ bg: "blue.400" }}
             disabled={!newUserEmail}
             onClick={handleNewUser}
           >
             Enviar email de cadastro
-          </Button>
+          </CustomButton>
+
           <FormControl w="420px">
             <Input
               bg="white"
@@ -121,13 +121,12 @@ export default function Admin({ users }: AdminProps) {
                   <Td>{user?.name}</Td>
                   <Td>{user.email}</Td>
                   <Td>
-                    <Button
-                      bg="red.500"
-                      _hover={{ bg: "red.600" }}
+                    <CustomButton
+                      buttonType="danger"
                       onClick={() => handleDeleteUser(user.email)}
                     >
                       <Icon as={FiTrash2} />
-                    </Button>
+                    </CustomButton>
                   </Td>
                 </Tr>
               ))}
