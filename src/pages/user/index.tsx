@@ -27,54 +27,94 @@ import axios from "axios";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 
+import { CustomButton } from "~/components/CustomButton";
+import { MovieDetail } from "~/components/MovieDetail";
 import AuthContext from "~/contexts/AuthContext";
 import { Movie } from "~/interfaces/Movie";
 import { db as adminDb, firebaseAdmin } from "~/lib/firebase-admin";
 import { tmdbApi } from "~/lib/tmdb";
 
-interface movieWithDirector extends Movie {
+interface ShowMovieList extends Movie {
   director: string;
+  poster_path: string;
+  original_title: string;
+  release_date: string;
+}
+
+interface List {
+  name: string;
+  id_list_type: string;
+  movies: Movie[];
+  points: number;
 }
 
 interface MyListsProps {
-  lists?: {
+  lists?: List[];
+}
+
+interface TmdbMovie {
+  original_title: string;
+  poster_path: string;
+  release_date: string;
+}
+
+interface TmdbMovieCredit {
+  crew: {
+    job: "Director";
     name: string;
-    id_list_type: string;
-    movies: Movie[];
-    points: number;
   }[];
 }
 
 export default function MyLists({ lists }: MyListsProps) {
   const { user } = useContext(AuthContext);
   const { isOpen, onClose, onOpen } = useDisclosure();
-  const [selectedList, setSelectedList] = useState<movieWithDirector[]>([]);
+  const [selectedList, setSelectedList] = useState<ShowMovieList[]>([]);
 
   async function handleSeeList(movieList: Movie[]) {
-    const dirPromises = movieList.map((movie) =>
-      tmdbApi
-        .get(`movie/${movie.id}/credits`)
-        .then((results) =>
-          results.data.crew.filter((member) => member.job === "Director").pop()
-        )
-        .catch((err) => console.log(err))
-    );
-    const directors = await Promise.all(dirPromises).then((results) => results);
-    const moviesWithDirectors = directors.map((item, index) => ({
-      director: item.name as string,
-      id: movieList[index].id,
-      name: movieList[index].name,
-      points: movieList[index].points,
-    }));
-    setSelectedList(moviesWithDirectors);
-    onOpen();
+    try {
+      const dirPromises = movieList.map((movie) =>
+        tmdbApi
+          .get<TmdbMovieCredit>(`movie/${movie.id}/credits`)
+          .then((results) =>
+            results.data.crew
+              .filter((member) => member.job === "Director")
+              .pop()
+          )
+      );
+      const posterYearsPromises = movieList.map((movie) =>
+        tmdbApi.get<TmdbMovie>(`movie/${movie.id}`).then((results) => ({
+          original_title: results.data.original_title,
+          poster_path: results.data.poster_path,
+          release_date: results.data.release_date,
+        }))
+      );
+      const directors = await Promise.all(dirPromises).then(
+        (results) => results
+      );
+      const posterYears = await Promise.all(posterYearsPromises).then(
+        (results) => results
+      );
+      const moviesWithDirectors = directors.map((item, index) => ({
+        director: item.name as string,
+        id: movieList[index].id,
+        name: movieList[index].name,
+        points: movieList[index].points,
+        poster_path: posterYears[index].poster_path,
+        original_title: posterYears[index].original_title,
+        release_date: posterYears[index].release_date,
+      }));
+      setSelectedList(moviesWithDirectors);
+      onOpen();
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   async function handleGenerateCSVFile() {
     try {
       const onlyIdAndName = selectedList.map((movie) => ({
         id: movie.id,
-        name: movie.name,
+        name: movie.original_title,
       }));
       const { data } = await axios.post("/api/csv", {
         list: onlyIdAndName,
@@ -82,13 +122,16 @@ export default function MyLists({ lists }: MyListsProps) {
       const url = window.URL.createObjectURL(new Blob([data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", "file.csv");
+      link.setAttribute("download", `${user.name}_list.csv`);
       document.body.appendChild(link);
       link.click();
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       console.log(err);
     }
   }
+
+  const posterPathBase = "https://image.tmdb.org/t/p/w185";
 
   return (
     <>
@@ -114,13 +157,12 @@ export default function MyLists({ lists }: MyListsProps) {
                   <Td>{list.id_list_type.split("/")[1]}</Td>
                   <Td>{list.name}</Td>
                   <Td>
-                    <Button
+                    <CustomButton
+                      buttonType="primary"
                       onClick={() => handleSeeList(list.movies)}
-                      bg="blue.500"
-                      _hover={{ bg: "blue.600" }}
                     >
                       Ver Lista
-                    </Button>
+                    </CustomButton>
                   </Td>
                 </Tr>
               ))}
@@ -129,29 +171,39 @@ export default function MyLists({ lists }: MyListsProps) {
           <Modal size="6xl" isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
             <ModalContent>
-              <ModalHeader>Lista</ModalHeader>
+              <ModalHeader />
               <ModalCloseButton />
               <ModalBody>
-                <Grid gridTemplateColumns="repeat(4, 1fr)">
+                <Grid rowGap="4" gridTemplateColumns="repeat(3, 1fr)">
                   {selectedList.map((movie) => (
                     <Flex
+                      p="1"
+                      _hover={{ bg: "gray.900" }}
+                      borderRadius={6}
                       key={movie.id}
-                      justify="center"
-                      align="center"
-                      flexDir="column"
                     >
-                      <Text>{movie.name}</Text>
-                      <Flex>
-                        <Text fontWeight="bold" fontSize="small">
-                          Diretor:
+                      <Image
+                        boxSize="120px"
+                        borderRadius={6}
+                        objectFit="cover"
+                        objectPosition="top"
+                        src={`${posterPathBase}${movie.poster_path}`}
+                      />
+                      <Flex
+                        justify="space-around"
+                        align="flex-start"
+                        flexDir="column"
+                        ml="2"
+                      >
+                        <Text fontWeight="bold" fontSize="md">
+                          {movie.name}
                         </Text>
-                        <Text>{movie.director}</Text>
-                      </Flex>
-                      <Flex>
-                        <Text fontWeight="bold" fontSize="small">
-                          Pontos:
-                        </Text>
-                        <Text>{movie.points}</Text>
+                        <MovieDetail field="Diretor" value={movie.director} />
+                        <MovieDetail
+                          field="Ano"
+                          value={movie.release_date.split("-")[0]}
+                        />
+                        <MovieDetail field="Pontos" value={movie.points} />
                       </Flex>
                     </Flex>
                   ))}
@@ -168,14 +220,9 @@ export default function MyLists({ lists }: MyListsProps) {
                     Exportar como CSV
                   </Button>
                 </Tooltip>
-                <Button
-                  mx={3}
-                  bg="blue.500"
-                  _hover={{ bg: "blue.600" }}
-                  onClick={onClose}
-                >
+                <CustomButton mx={3} buttonType="primary" onClick={onClose}>
                   Fechar
-                </Button>
+                </CustomButton>
               </ModalFooter>
             </ModalContent>
           </Modal>
@@ -216,8 +263,6 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   }
 
   return {
-    props: {
-      // lists: userListsSnap.docs.map((list) => list.data()),
-    },
+    props: {},
   };
 };

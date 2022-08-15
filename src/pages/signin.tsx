@@ -20,6 +20,7 @@ import { doc, setDoc } from "firebase/firestore";
 import Head from "next/head";
 import Router from "next/router";
 
+import { CustomButton } from "~/components/CustomButton";
 import { db as webDb } from "~/lib/firebase";
 import { User } from "~/models/User";
 
@@ -109,16 +110,15 @@ export default function singnIn() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </FormControl>
-            <Button
-              bg="blue.500"
-              _hover={{ bg: "blue.600" }}
+            <CustomButton
+              buttonType="primary"
               alignSelf="flex-end"
               type="button"
               disabled={!name || !email || !password}
               onClick={handleSubmit}
             >
               Cadastrar
-            </Button>
+            </CustomButton>
           </Stack>
         </Flex>
       </Flex>

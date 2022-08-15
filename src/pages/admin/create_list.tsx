@@ -1,7 +1,6 @@
 import React, { useRef, useState } from "react";
 
 import {
-  Button,
   Flex,
   FormControl,
   FormLabel,
@@ -28,6 +27,7 @@ import {
 } from "firebase/firestore";
 import { GetServerSideProps } from "next";
 
+import { CustomButton } from "~/components/CustomButton";
 import { db as webDb } from "~/lib/firebase";
 import { db as adminDb } from "~/lib/firebase-admin";
 import { GeneralList } from "~/models/GeneralList";
@@ -139,15 +139,14 @@ export default function createList({
               ))}
             </Select>
           </FormControl>
-          <Button
+          <CustomButton
             alignSelf="flex-end"
-            bg="blue.500"
+            buttonType="primary"
             type="button"
-            _hover={{ bg: "blue.600" }}
             onClick={handleNewListType}
           >
             Criar
-          </Button>
+          </CustomButton>
         </HStack>
       </Flex>
       <TableContainer my="8">

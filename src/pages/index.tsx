@@ -14,6 +14,7 @@ import {
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 
+import { CustomButton } from "~/components/CustomButton";
 import AuthContext from "~/contexts/AuthContext";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
 
@@ -100,19 +101,18 @@ export default function Home() {
                 textAlign="start"
                 size="xs"
                 fontWeight="bold"
-                color="blue.400"
-                _hover={{ color: "blue.500" }}
+                color="blue.500"
+                _hover={{ color: "blue.600" }}
               >
                 Esqueci minha senha
               </Button>
-              <Button
+              <CustomButton
                 type="button"
-                bg="blue.500"
-                _hover={{ bg: "blue.600" }}
+                buttonType="primary"
                 onClick={handleLogin}
               >
                 Entrar
-              </Button>
+              </CustomButton>
             </Stack>
           </Flex>
         </Flex>

@@ -23,6 +23,7 @@ import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
 
+import { CustomButton } from "~/components/CustomButton";
 import AuthContext from "~/contexts/AuthContext";
 import useDebounce from "~/hooks/useDebounce";
 import { Movie } from "~/interfaces/Movie";
@@ -316,17 +317,16 @@ export default function Voting({ generalList }: VotingProps) {
             );
           })}
         </Grid>
-        <Button
-          bg="blue.500"
+        <CustomButton
+          buttonType="primary"
           mt="4"
           mr="6"
           alignSelf="flex-end"
-          _hover={{ bg: "blue.600" }}
           disabled={!isFullList}
           onClick={handleVote}
         >
           Votar
-        </Button>
+        </CustomButton>
       </Flex>
     </>
   );

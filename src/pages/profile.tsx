@@ -23,6 +23,7 @@ import {
 import { doc, updateDoc } from "firebase/firestore";
 import Head from "next/head";
 
+import { CustomButton } from "~/components/CustomButton";
 import AuthContext from "~/contexts/AuthContext";
 import { db as webDb } from "~/lib/firebase";
 
@@ -102,15 +103,10 @@ export default function Profile() {
             <FormLabel>Avatar</FormLabel>
             <Input bg="gray.900" readOnly value={photoURL ?? "Sem avatar"} />
           </Box>
-          <Button
-            bg="yellow.500"
-            alignSelf="flex-end"
-            _hover={{ bg: "yellow.600" }}
-            onClick={onOpen}
-          >
+          <CustomButton buttonType="warn" alignSelf="flex-end" onClick={onOpen}>
             <Icon as={HiPencilAlt} mr="2" />
             Editar
-          </Button>
+          </CustomButton>
         </Stack>
       </Flex>
       <Modal isOpen={isOpen} onClose={onClose}>
@@ -145,18 +141,17 @@ export default function Profile() {
             <Button variant="ghost" onClick={onClose}>
               Fechar
             </Button>
-            <Button
+            <CustomButton
               disabled={
                 name?.length <= 5 ||
                 (photoURL === loggedUser?.photoURL && name === loggedUser?.name)
               }
               ml="2"
-              bg="blue.500"
-              _hover={{ bg: "blue.600" }}
+              buttonType="primary"
               onClick={handleUpdate}
             >
               Salvar
-            </Button>
+            </CustomButton>
           </ModalFooter>
         </ModalContent>
       </Modal>

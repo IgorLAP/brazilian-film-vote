@@ -22,6 +22,7 @@ import { doc, updateDoc } from "firebase/firestore";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 
+import { CustomButton } from "~/components/CustomButton";
 import { Movie } from "~/interfaces/Movie";
 import { db as webDb } from "~/lib/firebase";
 import { db as adminDb } from "~/lib/firebase-admin";
@@ -86,28 +87,29 @@ export default function Lists({ generalList }: ListsProps) {
             <Tr key={list.idListType}>
               <Td>{list.idListType.split("/")[1]}</Td>
               <Td>
-                <Button onClick={() => handleSeeList(list.movies)}>
+                <Button
+                  variant="link"
+                  onClick={() => handleSeeList(list.movies)}
+                >
                   Ver lista
                 </Button>
               </Td>
               <Td>{list.status ? "Ativo" : "Finalizado"}</Td>
               <Td>
                 {list.status ? (
-                  <Button
-                    bg="red.500"
-                    _hover={{ bg: "red.600" }}
+                  <CustomButton
+                    buttonType="danger"
                     onClick={() => handleFinishList(list.idListType)}
                   >
                     Finalizar
-                  </Button>
+                  </CustomButton>
                 ) : (
-                  <Button
-                    bg="blue.500"
-                    _hover={{ bg: "blue.600" }}
+                  <CustomButton
+                    buttonType="primary"
                     onClick={() => router.push("/list/:id")}
                   >
                     Resultado
-                  </Button>
+                  </CustomButton>
                 )}
               </Td>
             </Tr>
@@ -139,14 +141,9 @@ export default function Lists({ generalList }: ListsProps) {
             </Table>
           </ModalBody>
           <ModalFooter>
-            <Button
-              bg="blue.500"
-              _hover={{ bg: "blue.600" }}
-              mr={3}
-              onClick={onClose}
-            >
+            <CustomButton buttonType="primary" mr={3} onClick={onClose}>
               Fechar
-            </Button>
+            </CustomButton>
           </ModalFooter>
         </ModalContent>
       </Modal>
