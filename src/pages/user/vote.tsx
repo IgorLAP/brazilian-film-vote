@@ -18,18 +18,20 @@ import {
   Text,
   UnorderedList,
 } from "@chakra-ui/react";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
 import AuthContext from "~/contexts/AuthContext";
+import { showToast } from "~/helpers/showToast";
 import useDebounce from "~/hooks/useDebounce";
 import { Movie } from "~/interfaces/Movie";
 import { db as webDb } from "~/lib/firebase";
 import { db as adminDb, firebaseAdmin } from "~/lib/firebase-admin";
 import { tmdbApi } from "~/lib/tmdb";
+import { GeneralList } from "~/models/GeneralList";
 
 interface VotingProps {
   generalList: {
@@ -100,7 +102,7 @@ export default function Voting({ generalList }: VotingProps) {
     const tmp = [...movieList];
     const alreadyHasMovie = tmp.filter((item) => item.name === movie);
     if (alreadyHasMovie.length > 0) {
-      alert("Filme já adicionado");
+      showToast("warn", "Filme já adicionado");
       setMovieList(() => {
         tmp[index].name = "";
         tmp[index].id = 0;
@@ -150,7 +152,7 @@ export default function Voting({ generalList }: VotingProps) {
       setTmdbList(filterByDecade);
       setHasResults(true);
     } else {
-      alert("Nenhum resultado encontrado");
+      showToast("error", "Nenhum resultado encontrado");
       setHasResults(false);
       setTmdbList([]);
     }
@@ -160,12 +162,26 @@ export default function Voting({ generalList }: VotingProps) {
     if (search) tmdbSearch(debouncedSearch);
   }, [debouncedSearch]);
 
-  function handleNotFoundMovie(index: number) {
-    setMovieList((prevState) => {
-      const tmp = [...prevState];
-      tmp[index].id = "No ID";
-      return tmp;
-    });
+  function handleNotFoundMovie(inputValue: string, index: number) {
+    const clone = [...movieList];
+    clone[index].name = inputValue;
+    const alreadyHasMovie = clone.filter(
+      (item) => item.name.toLowerCase() === inputValue.toLowerCase()
+    );
+    if (alreadyHasMovie.length > 1) {
+      showToast("warn", "Filme já adicionado");
+      setMovieList(() => {
+        clone[index].name = "";
+        clone[index].id = 0;
+        return clone;
+      });
+    } else {
+      setMovieList((prevState) => {
+        const tmp = [...prevState];
+        tmp[index].id = "No ID";
+        return tmp;
+      });
+    }
   }
 
   async function handleVote() {
@@ -175,13 +191,50 @@ export default function Voting({ generalList }: VotingProps) {
         `users/${user.uid}/lists`,
         generalList.idListType.split("/")[1]
       );
+      const generalListCollectionRef = doc(
+        webDb,
+        "general_list",
+        generalList.idListType.split("/")[1]
+      );
       await setDoc(listsCollectionDocRef, {
         id_list_type: generalList.idListType,
         movies: movieList,
       });
+      const actualGeneral = await getDoc(generalListCollectionRef);
+      if (actualGeneral.exists) {
+        const { movies } = actualGeneral.data();
+        const cloneMovieList = [...movieList];
+        // eslint-disable-next-line guard-for-in
+        for (const i in movies) {
+          for (const y in cloneMovieList) {
+            if (movies[i].name === cloneMovieList[y].name) {
+              movies[i].points += cloneMovieList[y].points;
+              cloneMovieList.splice(Number(y), 1);
+            }
+          }
+        }
+        const updatedGeneralList = cloneMovieList
+          .concat(movies)
+          .sort((a, b) => b.points - a.points);
+        await updateDoc(generalListCollectionRef, {
+          movies: updatedGeneralList,
+        });
+      } else {
+        const listTypeRef = doc(
+          webDb,
+          "list_type",
+          `${generalList.idListType}-0`
+        );
+        const newGeneralList = new GeneralList({
+          idListType: listTypeRef,
+          movies: movieList.sort((a, b) => b.points - a.points),
+          status: true,
+        });
+        await setDoc(generalListCollectionRef, { ...newGeneralList });
+      }
       router.push("/user");
     } catch (err) {
-      console.log(err);
+      showToast("error", err.message);
     }
   }
 
@@ -253,7 +306,9 @@ export default function Voting({ generalList }: VotingProps) {
                       mt="2"
                       disabled={!isDefaultId && !isNotFoundMovie}
                       isChecked={hasName && isNotFoundMovie}
-                      onChange={() => handleNotFoundMovie(index)}
+                      onChange={() =>
+                        handleNotFoundMovie(movieList[index].name, index)
+                      }
                       ref={checkboxArrayRef}
                     >
                       <Text fontSize="smaller">Filme não encontrado</Text>

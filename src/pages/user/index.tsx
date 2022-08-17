@@ -30,6 +30,7 @@ import Head from "next/head";
 import { CustomButton } from "~/components/CustomButton";
 import { MovieDetail } from "~/components/MovieDetail";
 import AuthContext from "~/contexts/AuthContext";
+import { showToast } from "~/helpers/showToast";
 import { Movie } from "~/interfaces/Movie";
 import { db as adminDb, firebaseAdmin } from "~/lib/firebase-admin";
 import { tmdbApi } from "~/lib/tmdb";
@@ -72,22 +73,40 @@ export default function MyLists({ lists }: MyListsProps) {
 
   async function handleSeeList(movieList: Movie[]) {
     try {
-      const dirPromises = movieList.map((movie) =>
-        tmdbApi
+      const dirPromises = movieList.map((movie) => {
+        if (movie.id === "No ID") {
+          return new Promise<{ name: string }>((resolve) => {
+            resolve({
+              name: "No provided",
+            });
+          });
+        }
+        return tmdbApi
           .get<TmdbMovieCredit>(`movie/${movie.id}/credits`)
           .then((results) =>
             results.data.crew
               .filter((member) => member.job === "Director")
               .pop()
-          )
-      );
-      const posterYearsPromises = movieList.map((movie) =>
-        tmdbApi.get<TmdbMovie>(`movie/${movie.id}`).then((results) => ({
+          );
+      });
+      const posterYearsPromises = movieList.map((movie) => {
+        if (movie.id === "No ID") {
+          return new Promise<TmdbMovie>((resolve) => {
+            resolve({
+              original_title: movie.name,
+              poster_path:
+                "https://eapp.org/wp-content/uploads/2018/05/poster_placeholder.jpg",
+              release_date: "0000-00-00",
+            });
+          });
+        }
+
+        return tmdbApi.get<TmdbMovie>(`movie/${movie.id}`).then((results) => ({
           original_title: results.data.original_title,
           poster_path: results.data.poster_path,
           release_date: results.data.release_date,
-        }))
-      );
+        }));
+      });
       const directors = await Promise.all(dirPromises).then(
         (results) => results
       );
@@ -95,7 +114,7 @@ export default function MyLists({ lists }: MyListsProps) {
         (results) => results
       );
       const moviesWithDirectors = directors.map((item, index) => ({
-        director: item.name as string,
+        director: item?.name,
         id: movieList[index].id,
         name: movieList[index].name,
         points: movieList[index].points,
@@ -106,7 +125,7 @@ export default function MyLists({ lists }: MyListsProps) {
       setSelectedList(moviesWithDirectors);
       onOpen();
     } catch (err) {
-      console.log(err);
+      showToast("error", err.message);
     }
   }
 
@@ -127,7 +146,7 @@ export default function MyLists({ lists }: MyListsProps) {
       link.click();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      console.log(err);
+      showToast("error", err.message);
     }
   }
 
@@ -187,7 +206,11 @@ export default function MyLists({ lists }: MyListsProps) {
                         borderRadius={6}
                         objectFit="cover"
                         objectPosition="top"
-                        src={`${posterPathBase}${movie.poster_path}`}
+                        src={
+                          movie.id !== "No ID"
+                            ? `${posterPathBase}${movie.poster_path}`
+                            : movie.poster_path
+                        }
                       />
                       <Flex
                         justify="space-around"
