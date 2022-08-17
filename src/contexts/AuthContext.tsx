@@ -6,10 +6,11 @@ import {
   signOut as firebaseSignOut,
   updateProfile,
 } from "firebase/auth";
-import Router, { useRouter } from "next/router";
+import { useRouter } from "next/router";
 import { destroyCookie, setCookie } from "nookies";
 
 import { getUserByEmail } from "~/helpers/get-user-by-email";
+import { showToast } from "~/helpers/showToast";
 
 interface LoggedUser {
   name: string;
@@ -51,9 +52,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
         const token = await sessionUser.getIdToken();
         setCookie(undefined, "token", token, { path: "/" });
-      } else {
-        router.push("/");
       }
+      // Improve auto signout method
+      if (!sessionUser && auth.currentUser) signOut();
     });
   }, []);
 
@@ -76,12 +77,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: userDoc.role,
       });
       if (userDoc.role === "ADMIN") {
-        Router.push("/admin");
+        router.push("/admin");
         return;
       }
-      Router.push("/user");
+      router.push("/user");
     } catch (err) {
-      console.log(err);
+      showToast("error", err.message);
     }
   }
 
@@ -89,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await firebaseSignOut(auth);
     setUser(null);
     destroyCookie(undefined, "token");
-    Router.push("/");
+    router.push("/");
   }
 
   async function onUpdate(name?: string, photoURL?: string) {

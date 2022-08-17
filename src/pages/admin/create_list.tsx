@@ -26,8 +26,10 @@ import {
   where,
 } from "firebase/firestore";
 import { GetServerSideProps } from "next";
+import Head from "next/head";
 
 import { CustomButton } from "~/components/CustomButton";
+import { showToast } from "~/helpers/showToast";
 import { db as webDb } from "~/lib/firebase";
 import { db as adminDb } from "~/lib/firebase-admin";
 import { GeneralList } from "~/models/GeneralList";
@@ -51,126 +53,140 @@ export default function createList({
 
   async function handleNewListType() {
     try {
-      if (listName !== "" && !!decadeSelectRef.current.value) {
-        const decade = Number(decadeSelectRef.current.value);
-        const newListType = new ListType({ name: listName, decade });
-        const listTypeDocRef = doc(webDb, "list_type", `${decade}-0`);
-
-        const listTypeExists = (await getDoc(listTypeDocRef)).exists();
-        if (listTypeExists) {
-          const q = query(
-            collection(webDb, "list_type"),
-            where("decade", "==", decade)
-          );
-          const querySnap = await getDocs(q);
-          const thisDecadeListTypesIds = querySnap.docs.map((item) => item.id);
-          const lastUsedIndex = (thisDecadeListTypesIds.at(-1) as string).split(
-            "-"
-          )[1];
-
-          const newIndex = Number(lastUsedIndex) + 1;
-          await setDoc(doc(webDb, "list_type", `${decade}-${newIndex}`), {
-            ...newListType,
-          });
-
-          const listTypeRef = doc(webDb, "list_type", `${decade}-${newIndex}`);
-          const newGeneralList = new GeneralList({ idListType: listTypeRef });
-          await setDoc(doc(webDb, "general_list", `${decade}-${newIndex}`), {
-            id_list_type: newGeneralList.idListType,
-            movies: newGeneralList.movies,
-            status: newGeneralList.status,
-          });
-        } else {
-          await setDoc(listTypeDocRef, {
-            ...newListType,
-          });
-
-          const listTypeRef = doc(webDb, "list_type", `${decade}-0`);
-          const newGeneralList = new GeneralList({ idListType: listTypeRef });
-          await setDoc(doc(webDb, "general_list", `${decade}-0`), {
-            id_list_type: newGeneralList.idListType,
-            movies: newGeneralList.movies,
-            status: newGeneralList.status,
-          });
-        }
-
-        setLTypes((prevState) => [
-          ...prevState,
-          { name: listName, decade: decade as number },
-        ]);
-        setListName("");
-        decadeSelectRef.current.value = "";
+      if (listName === "" || !decadeSelectRef.current.value) {
+        showToast("error", "Preencha o nome e a década");
+        return;
       }
+      const decade = Number(decadeSelectRef.current.value);
+      const newListType = new ListType({ name: listName, decade });
+      const listTypeDocRef = doc(webDb, "list_type", `${decade}-0`);
+
+      const listTypeExists = (await getDoc(listTypeDocRef)).exists();
+      if (listTypeExists) {
+        const q = query(
+          collection(webDb, "list_type"),
+          where("decade", "==", decade)
+        );
+        const querySnap = await getDocs(q);
+        const thisDecadeListTypesIds = querySnap.docs.map((item) => item.id);
+        const lastUsedIndex = (thisDecadeListTypesIds.at(-1) as string).split(
+          "-"
+        )[1];
+
+        const newIndex = Number(lastUsedIndex) + 1;
+        await setDoc(doc(webDb, "list_type", `${decade}-${newIndex}`), {
+          ...newListType,
+        });
+
+        const listTypeRef = doc(webDb, "list_type", `${decade}-${newIndex}`);
+        const newGeneralList = new GeneralList({ idListType: listTypeRef });
+        await setDoc(doc(webDb, "general_list", `${decade}-${newIndex}`), {
+          id_list_type: newGeneralList.idListType,
+          movies: newGeneralList.movies,
+          status: newGeneralList.status,
+        });
+      } else {
+        await setDoc(listTypeDocRef, {
+          ...newListType,
+        });
+
+        const listTypeRef = doc(webDb, "list_type", `${decade}-0`);
+        const newGeneralList = new GeneralList({ idListType: listTypeRef });
+        await setDoc(doc(webDb, "general_list", `${decade}-0`), {
+          id_list_type: newGeneralList.idListType,
+          movies: newGeneralList.movies,
+          status: newGeneralList.status,
+        });
+      }
+
+      setLTypes((prevState) => [
+        ...prevState,
+        { name: listName, decade: decade as number },
+      ]);
+      setListName("");
+      decadeSelectRef.current.value = "";
     } catch (err) {
-      console.log(err);
+      showToast("error", err.message);
     }
   }
 
   return (
-    <Flex flexDir="column">
-      <Flex
-        bg="gray.800"
-        py="4"
-        px="6"
-        borderRadius={6}
-        as="form"
-        justify="flex-start"
-        align="center"
-        alignSelf="flex-start"
-      >
-        <HStack spacing="4">
-          <FormControl>
-            <FormLabel>Nome da lista</FormLabel>
-            <Input
-              bg="gray.900"
-              type="text"
-              value={listName}
-              onChange={(e) => setListName(e.target.value)}
-            />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Década</FormLabel>
-            <Select ref={decadeSelectRef} bg="gray.900">
-              <option value="">Selecione</option>
-              {validDecades.map((decadeOpt) => (
-                <option value={decadeOpt} key={decadeOpt}>
-                  {decadeOpt}
-                </option>
-              ))}
-            </Select>
-          </FormControl>
-          <CustomButton
-            alignSelf="flex-end"
-            buttonType="primary"
-            type="button"
-            onClick={handleNewListType}
-          >
-            Criar
-          </CustomButton>
-        </HStack>
+    <>
+      <Head>
+        <title>Criar Lista - Brazilian film vote</title>
+      </Head>
+      <Flex flexDir="column">
+        <Flex
+          bg="gray.800"
+          py="4"
+          px="6"
+          borderRadius={6}
+          as="form"
+          justify="flex-start"
+          align="center"
+          alignSelf="flex-start"
+        >
+          <HStack spacing="4">
+            <FormControl>
+              <FormLabel>Nome da lista</FormLabel>
+              <Input
+                bg="gray.900"
+                type="text"
+                value={listName}
+                onChange={(e) => setListName(e.target.value)}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Década</FormLabel>
+              <Select ref={decadeSelectRef} bg="gray.900">
+                <option value="">Selecione</option>
+                {validDecades.map((decadeOpt) => (
+                  <option value={decadeOpt} key={decadeOpt}>
+                    {decadeOpt}
+                  </option>
+                ))}
+              </Select>
+            </FormControl>
+            <CustomButton
+              alignSelf="flex-end"
+              buttonType="primary"
+              type="button"
+              px={6}
+              onClick={handleNewListType}
+            >
+              Criar
+            </CustomButton>
+          </HStack>
+        </Flex>
+        {lTypes.length > 0 ? (
+          <TableContainer my="8">
+            <Heading as="h1" fontSize="2xl">
+              Listas cadastradas
+            </Heading>
+            <Table variant="striped">
+              <Thead>
+                <Tr>
+                  <Th>Nome</Th>
+                  <Th>Década</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {lTypes.map((listType, index) => (
+                  <Tr key={`${index + 1}`}>
+                    <Td>{listType.name}</Td>
+                    <Td>{listType.decade}</Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Heading as="h1" fontSize="2xl" mt="4">
+            Ainda não há listas
+          </Heading>
+        )}
       </Flex>
-      <TableContainer my="8">
-        <Heading as="h1" fontSize="2xl">
-          Listas cadastradas
-        </Heading>
-        <Table variant="striped">
-          <Thead>
-            <Tr>
-              <Th>Nome</Th>
-              <Th>Década</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {lTypes.map((listType, index) => (
-              <Tr key={`${index + 1}`}>
-                <Td>{listType.name}</Td>
-                <Td>{listType.decade}</Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </TableContainer>
-    </Flex>
+    </>
   );
 }
 

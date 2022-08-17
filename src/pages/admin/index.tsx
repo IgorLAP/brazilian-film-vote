@@ -28,6 +28,7 @@ import { GetServerSideProps } from "next";
 import Head from "next/head";
 
 import { CustomButton } from "~/components/CustomButton";
+import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
 import { db as webDb } from "~/lib/firebase";
 import { db, firebaseAdmin } from "~/lib/firebase-admin";
@@ -58,13 +59,13 @@ export default function Admin({ users }: AdminProps) {
       );
       if (alreadyExistsEmail.length === 0) {
         await sendSignInLinkToEmail(auth, newUserEmail, actionCodeSetting);
-        alert("Email enviado");
+        showToast("error", "Email enviado");
         setNewUserEmail("");
       } else {
-        alert("Email já cadastrado");
+        showToast("error", "Email já cadastrado");
       }
     } catch (err) {
-      console.log(err);
+      showToast("error", err.message);
     }
   }
 
@@ -81,7 +82,7 @@ export default function Admin({ users }: AdminProps) {
   return (
     <>
       <Head>
-        <title>Admin Dashboard</title>
+        <title>Admin Dashboard - Brazilian film vote</title>
       </Head>
       <Flex w="100%" flexDir="column">
         <Stack spacing="4" borderRadius="4">

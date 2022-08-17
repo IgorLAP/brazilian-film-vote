@@ -1,4 +1,7 @@
+import "react-toastify/dist/ReactToastify.css";
+
 import React from "react";
+import { ToastContainer } from "react-toastify";
 
 import { ChakraProvider } from "@chakra-ui/react";
 import { AppProps } from "next/app";
@@ -14,6 +17,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <Layout>
           <Component {...pageProps} />
         </Layout>
+        <ToastContainer newestOnTop />
       </ChakraProvider>
     </AuthProvider>
   );

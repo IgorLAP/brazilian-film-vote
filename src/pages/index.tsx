@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
+import { IoIosMail } from "react-icons/io";
+import { RiLock2Fill } from "react-icons/ri";
 
-import { LockIcon, EmailIcon } from "@chakra-ui/icons";
 import {
   Button,
   Flex,
@@ -73,7 +74,7 @@ export default function Home() {
           <Flex h="100%" as="form" flexDir="column">
             <Stack spacing="4">
               <Flex justify="center" align="center">
-                <Icon as={EmailIcon} w={5} h={5} />
+                <Icon as={IoIosMail} w={6} h={6} />
                 <Input
                   placeholder="E-mail"
                   type="email"
@@ -85,11 +86,11 @@ export default function Home() {
                 />
               </Flex>
               <Flex justify="center" align="center">
-                <Icon as={LockIcon} w={5} h={5} />
+                <Icon as={RiLock2Fill} w={6} h={6} />
                 <Input
                   placeholder="Senha"
                   type="password"
-                  border="blue.50"
+                  border="blue.60"
                   bg="gray.900"
                   w="320px"
                   ml="2"

@@ -20,9 +20,11 @@ import {
 } from "@chakra-ui/react";
 import { doc, updateDoc } from "firebase/firestore";
 import { GetServerSideProps } from "next";
+import Head from "next/head";
 import { useRouter } from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
+import { showToast } from "~/helpers/showToast";
 import { Movie } from "~/interfaces/Movie";
 import { db as webDb } from "~/lib/firebase";
 import { db as adminDb } from "~/lib/firebase-admin";
@@ -66,12 +68,15 @@ export default function Lists({ generalList }: ListsProps) {
         return tmp;
       });
     } catch (err) {
-      console.log(err);
+      showToast("error", err.message);
     }
   }
 
-  return (
+  return gList.length > 0 ? (
     <>
+      <Head>
+        <title>Listas - Brazilian film vote</title>
+      </Head>
       <Heading as="h1">Listas</Heading>
       <Table variant="striped">
         <Thead>
@@ -148,6 +153,10 @@ export default function Lists({ generalList }: ListsProps) {
         </ModalContent>
       </Modal>
     </>
+  ) : (
+    <Heading fontSize="2xl" as="h1">
+      Ainda não há Listas
+    </Heading>
   );
 }
 

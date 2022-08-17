@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 
 import {
-  Button,
   Flex,
   FormControl,
   FormLabel,
@@ -21,6 +20,7 @@ import Head from "next/head";
 import Router from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
+import { showToast } from "~/helpers/showToast";
 import { db as webDb } from "~/lib/firebase";
 import { User } from "~/models/User";
 
@@ -28,12 +28,19 @@ export default function singnIn() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [canSignIn, setCanSignIn] = useState(true);
 
   useEffect(() => {
     const auth = getAuth();
     if (!isSignInWithEmailLink(auth, window.location.href)) {
-      alert("Invalid link, request another one");
+      setCanSignIn(false);
       Router.push("/");
+      showToast("warn", "Link inválido, solicite outro");
+    }
+
+    if (auth.currentUser) {
+      setCanSignIn(false);
+      Router.push("/user");
     }
   }, []);
 
@@ -53,7 +60,7 @@ export default function singnIn() {
       });
       Router.push("/profile");
     } catch (err) {
-      console.log(err);
+      showToast("error", err.message);
     }
   }
 
@@ -114,7 +121,7 @@ export default function singnIn() {
               buttonType="primary"
               alignSelf="flex-end"
               type="button"
-              disabled={!name || !email || !password}
+              disabled={canSignIn && (!name || !email || !password)}
               onClick={handleSubmit}
             >
               Cadastrar

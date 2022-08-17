@@ -25,6 +25,7 @@ import Head from "next/head";
 
 import { CustomButton } from "~/components/CustomButton";
 import AuthContext from "~/contexts/AuthContext";
+import { showToast } from "~/helpers/showToast";
 import { db as webDb } from "~/lib/firebase";
 
 export default function Profile() {
@@ -56,7 +57,7 @@ export default function Profile() {
   async function handleUpdate() {
     if (photoURL) {
       if (!(await doesImageExist(photoURL))) {
-        alert("Imagem invalida");
+        showToast("error", "Imagem inválida");
         return;
       }
     }
@@ -70,14 +71,14 @@ export default function Profile() {
       onUpdate(name, photoURL);
       onClose();
     } catch (err) {
-      console.log(err);
+      showToast("error", err.message);
     }
   }
 
   return (
     <>
       <Head>
-        <title>{name} - Perfil</title>
+        <title>Brazilian filme vote - Perfil</title>
       </Head>
       <Heading as="h1" textAlign="center">
         Perfil
