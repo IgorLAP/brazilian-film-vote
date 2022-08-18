@@ -8,6 +8,7 @@ import {
   Input,
   Stack,
 } from "@chakra-ui/react";
+import axios from "axios";
 import {
   getAuth,
   isSignInWithEmailLink,
@@ -15,38 +16,39 @@ import {
   updatePassword,
   updateProfile,
 } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
 import Head from "next/head";
-import Router from "next/router";
+import { useRouter } from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
 import { showToast } from "~/helpers/showToast";
-import { db as webDb } from "~/lib/firebase";
 import { User } from "~/models/User";
 
 export default function singnIn() {
+  const router = useRouter();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [canSignIn, setCanSignIn] = useState(true);
 
   useEffect(() => {
     const auth = getAuth();
     if (!isSignInWithEmailLink(auth, window.location.href)) {
       setCanSignIn(false);
-      Router.push("/");
+      router.push("/");
       showToast("warn", "Link inválido, solicite outro");
     }
 
     if (auth.currentUser) {
       setCanSignIn(false);
-      Router.push("/user");
+      router.push("/user");
     }
   }, []);
 
   async function handleSubmit() {
+    const auth = getAuth();
     try {
-      const auth = getAuth();
       const { user } = await signInWithEmailLink(
         auth,
         email,
@@ -55,10 +57,8 @@ export default function singnIn() {
       await updatePassword(user, password);
       await updateProfile(user, { displayName: name });
       const newUser = new User({ email, name });
-      await setDoc(doc(webDb, "users", user.uid), {
-        ...newUser,
-      });
-      Router.push("/profile");
+      await axios.post("/api/signin", { uid: user.uid, ...newUser });
+      router.push("/profile");
     } catch (err) {
       showToast("error", err.message);
     }
@@ -67,7 +67,7 @@ export default function singnIn() {
   return (
     <>
       <Head>
-        <title>Complete Signin</title>
+        <title>Cadastre-se - Brazilian film vote</title>
       </Head>
       <Flex
         maxW="1180px"
@@ -91,7 +91,7 @@ export default function singnIn() {
         >
           <Stack spacing="3">
             <FormControl>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>Nome</FormLabel>
               <Input
                 type="text"
                 bg="gray.900"
@@ -109,7 +109,7 @@ export default function singnIn() {
               />
             </FormControl>
             <FormControl>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Senha</FormLabel>
               <Input
                 type="password"
                 value={password}
@@ -117,11 +117,23 @@ export default function singnIn() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </FormControl>
+            <FormControl>
+              <FormLabel>Confirmar senha</FormLabel>
+              <Input
+                type="password"
+                value={confirmPassword}
+                bg="gray.900"
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </FormControl>
             <CustomButton
               buttonType="primary"
               alignSelf="flex-end"
               type="button"
-              disabled={canSignIn && (!name || !email || !password)}
+              disabled={
+                canSignIn &&
+                (!name || !email || !password || password !== confirmPassword)
+              }
               onClick={handleSubmit}
             >
               Cadastrar
