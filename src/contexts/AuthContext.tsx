@@ -1,5 +1,6 @@
 import React, { createContext, useEffect, useState } from "react";
 
+import axios from "axios";
 import {
   getAuth,
   signInWithEmailAndPassword,
@@ -66,17 +67,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password
       );
       const { uid, photoURL, displayName } = loggedUser;
+      const userDoc = await getUserByEmail(loggedUser.email);
+      await updateProfile(loggedUser, { displayName: userDoc.name });
+
       const token = await loggedUser.getIdToken();
       setCookie(undefined, "token", token, { path: "/" });
-      const userDoc = await getUserByEmail(loggedUser.email);
+
       setUser({
         uid,
-        email: loggedUser.email,
-        name: displayName,
+        email: userDoc.email,
+        name: displayName || userDoc.name,
         photoURL,
         role: userDoc.role,
       });
+
       if (userDoc.role === "ADMIN") {
+        const { admin } = (await auth.currentUser.getIdTokenResult(true))
+          .claims;
+        if (!admin) {
+          await axios.post("/api/set-user-claim", { uid });
+        }
         router.push("/admin");
         return;
       }

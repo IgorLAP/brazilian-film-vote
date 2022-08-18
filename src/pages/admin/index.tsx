@@ -15,6 +15,7 @@ import {
   Thead,
   Tr,
 } from "@chakra-ui/react";
+import axios from "axios";
 import { getAuth, sendSignInLinkToEmail } from "firebase/auth";
 import {
   collection,
@@ -28,10 +29,11 @@ import { GetServerSideProps } from "next";
 import Head from "next/head";
 
 import { CustomButton } from "~/components/CustomButton";
+import { showAlert } from "~/helpers/showAlert";
 import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
 import { db as webDb } from "~/lib/firebase";
-import { db, firebaseAdmin } from "~/lib/firebase-admin";
+import { db } from "~/lib/firebase-admin";
 
 interface Users {
   name?: string;
@@ -59,7 +61,7 @@ export default function Admin({ users }: AdminProps) {
       );
       if (alreadyExistsEmail.length === 0) {
         await sendSignInLinkToEmail(auth, newUserEmail, actionCodeSetting);
-        showToast("error", "Email enviado");
+        showToast("success", "Email enviado");
         setNewUserEmail("");
       } else {
         showToast("error", "Email já cadastrado");
@@ -70,13 +72,20 @@ export default function Admin({ users }: AdminProps) {
   }
 
   async function handleDeleteUser(email: string) {
+    const { isConfirmed } = await showAlert({
+      title: "Confirmar ação",
+      text: `Deletar usuário de email: ${email}?`,
+    });
+    if (!isConfirmed) return;
     const q = query(collection(webDb, "users"), where("email", "==", email));
     const querySnap = await getDocs(q);
     const [userID] = querySnap.docs.map((i) => i.id);
     await deleteDoc(doc(webDb, "users", userID));
+    await axios.post("/api/auth-delete", { email });
     setUsersList((prevState) =>
       prevState.filter((user) => user.email !== email)
     );
+    showToast("success", "Deletado");
   }
 
   return (
@@ -140,16 +149,7 @@ export default function Admin({ users }: AdminProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = verifySSRAuth(
-  async ({ req }) => {
-    const { token } = req.cookies;
-    const auth = firebaseAdmin.auth();
-    const { uid } = await auth.verifyIdToken(token);
-    const { customClaims } = await auth.getUser(uid);
-
-    if (!customClaims?.admin) {
-      await auth.setCustomUserClaims(uid, { admin: true });
-    }
-
+  async () => {
     const usersRef = db.collection("users");
     const users = await usersRef.get();
 
