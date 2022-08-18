@@ -39,7 +39,9 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
+import { showAlert } from "~/helpers/showAlert";
 import { showToast } from "~/helpers/showToast";
+import { verifySSRAuth } from "~/helpers/veritySSRAuth";
 import { Movie } from "~/interfaces/Movie";
 import { db as webDb } from "~/lib/firebase";
 import { db as adminDb } from "~/lib/firebase-admin";
@@ -160,6 +162,11 @@ export default function Lists({ generalList, validDecades }: ListsProps) {
   }
 
   async function handleFinishList(idListType: string) {
+    const { isConfirmed } = await showAlert({
+      title: "Confirmar ação",
+      text: `Finalizar a votação ${idListType.split("/")[1]}?`,
+    });
+    if (!isConfirmed) return;
     try {
       const generalListDocRef = doc(
         webDb,
@@ -313,23 +320,25 @@ export default function Lists({ generalList, validDecades }: ListsProps) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
-  const generalListRef = adminDb.collection("general_list");
-  const generalListSnap = await generalListRef.get();
-  const generalList = generalListSnap.docs.map((list) => ({
-    idListType: list.data().id_list_type.path,
-    movies: list.data().movies,
-    status: list.data().status,
-  }));
+export const getServerSideProps: GetServerSideProps = verifySSRAuth(
+  async () => {
+    const generalListRef = adminDb.collection("general_list");
+    const generalListSnap = await generalListRef.get();
+    const generalList = generalListSnap.docs.map((list) => ({
+      idListType: list.data().id_list_type.path,
+      movies: list.data().movies,
+      status: list.data().status,
+    }));
 
-  const decadesRef = adminDb.collection("decades");
-  const decadesSnap = await decadesRef.get();
-  const [validDecades] = decadesSnap.docs.map((year) => year.data());
+    const decadesRef = adminDb.collection("decades");
+    const decadesSnap = await decadesRef.get();
+    const [validDecades] = decadesSnap.docs.map((year) => year.data());
 
-  return {
-    props: {
-      generalList,
-      validDecades: validDecades.availables,
-    },
-  };
-};
+    return {
+      props: {
+        generalList,
+        validDecades: validDecades.availables,
+      },
+    };
+  }
+);

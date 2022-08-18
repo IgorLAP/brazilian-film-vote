@@ -5,7 +5,7 @@ import {
 } from "next";
 import { destroyCookie } from "nookies";
 
-import { firebaseAdmin } from "~/lib/firebase-admin";
+import { auth } from "~/lib/firebase-admin";
 
 export function verifySSRAuth(fn: GetServerSideProps) {
   return async (
@@ -25,11 +25,10 @@ export function verifySSRAuth(fn: GetServerSideProps) {
       }
 
       if (token) {
-        const auth = firebaseAdmin.auth();
         const { uid } = await auth.verifyIdToken(token);
         const { customClaims } = await auth.getUser(uid);
 
-        if (customClaims?.admin && resolvedUrl !== "/admin") {
+        if (customClaims?.admin && !resolvedUrl.includes("/admin")) {
           return {
             redirect: {
               destination: "/admin",
@@ -38,10 +37,10 @@ export function verifySSRAuth(fn: GetServerSideProps) {
           };
         }
 
-        if (!customClaims?.admin && resolvedUrl !== "/profile") {
+        if (!customClaims?.admin && !resolvedUrl.includes("/user")) {
           return {
             redirect: {
-              destination: "/profile",
+              destination: "/user",
               permanent: false,
             },
           };

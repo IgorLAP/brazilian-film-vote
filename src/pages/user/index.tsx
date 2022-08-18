@@ -31,8 +31,9 @@ import { CustomButton } from "~/components/CustomButton";
 import { MovieDetail } from "~/components/MovieDetail";
 import AuthContext from "~/contexts/AuthContext";
 import { showToast } from "~/helpers/showToast";
+import { verifySSRAuth } from "~/helpers/veritySSRAuth";
 import { Movie } from "~/interfaces/Movie";
-import { db as adminDb, firebaseAdmin } from "~/lib/firebase-admin";
+import { db as adminDb, auth } from "~/lib/firebase-admin";
 import { tmdbApi } from "~/lib/tmdb";
 
 interface ShowMovieList extends Movie {
@@ -255,37 +256,40 @@ export default function MyLists({ lists }: MyListsProps) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-  const { token } = req.cookies;
-  const { uid } = await firebaseAdmin.auth().verifyIdToken(token);
-  const userListsSnap = await adminDb
-    .collection("users")
-    .doc(uid)
-    .collection("lists")
-    .get();
+export const getServerSideProps: GetServerSideProps = verifySSRAuth(
+  async ({ req }) => {
+    const { token } = req.cookies;
+    const { uid } = await auth.verifyIdToken(token);
+    const userListsSnap = await adminDb
+      .collection("users")
+      .doc(uid)
+      .collection("lists")
+      .get();
 
-  if (!userListsSnap.empty) {
-    const listTypesSnap = await adminDb.collection("list_type").get();
-    const formattedData = userListsSnap.docs.map((item, index) => {
-      if (
-        listTypesSnap.docs[index].id === item.data().id_list_type.split("/")[1]
-      ) {
-        return {
-          name: listTypesSnap.docs[index].data().name,
-          movies: item.data().movies,
-          id_list_type: item.data().id_list_type,
-        };
-      }
-      return {};
-    });
+    if (!userListsSnap.empty) {
+      const listTypesSnap = await adminDb.collection("list_type").get();
+      const formattedData = userListsSnap.docs.map((item, index) => {
+        if (
+          listTypesSnap.docs[index].id ===
+          item.data().id_list_type.split("/")[1]
+        ) {
+          return {
+            name: listTypesSnap.docs[index].data().name,
+            movies: item.data().movies,
+            id_list_type: item.data().id_list_type,
+          };
+        }
+        return {};
+      });
+      return {
+        props: {
+          lists: formattedData,
+        },
+      };
+    }
+
     return {
-      props: {
-        lists: formattedData,
-      },
+      props: {},
     };
   }
-
-  return {
-    props: {},
-  };
-};
+);

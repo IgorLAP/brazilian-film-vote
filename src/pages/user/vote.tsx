@@ -26,10 +26,11 @@ import { useRouter } from "next/router";
 import { CustomButton } from "~/components/CustomButton";
 import AuthContext from "~/contexts/AuthContext";
 import { showToast } from "~/helpers/showToast";
+import { verifySSRAuth } from "~/helpers/veritySSRAuth";
 import useDebounce from "~/hooks/useDebounce";
 import { Movie } from "~/interfaces/Movie";
 import { db as webDb } from "~/lib/firebase";
-import { db as adminDb, firebaseAdmin } from "~/lib/firebase-admin";
+import { db as adminDb, auth } from "~/lib/firebase-admin";
 import { tmdbApi } from "~/lib/tmdb";
 import { GeneralList } from "~/models/GeneralList";
 
@@ -261,7 +262,7 @@ export default function Voting({ generalList }: VotingProps) {
         bg="gray.800"
         pb="4"
         pt="8"
-        px="2"
+        px="6"
         borderRadius={6}
         mt="2"
       >
@@ -375,7 +376,7 @@ export default function Voting({ generalList }: VotingProps) {
         <CustomButton
           buttonType="primary"
           mt="4"
-          mr="6"
+          px="6"
           alignSelf="flex-end"
           disabled={!isFullList}
           onClick={handleVote}
@@ -387,57 +388,59 @@ export default function Voting({ generalList }: VotingProps) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
-  const { token } = req.cookies;
-  const generalListRef = adminDb
-    .collection("general_list")
-    .where("status", "==", true);
-  const isVotingConcluded = (await generalListRef.get()).empty;
+export const getServerSideProps: GetServerSideProps = verifySSRAuth(
+  async ({ req }) => {
+    const { token } = req.cookies;
+    const generalListRef = adminDb
+      .collection("general_list")
+      .where("status", "==", true);
+    const isVotingConcluded = (await generalListRef.get()).empty;
 
-  if (isVotingConcluded) {
+    if (isVotingConcluded) {
+      return {
+        redirect: {
+          destination: "/user",
+          permanent: false,
+        },
+      };
+    }
+
+    const [activeGList] = (await generalListRef.get()).docs;
+    const activeGListId = activeGList.data().id_list_type.path;
+    const activeGListStatus = activeGList.data().status;
+
+    const actualGeneralList = {
+      idListType: activeGListId,
+      status: activeGListStatus,
+    };
+
+    const { uid } = await auth.verifyIdToken(token);
+
+    const userActualList = await adminDb
+      .collection("users")
+      .doc(uid)
+      .collection("lists")
+      .doc(activeGListId.split("/")[1] as string)
+      .get();
+
+    if (userActualList.exists) {
+      return {
+        redirect: {
+          destination: "/user",
+          permanent: false,
+        },
+      };
+    }
+
+    const user = (await adminDb.collection("users").doc(uid).get()).data();
+    await auth.updateUser(uid, {
+      displayName: user.name,
+    });
+
     return {
-      redirect: {
-        destination: "/user",
-        permanent: false,
+      props: {
+        generalList: actualGeneralList,
       },
     };
   }
-
-  const [activeGList] = (await generalListRef.get()).docs;
-  const activeGListId = activeGList.data().id_list_type.path;
-  const activeGListStatus = activeGList.data().status;
-
-  const actualGeneralList = {
-    idListType: activeGListId,
-    status: activeGListStatus,
-  };
-
-  const { uid } = await firebaseAdmin.auth().verifyIdToken(token);
-
-  const userActualList = await adminDb
-    .collection("users")
-    .doc(uid)
-    .collection("lists")
-    .doc(activeGListId.split("/")[1] as string)
-    .get();
-
-  if (userActualList.exists) {
-    return {
-      redirect: {
-        destination: "/user",
-        permanent: false,
-      },
-    };
-  }
-
-  const user = (await adminDb.collection("users").doc(uid).get()).data();
-  await firebaseAdmin.auth().updateUser(uid, {
-    displayName: user.name,
-  });
-
-  return {
-    props: {
-      generalList: actualGeneralList,
-    },
-  };
-};
+);
