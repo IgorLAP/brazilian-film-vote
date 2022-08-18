@@ -1,6 +1,5 @@
 import React, { useContext } from "react";
 import { AiOutlineUsergroupDelete } from "react-icons/ai";
-import { BiListPlus } from "react-icons/bi";
 import { BsList } from "react-icons/bs";
 import { MdOutlineHowToVote } from "react-icons/md";
 import { RiListSettingsLine } from "react-icons/ri";
@@ -23,11 +22,6 @@ export function Sidebar() {
               href="/admin"
               text="Usuários"
               icon={AiOutlineUsergroupDelete}
-            />
-            <LinkSidebar
-              href="/admin/create_list"
-              text="Criar nova lista"
-              icon={BiListPlus}
             />
             <LinkSidebar href="/admin/lists" text="Listas" icon={BsList} />
           </>

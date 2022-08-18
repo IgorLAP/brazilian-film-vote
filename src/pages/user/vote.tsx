@@ -78,6 +78,7 @@ const movieListPlaceholder: Movie[] = [
 
 export default function Voting({ generalList }: VotingProps) {
   const router = useRouter();
+
   const { user } = useContext(AuthContext);
 
   const inputArrayRef = useRef<HTMLInputElement[]>();
@@ -89,6 +90,10 @@ export default function Voting({ generalList }: VotingProps) {
   const [search, setSearch] = useState("");
 
   const debouncedSearch = useDebounce(search, 500);
+
+  useEffect(() => {
+    if (search) tmdbSearch(debouncedSearch);
+  }, [debouncedSearch]);
 
   const isFullList = movieList.every(
     (movie) => movie.id !== 0 && movie.name !== ""
@@ -158,10 +163,6 @@ export default function Voting({ generalList }: VotingProps) {
     }
   }
 
-  useEffect(() => {
-    if (search) tmdbSearch(debouncedSearch);
-  }, [debouncedSearch]);
-
   function handleNotFoundMovie(inputValue: string, index: number) {
     const clone = [...movieList];
     clone[index].name = inputValue;
@@ -204,15 +205,14 @@ export default function Voting({ generalList }: VotingProps) {
       if (actualGeneral.exists) {
         const { movies } = actualGeneral.data();
         const cloneMovieList = [...movieList];
-        // eslint-disable-next-line guard-for-in
-        for (const i in movies) {
-          for (const y in cloneMovieList) {
+        Object.keys(movies).forEach((i) => {
+          Object.keys(movieList).forEach((y) => {
             if (movies[i].name === cloneMovieList[y].name) {
               movies[i].points += cloneMovieList[y].points;
               cloneMovieList.splice(Number(y), 1);
             }
-          }
-        }
+          });
+        });
         const updatedGeneralList = cloneMovieList
           .concat(movies)
           .sort((a, b) => b.points - a.points);
