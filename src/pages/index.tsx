@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { IoIosMail } from "react-icons/io";
 import { RiLock2Fill } from "react-icons/ri";
 
@@ -16,6 +16,7 @@ import { GetServerSideProps } from "next";
 import Head from "next/head";
 
 import { CustomButton } from "~/components/CustomButton";
+import { LoadingBar } from "~/components/LoadingBar";
 import AuthContext from "~/contexts/AuthContext";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
 
@@ -24,16 +25,31 @@ export default function Home() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loadingStatus, setLoadingStatus] = useState(0);
+  const [intervalID, setIntervalID] = useState<NodeJS.Timeout>();
 
   function handleLogin() {
+    setIntervalID(
+      setInterval(() => {
+        setLoadingStatus((prev) => prev + 20);
+      }, 500)
+    );
     signIn(email, password);
   }
+
+  useEffect(() => {
+    if (loadingStatus >= 100) {
+      window.clearInterval(intervalID);
+      setLoadingStatus(0);
+    }
+  }, [loadingStatus]);
 
   return (
     <>
       <Head>
         <title>Brazilian film vote</title>
       </Head>
+      <LoadingBar status={loadingStatus} />
       <Grid
         as="main"
         h="100vh"
