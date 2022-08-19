@@ -1,27 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 import { Box } from "@chakra-ui/react";
+import { motion } from "framer-motion";
 
 interface LoadingBarProps {
   status: number;
 }
 
 export function LoadingBar({ status }: LoadingBarProps) {
-  const [statusBar, setStatusBar] = useState(status);
-
-  useEffect(() => {
-    setStatusBar(status);
-  }, [status]);
-
   return (
     <Box
       backgroundColor="green.500"
-      h="2"
-      w={`${statusBar}%`}
+      as={motion.div}
+      height="2"
+      w={`${status}%`}
       position="absolute"
       left={0}
       top={0}
-      display={statusBar === 0 ? "none" : "block"}
+      transition="0.1s linear"
     />
   );
 }

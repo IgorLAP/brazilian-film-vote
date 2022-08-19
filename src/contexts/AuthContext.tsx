@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 import axios from "axios";
 import {
@@ -13,6 +13,8 @@ import { destroyCookie, setCookie } from "nookies";
 import { getUserByEmail } from "~/helpers/get-user-by-email";
 import { showToast } from "~/helpers/showToast";
 
+import { LoadingContext } from "./LoadingContext";
+
 interface LoggedUser {
   name: string;
   uid: string;
@@ -21,19 +23,22 @@ interface LoggedUser {
   role: "USER" | "ADMIN";
 }
 
-interface IinitialValue {
+export interface AuthContextInitial {
   user: LoggedUser;
-  signIn: (email: string, password: string) => void;
+  signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   onUpdate: (name?: string, photoURL?: string) => Promise<void>;
 }
 
-const initialValue = {} as IinitialValue;
+const initialValue = {} as AuthContextInitial;
 
-const AuthContext = createContext<IinitialValue>(initialValue);
+const AuthContext = createContext<AuthContextInitial>(initialValue);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const { handleLoading, clearLoading } = useContext(LoadingContext);
+
   const auth = getAuth();
+
   const router = useRouter();
 
   const [user, setUser] = useState<LoggedUser>(null);
@@ -61,6 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signIn(email: string, password: string) {
     try {
+      handleLoading(20, 1000);
       const { user: loggedUser } = await signInWithEmailAndPassword(
         auth,
         email,
@@ -92,24 +98,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       router.push("/user");
     } catch (err) {
-      showToast("error", err.message);
+      if (err) clearLoading();
+      throw new Error(err);
     }
   }
 
   async function signOut() {
-    await firebaseSignOut(auth);
-    setUser(null);
-    destroyCookie(undefined, "token");
-    router.push("/");
+    try {
+      handleLoading(60, 500);
+      await firebaseSignOut(auth);
+      setUser(null);
+      destroyCookie(undefined, "token");
+      router.push("/");
+    } catch (err) {
+      authError(err);
+    }
   }
 
   async function onUpdate(name?: string, photoURL?: string) {
-    await updateProfile(auth.currentUser, {
-      displayName: name,
-      photoURL,
-    });
-    const newInfos = { ...user, name, photoURL };
-    setUser(newInfos);
+    try {
+      await updateProfile(auth.currentUser, {
+        displayName: name,
+        photoURL,
+      });
+      const newInfos = { ...user, name, photoURL };
+      setUser(newInfos);
+      showToast("success", "Atualizado com sucesso");
+    } catch (err) {
+      showToast("error", err.message);
+    }
+  }
+
+  function authError(err) {
+    clearLoading();
+    showToast("error", err.message);
   }
 
   return (
