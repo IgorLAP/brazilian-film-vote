@@ -8,7 +8,7 @@ import { Box, Stack } from "@chakra-ui/react";
 
 import AuthContext from "~/contexts/AuthContext";
 
-import { LinkSidebar } from "./LinkSidebar";
+import { CustomLink } from "./CustomLink";
 
 export function Sidebar() {
   const { user } = useContext(AuthContext);
@@ -18,22 +18,22 @@ export function Sidebar() {
       <Stack spacing="4">
         {user?.role === "ADMIN" && (
           <>
-            <LinkSidebar
+            <CustomLink
               href="/admin"
               text="Usuários"
               icon={AiOutlineUsergroupDelete}
             />
-            <LinkSidebar href="/admin/lists" text="Listas" icon={BsList} />
+            <CustomLink href="/admin/lists" text="Listas" icon={BsList} />
           </>
         )}
         {user?.role === "USER" && (
           <>
-            <LinkSidebar
+            <CustomLink
               href="/user/vote"
               text="Votar"
               icon={MdOutlineHowToVote}
             />
-            <LinkSidebar
+            <CustomLink
               href="/user"
               text="Minhas Listas"
               icon={RiListSettingsLine}

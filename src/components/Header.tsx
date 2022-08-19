@@ -8,16 +8,16 @@ import {
   Flex,
   Icon,
   Image,
-  Link as ChakraLink,
   Popover,
   PopoverBody,
   PopoverContent,
   PopoverTrigger,
   Text,
 } from "@chakra-ui/react";
-import NextLink from "next/link";
 
 import AuthContext from "~/contexts/AuthContext";
+
+import { CustomLink } from "./CustomLink";
 
 export function Header() {
   const { user, signOut } = useContext(AuthContext);
@@ -88,20 +88,11 @@ export function Header() {
                 alignItems="flex-start"
                 flexDir="column"
               >
-                <Flex
-                  _hover={{ color: "blue.400" }}
-                  w="100%"
-                  justify="flex-start"
-                  align="center"
-                >
-                  <Icon mr="2" as={BsFillPersonFill} />
-                  <NextLink href="/profile">
-                    <ChakraLink _hover={{ textDecoration: "none" }}>
-                      Profile
-                    </ChakraLink>
-                  </NextLink>
-                </Flex>
-
+                <CustomLink
+                  href="/profile"
+                  icon={BsFillPersonFill}
+                  text="Profile"
+                />
                 <Divider />
                 <Button
                   display="flex"
