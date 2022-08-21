@@ -26,12 +26,12 @@ export function LoadingProvider({ children }: loadingProviderProps) {
 
   useEffect(() => {
     if (loadingStatus >= 100) {
-      resetLoading();
+      clearLoading();
     }
   }, [loadingStatus]);
 
   useEffect(() => {
-    resetLoading();
+    clearLoading();
   }, [router.pathname]);
 
   function handleLoading(percentage: number, intervalTime: number) {
@@ -43,12 +43,9 @@ export function LoadingProvider({ children }: loadingProviderProps) {
   }
 
   function clearLoading() {
-    setLoadingStatus(100);
-  }
-
-  function resetLoading() {
     window.clearInterval(intervalID);
-    setLoadingStatus(0);
+    if (loadingStatus !== 100) setLoadingStatus(100);
+    setTimeout(() => setLoadingStatus(0), 250);
   }
 
   return (

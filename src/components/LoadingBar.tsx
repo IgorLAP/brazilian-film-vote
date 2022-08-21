@@ -12,7 +12,7 @@ export function LoadingBar({ status }: LoadingBarProps) {
     <Box
       backgroundColor="green.500"
       as={motion.div}
-      height="2"
+      height="1"
       w={`${status}%`}
       position="absolute"
       left={0}
