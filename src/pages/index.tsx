@@ -27,6 +27,10 @@ export default function Home() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const emailRegex = /^[\w-\\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
+  const validEmail = email.match(emailRegex);
+  const passRequiredMinimunLength = password !== "" && password.length >= 6;
+
   async function handleLogin() {
     try {
       setLoading(true);
@@ -118,7 +122,9 @@ export default function Home() {
               <CustomButton
                 type="button"
                 buttonType="primary"
-                disabled={loading}
+                disabled={
+                  !(!!validEmail && passRequiredMinimunLength) || loading
+                }
                 onClick={handleLogin}
               >
                 Entrar

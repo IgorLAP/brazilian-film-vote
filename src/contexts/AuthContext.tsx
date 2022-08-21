@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signIn(email: string, password: string) {
     try {
-      handleLoading(20, 1000);
+      handleLoading(15, 1000);
       const { user: loggedUser } = await signInWithEmailAndPassword(
         auth,
         email,
