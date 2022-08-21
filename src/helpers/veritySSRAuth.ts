@@ -38,6 +38,8 @@ export function verifySSRAuth(fn: GetServerSideProps) {
         }
 
         if (!customClaims?.admin && !resolvedUrl.includes("/user")) {
+          if (resolvedUrl.includes("/profile")) return fn(ctx);
+
           return {
             redirect: {
               destination: "/user",

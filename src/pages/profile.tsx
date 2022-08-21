@@ -21,6 +21,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { doc, updateDoc } from "firebase/firestore";
+import { GetServerSideProps } from "next";
 import Head from "next/head";
 
 import { CustomButton } from "~/components/CustomButton";
@@ -83,7 +84,7 @@ export default function Profile() {
       <Heading as="h1" textAlign="center">
         Perfil
       </Heading>
-      <Flex mt="2" justify="center" align="center">
+      <Flex as="main" mt="2" justify="center" align="center">
         <Stack
           bg="gray.800"
           py="4"
@@ -159,3 +160,9 @@ export default function Profile() {
     </>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  return {
+    props: {},
+  };
+};
