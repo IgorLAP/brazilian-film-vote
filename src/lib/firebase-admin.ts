@@ -1,7 +1,7 @@
 import * as firebaseAdmin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 
-import serviceKey from "../../brazilian-film-vote-firebase-adminsdk.json";
+import serviceKey from "../../brazilianfilmvote-firebase-adminsdk.json";
 
 if (!firebaseAdmin.apps.length) {
   firebaseAdmin.initializeApp({
