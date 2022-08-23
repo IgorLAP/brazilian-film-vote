@@ -28,7 +28,8 @@ import AuthContext from "~/contexts/AuthContext";
 import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
 import useDebounce from "~/hooks/useDebounce";
-import { Movie } from "~/interfaces/Movie";
+import { GLMovie, Movie } from "~/interfaces/Movie";
+import { fieldName } from "~/interfaces/Voters";
 import { db as webDb } from "~/lib/firebase";
 import { db as adminDb, auth } from "~/lib/firebase-admin";
 import { tmdbApi } from "~/lib/tmdb";
@@ -203,35 +204,81 @@ export default function Voting({ generalList }: VotingProps) {
         movies: movieList,
       });
       const actualGeneral = await getDoc(generalListCollectionRef);
-      if (actualGeneral.exists) {
+      if (actualGeneral.data().movies.length > 0) {
         const { movies } = actualGeneral.data();
-        const cloneMovieList = [...movieList];
+        const cloneMovieList = [...movieList] as GLMovie[];
         Object.keys(movies).forEach((i) => {
           Object.keys(movieList).forEach((y) => {
-            if (movies[i].name === cloneMovieList[y].name) {
+            if (movies[i].name === cloneMovieList[y]?.name) {
               movies[i].points += cloneMovieList[y].points;
+              const movieListPlace = movieList.findIndex(
+                (item) => item.name === cloneMovieList[y]?.name
+              );
+              movies[i].voters.forEach((voter, voteI) => {
+                if (voter.place === `#${movieListPlace + 1}`) {
+                  movies[i].voters[voteI].name.push(user.name);
+                  return;
+                }
+                movies[i].voters.push({
+                  name: [user.name],
+                  place: `#${movieListPlace + 1}`,
+                });
+              });
               cloneMovieList.splice(Number(y), 1);
             }
           });
         });
+
         const updatedGeneralList = cloneMovieList
           .concat(movies)
-          .sort((a, b) => b.points - a.points);
+          .map((item, index) => {
+            if (!item.voters) {
+              return {
+                ...item,
+                voters: [
+                  {
+                    name: [user.name],
+                    place: `#${index + 1}`,
+                  },
+                ],
+              };
+            }
+            return {
+              ...item,
+            };
+          });
         await updateDoc(generalListCollectionRef, {
-          movies: updatedGeneralList,
+          movies: updatedGeneralList.sort((a, b) => b.points - a.points),
         });
       } else {
         const listTypeRef = doc(
           webDb,
           "list_type",
-          `${generalList.idListType}-0`
+          `${generalList.idListType.split("/")[1]}`
         );
+        const movies = movieList
+          .sort((a, b) => b.points - a.points)
+          .map((item, index) => ({
+            id: item.id,
+            name: item.name,
+            points: item.points,
+            voters: [
+              {
+                name: [`${user.name}`],
+                place: `#${index + 1}` as fieldName,
+              },
+            ],
+          }));
         const newGeneralList = new GeneralList({
           idListType: listTypeRef,
-          movies: movieList.sort((a, b) => b.points - a.points),
+          movies,
           status: true,
         });
-        await setDoc(generalListCollectionRef, { ...newGeneralList });
+        await setDoc(generalListCollectionRef, {
+          id_list_type: newGeneralList.idListType,
+          movies: newGeneralList.movies,
+          status: newGeneralList.status,
+        });
       }
       router.push("/user");
     } catch (err) {

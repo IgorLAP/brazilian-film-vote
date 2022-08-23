@@ -42,18 +42,16 @@ import { CustomButton } from "~/components/CustomButton";
 import { showAlert } from "~/helpers/showAlert";
 import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
+import { ExhibitGeneralListI } from "~/interfaces/GeneralList";
 import { Movie } from "~/interfaces/Movie";
 import { db as webDb } from "~/lib/firebase";
-import { db as adminDb } from "~/lib/firebase-admin";
+import { db as adminDb, db } from "~/lib/firebase-admin";
+import { Decades } from "~/models/Decades";
 import { GeneralList } from "~/models/GeneralList";
 import { ListType } from "~/models/ListType";
 
 interface ListsProps {
-  generalList: {
-    idListType: string;
-    movies: Movie[];
-    status: boolean;
-  }[];
+  generalList: ExhibitGeneralListI[];
   validDecades: number[];
 }
 
@@ -151,6 +149,7 @@ export default function Lists({ generalList, validDecades }: ListsProps) {
       setListName("");
       decadeSelectRef.current.value = "";
     } catch (err) {
+      console.log(err);
       showToast("error", err.message);
     }
   }
@@ -256,7 +255,7 @@ export default function Lists({ generalList, validDecades }: ListsProps) {
                       variant="link"
                       onClick={() => handleSeeList(list.movies)}
                     >
-                      Ver lista
+                      Top 10
                     </Button>
                   </Td>
                   <Td>{list.status ? "Ativo" : "Finalizado"}</Td>
@@ -271,9 +270,11 @@ export default function Lists({ generalList, validDecades }: ListsProps) {
                     ) : (
                       <CustomButton
                         buttonType="primary"
-                        onClick={() => router.push("/list/:id")}
+                        onClick={() =>
+                          router.push(`/list/${list.idListType.split("/")[1]}`)
+                        }
                       >
-                        Resultado
+                        Lista
                       </CustomButton>
                     )}
                   </Td>
@@ -282,7 +283,9 @@ export default function Lists({ generalList, validDecades }: ListsProps) {
             </Tbody>
           </Table>
         ) : (
-          <Heading as="h2">Ainda não há listas</Heading>
+          <Heading mt="4" as="h2">
+            Ainda não há listas
+          </Heading>
         )}
         <Modal isOpen={isOpen} onClose={onClose}>
           <ModalOverlay />
@@ -332,6 +335,12 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
 
     const decadesRef = adminDb.collection("decades");
     const decadesSnap = await decadesRef.get();
+    if (decadesSnap.empty) {
+      const decades = new Decades();
+      db.collection("decades").doc("valid_decades").set({
+        availables: decades.valid_decades.availables,
+      });
+    }
     const [validDecades] = decadesSnap.docs.map((year) => year.data());
 
     return {

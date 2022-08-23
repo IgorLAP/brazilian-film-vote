@@ -44,24 +44,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<LoggedUser>(null);
 
   useEffect(() => {
-    auth.onIdTokenChanged(async (sessionUser) => {
-      if (sessionUser) {
-        const { admin } = (await auth.currentUser.getIdTokenResult(true))
-          .claims;
-        const { uid, displayName, photoURL, email } = sessionUser;
-        setUser({
-          uid,
-          name: displayName,
-          photoURL,
-          email,
-          role: admin ? "ADMIN" : "USER",
-        });
-        const token = await sessionUser.getIdToken();
-        setCookie(undefined, "token", token, { path: "/" });
-      }
-      // Improve auto signout method
-      if (!sessionUser && auth.currentUser) signOut();
-    });
+    try {
+      auth.onIdTokenChanged(async (sessionUser) => {
+        if (sessionUser) {
+          const { admin } = (await auth.currentUser.getIdTokenResult(true))
+            .claims;
+          const { uid, displayName, photoURL, email } = sessionUser;
+          setUser({
+            uid,
+            name: displayName,
+            photoURL,
+            email,
+            role: admin ? "ADMIN" : "USER",
+          });
+          const token = await sessionUser.getIdToken();
+          setCookie(undefined, "token", token, { path: "/" });
+        }
+        // Improve auto signout method
+        if (!sessionUser && auth.currentUser) signOut();
+      });
+    } catch (err) {
+      console.log(err);
+      showToast("error", err.message);
+    }
   }, []);
 
   async function signIn(email: string, password: string) {

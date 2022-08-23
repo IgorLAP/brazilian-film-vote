@@ -26,7 +26,7 @@ export function CustomLink({ href, icon, text, ...rest }: CustomLinkProps) {
 
   function handleClick(link: string) {
     if (link === "/user/vote") {
-      handleLoading(25, 1000);
+      handleLoading(15, 1000);
       router.push(link);
       return;
     }
