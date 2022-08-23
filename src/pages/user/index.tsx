@@ -43,15 +43,13 @@ interface ShowMovieList extends Movie {
   release_date: string;
 }
 
-interface List {
-  name: string;
-  id_list_type: string;
-  movies: Movie[];
-  points: number;
-}
-
 interface MyListsProps {
-  lists?: List[];
+  lists?: {
+    name: string;
+    decade: string;
+    movies: Movie[];
+    points: number;
+  }[];
 }
 
 interface TmdbMovie {
@@ -166,15 +164,15 @@ export default function MyLists({ lists }: MyListsProps) {
           <Table variant="striped">
             <Thead>
               <Tr>
-                <Th>ID</Th>
+                <Th>Década</Th>
                 <Th>Nome</Th>
                 <Th>Filmes</Th>
               </Tr>
             </Thead>
             <Tbody>
               {lists.map((list) => (
-                <Tr key={list.id_list_type}>
-                  <Td>{list.id_list_type.split("/")[1]}</Td>
+                <Tr key={list.name}>
+                  <Td>{list.decade}</Td>
                   <Td>{list.name}</Td>
                   <Td>
                     <CustomButton
@@ -276,7 +274,7 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
           return {
             name: listTypesSnap.docs[index].data().name,
             movies: item.data().movies,
-            id_list_type: item.data().id_list_type,
+            decade: item.data().id_list_type.split("/")[1].split("-")[0],
           };
         }
         return {};
