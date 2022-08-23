@@ -28,6 +28,9 @@ export function verifySSRAuth(fn: GetServerSideProps) {
         const { uid } = await auth.verifyIdToken(token);
         const { customClaims } = await auth.getUser(uid);
 
+        if (resolvedUrl.includes("/profile")) return fn(ctx);
+        if (resolvedUrl.includes("/list/")) return fn(ctx);
+
         if (customClaims?.admin && !resolvedUrl.includes("/admin")) {
           return {
             redirect: {
@@ -38,8 +41,6 @@ export function verifySSRAuth(fn: GetServerSideProps) {
         }
 
         if (!customClaims?.admin && !resolvedUrl.includes("/user")) {
-          if (resolvedUrl.includes("/profile")) return fn(ctx);
-
           return {
             redirect: {
               destination: "/user",
