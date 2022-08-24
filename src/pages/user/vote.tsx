@@ -5,18 +5,30 @@ import {
   Button,
   Checkbox,
   Flex,
+  FormControl,
+  FormLabel,
   Grid,
   Heading,
+  HStack,
   Image,
   Input,
   ListItem,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Popover,
   PopoverAnchor,
   PopoverBody,
   PopoverContent,
+  Spinner,
   Stack,
   Text,
   UnorderedList,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { GetServerSideProps } from "next";
@@ -25,6 +37,7 @@ import { useRouter } from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
 import AuthContext from "~/contexts/AuthContext";
+import { LoadingContext } from "~/contexts/LoadingContext";
 import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
 import useDebounce from "~/hooks/useDebounce";
@@ -82,14 +95,19 @@ export default function Voting({ generalList }: VotingProps) {
   const router = useRouter();
 
   const { user } = useContext(AuthContext);
+  const { handleLoading, clearLoading } = useContext(LoadingContext);
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const inputArrayRef = useRef<HTMLInputElement[]>();
   const checkboxArrayRef = useRef<HTMLInputElement>();
 
   const [movieList, setMovieList] = useState(movieListPlaceholder);
   const [hasResults, setHasResults] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [tmdbList, setTmdbList] = useState<TmdbList[]>([]);
   const [search, setSearch] = useState("");
+  const [notFoundMovie, setNotFoundMovie] = useState<Movie | null>();
 
   const debouncedSearch = useDebounce(search, 500);
 
@@ -122,19 +140,27 @@ export default function Voting({ generalList }: VotingProps) {
         return tmp;
       });
     }
+    setSearch("");
     setHasResults(false);
     setTmdbList([]);
   }
 
   async function handleSearch(inputValue: string, index: number) {
+    setLoading(true);
     if (!inputValue || !inputValue.trim()) {
       setHasResults(false);
       setTmdbList([]);
       setMovieList((prevState) => {
         const tmp = [...prevState];
         tmp[index].name = "";
+        tmp[index].id = 0;
+        if (tmp[index].director) {
+          delete tmp[index].director;
+          delete tmp[index].year;
+        }
         return tmp;
       });
+      setLoading(false);
     }
 
     setMovieList((prevState) => {
@@ -163,6 +189,7 @@ export default function Voting({ generalList }: VotingProps) {
       setHasResults(false);
       setTmdbList([]);
     }
+    setLoading(false);
   }
 
   function handleNotFoundMovie(inputValue: string, index: number) {
@@ -179,15 +206,26 @@ export default function Voting({ generalList }: VotingProps) {
         return clone;
       });
     } else {
-      setMovieList((prevState) => {
-        const tmp = [...prevState];
-        tmp[index].id = "No ID";
-        return tmp;
-      });
+      setNotFoundMovie(clone[index]);
+      onOpen();
     }
   }
 
+  function handleCompleteNotFoundMovie(movieName: string) {
+    const index = movieList.findIndex((movie) => movie.name === movieName);
+    setMovieList((prevState) => {
+      const tmp = [...prevState];
+      tmp[index].id = "No ID";
+      tmp[index].director = notFoundMovie.director;
+      tmp[index].year = notFoundMovie.year;
+      return tmp;
+    });
+    setNotFoundMovie(null);
+    onClose();
+  }
+
   async function handleVote() {
+    handleLoading(25, 1000);
     try {
       const listsCollectionDocRef = doc(
         webDb,
@@ -282,6 +320,7 @@ export default function Voting({ generalList }: VotingProps) {
       }
       router.push("/user");
     } catch (err) {
+      clearLoading();
       showToast("error", err.message);
     }
   }
@@ -315,7 +354,7 @@ export default function Voting({ generalList }: VotingProps) {
       >
         <Grid
           templateColumns="repeat(4, 1fr)"
-          columnGap="6"
+          columnGap="4"
           rowGap="4"
           mx="auto"
         >
@@ -324,6 +363,7 @@ export default function Voting({ generalList }: VotingProps) {
             const hasName = !!movieList[index].name;
             const isDefaultId = movieList[index].id === 0;
             const isNotFoundMovie = movieList[index].id === "No ID";
+            const waitResetDebounce = debouncedSearch !== "" && search === "";
             return (
               <Popover
                 isOpen={hasName && isDefaultId}
@@ -332,31 +372,46 @@ export default function Voting({ generalList }: VotingProps) {
               >
                 <PopoverAnchor>
                   <Box>
-                    <Input
-                      type="text"
-                      bg="gray.900"
-                      position="relative"
-                      placeholder={`${index + 1}º`}
-                      ref={inputArrayRef[index]}
-                      value={movieList[index].name}
-                      borderColor={hasId && hasName ? "green.500" : "inherit"}
-                      _hover={{
-                        borderColor:
-                          hasId && hasName ? "green.400" : "gray.600",
-                      }}
-                      onChange={(e) => handleSearch(e.target.value, index)}
-                      onFocus={() => {
-                        if (hasResults) setHasResults(false);
-                      }}
-                    />
+                    <Flex align="center">
+                      <Input
+                        type="text"
+                        bg="gray.900"
+                        pl="3"
+                        pr="6"
+                        position="relative"
+                        placeholder={`${index + 1}º`}
+                        ref={inputArrayRef[index]}
+                        value={movieList[index].name}
+                        disabled={waitResetDebounce}
+                        borderColor={hasId && hasName ? "green.500" : "inherit"}
+                        _hover={{
+                          borderColor:
+                            hasId && hasName ? "green.400" : "gray.600",
+                        }}
+                        onChange={(e) => handleSearch(e.target.value, index)}
+                        onFocus={() => {
+                          if (hasResults) setHasResults(false);
+                        }}
+                      />
+                      <Spinner
+                        color="gray.400"
+                        zIndex="9"
+                        size="xs"
+                        ml="-5"
+                        display={
+                          loading && !hasId && hasName ? "block" : "none"
+                        }
+                      />
+                    </Flex>
                     <Checkbox
                       size="sm"
                       mt="2"
                       disabled={!isDefaultId && !isNotFoundMovie}
                       isChecked={hasName && isNotFoundMovie}
-                      onChange={() =>
-                        handleNotFoundMovie(movieList[index].name, index)
-                      }
+                      onChange={() => {
+                        if (hasName)
+                          handleNotFoundMovie(movieList[index].name, index);
+                      }}
                       ref={checkboxArrayRef}
                     >
                       <Text fontSize="smaller">Filme não encontrado</Text>
@@ -387,6 +442,7 @@ export default function Voting({ generalList }: VotingProps) {
                             >
                               <Button
                                 w="100%"
+                                h="100%"
                                 mr="2"
                                 variant="unstyled"
                                 display="flex"
@@ -407,7 +463,10 @@ export default function Voting({ generalList }: VotingProps) {
                                   objectPosition="center"
                                   src={posterPathBase + result.poster_path}
                                 />
-                                {result.title}
+                                {result.title.length >= 40
+                                  ? `${result.title.substring(0, 25)}... `
+                                  : result.title}
+                                - {result.release_date.split("-")[0]}
                               </Button>
                             </ListItem>
                           ))}
@@ -431,6 +490,88 @@ export default function Voting({ generalList }: VotingProps) {
           Votar
         </CustomButton>
       </Flex>
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Completar informações</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <FormControl>
+              <FormLabel ml="2">Nome</FormLabel>
+              <Input
+                type="text"
+                bg="gray.900"
+                placeholder="Nome"
+                mb="4"
+                value={notFoundMovie?.name}
+                onChange={(e) => {
+                  const clone = [...movieList];
+                  const index = clone.findIndex(
+                    (movie) => movie.name === notFoundMovie.name
+                  );
+                  setNotFoundMovie((prev) => ({
+                    ...prev,
+                    name: e.target.value,
+                  }));
+                  clone[index].name = e.target.value;
+                  setMovieList(clone);
+                }}
+              />
+            </FormControl>
+            <HStack spacing="2">
+              <FormControl>
+                <FormLabel ml="2">Ano</FormLabel>
+                <Input
+                  w="150"
+                  type="text"
+                  bg="gray.900"
+                  placeholder="Ano"
+                  maxLength={4}
+                  value={notFoundMovie?.year}
+                  onChange={(e) => {
+                    if (!Number.isNaN(Number(e.target.value)))
+                      setNotFoundMovie((prev) => ({
+                        ...prev,
+                        year: Number(e.target.value),
+                      }));
+                  }}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel ml="2">Diretor</FormLabel>
+                <Input
+                  type="text"
+                  bg="gray.900"
+                  placeholder="Diretor"
+                  value={notFoundMovie?.director}
+                  onChange={(e) =>
+                    setNotFoundMovie((prev) => ({
+                      ...prev,
+                      director: e.target.value,
+                    }))
+                  }
+                />
+              </FormControl>
+            </HStack>
+          </ModalBody>
+          <ModalFooter>
+            <CustomButton
+              buttonType="primary"
+              disabled={
+                !String(notFoundMovie?.year).includes(
+                  String(votingDecade).substring(0, 3)
+                ) ||
+                String(notFoundMovie?.year).length < 4 ||
+                !notFoundMovie.director ||
+                !notFoundMovie.name
+              }
+              onClick={() => handleCompleteNotFoundMovie(notFoundMovie.name)}
+            >
+              Salvar
+            </CustomButton>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </>
   );
 }
