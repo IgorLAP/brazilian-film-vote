@@ -76,7 +76,7 @@ export default function MyLists({ lists }: MyListsProps) {
         if (movie.id === "No ID") {
           return new Promise<{ name: string }>((resolve) => {
             resolve({
-              name: "No provided",
+              name: movie?.director,
             });
           });
         }
@@ -93,9 +93,8 @@ export default function MyLists({ lists }: MyListsProps) {
           return new Promise<TmdbMovie>((resolve) => {
             resolve({
               original_title: movie.name,
-              poster_path:
-                "https://eapp.org/wp-content/uploads/2018/05/poster_placeholder.jpg",
-              release_date: "0000-00-00",
+              poster_path: "/images/poster_placeholder.jpg",
+              release_date: String(movie?.year),
             });
           });
         }
@@ -198,7 +197,7 @@ export default function MyLists({ lists }: MyListsProps) {
                       p="1"
                       _hover={{ bg: "gray.900" }}
                       borderRadius={6}
-                      key={movie.id}
+                      key={movie.original_title}
                     >
                       <Image
                         boxSize="120px"
@@ -236,7 +235,7 @@ export default function MyLists({ lists }: MyListsProps) {
                   bg="black"
                   color="white"
                   placement="top"
-                  label="Importe listas de arquivos .CSV no letterboxd"
+                  label="Importe listas de arquivos .csv no Letterboxd"
                 >
                   <Button variant="ghost" onClick={handleGenerateCSVFile}>
                     Exportar como CSV

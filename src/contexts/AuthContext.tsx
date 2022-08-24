@@ -64,7 +64,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!sessionUser && auth.currentUser) signOut();
       });
     } catch (err) {
-      console.log(err);
       showToast("error", err.message);
     }
   }, []);
