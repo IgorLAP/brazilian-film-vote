@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { FormEvent, useContext, useState } from "react";
 import { IoIosMail } from "react-icons/io";
 import { RiLock2Fill } from "react-icons/ri";
 
@@ -31,7 +31,8 @@ export default function Home() {
   const validEmail = email.match(emailRegex);
   const passRequiredMinimunLength = password !== "" && password.length >= 6;
 
-  async function handleLogin() {
+  async function handleLogin(event: FormEvent) {
+    event.preventDefault();
     try {
       setLoading(true);
       await signIn(email, password);
@@ -83,7 +84,7 @@ export default function Home() {
           p="8"
           borderRadius={8}
         >
-          <Flex h="100%" as="form" flexDir="column">
+          <Flex h="100%" as="form" flexDir="column" onSubmit={handleLogin}>
             <Stack spacing="4">
               <Flex justify="center" align="center">
                 <Icon as={IoIosMail} w={6} h={6} />
@@ -120,12 +121,11 @@ export default function Home() {
                 Esqueci minha senha
               </Button>
               <CustomButton
-                type="button"
+                type="submit"
                 buttonType="primary"
                 disabled={
                   !(!!validEmail && passRequiredMinimunLength) || loading
                 }
-                onClick={handleLogin}
               >
                 Entrar
               </CustomButton>

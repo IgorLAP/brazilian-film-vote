@@ -27,6 +27,7 @@ import Head from "next/head";
 import { CustomButton } from "~/components/CustomButton";
 import AuthContext from "~/contexts/AuthContext";
 import { showToast } from "~/helpers/showToast";
+import { verifySSRAuth } from "~/helpers/veritySSRAuth";
 import { db as webDb } from "~/lib/firebase";
 
 export default function Profile() {
@@ -161,8 +162,10 @@ export default function Profile() {
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
-  return {
-    props: {},
-  };
-};
+export const getServerSideProps: GetServerSideProps = verifySSRAuth(
+  async () => {
+    return {
+      props: {},
+    };
+  }
+);

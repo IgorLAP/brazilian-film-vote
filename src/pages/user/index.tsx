@@ -30,6 +30,7 @@ import Head from "next/head";
 import { CustomButton } from "~/components/CustomButton";
 import { MovieDetail } from "~/components/MovieDetail";
 import AuthContext from "~/contexts/AuthContext";
+import { LoadingContext } from "~/contexts/LoadingContext";
 import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
 import { Movie } from "~/interfaces/Movie";
@@ -67,10 +68,14 @@ interface TmdbMovieCredit {
 
 export default function MyLists({ lists }: MyListsProps) {
   const { user } = useContext(AuthContext);
+  const { handleLoading, clearLoading } = useContext(LoadingContext);
+
   const { isOpen, onClose, onOpen } = useDisclosure();
+
   const [selectedList, setSelectedList] = useState<ShowMovieList[]>([]);
 
   async function handleSeeList(movieList: Movie[]) {
+    handleLoading(45, 1000);
     try {
       const dirPromises = movieList.map((movie) => {
         if (movie.id === "No ID") {
@@ -121,8 +126,10 @@ export default function MyLists({ lists }: MyListsProps) {
         release_date: posterYears[index].release_date,
       }));
       setSelectedList(moviesWithDirectors);
+      clearLoading();
       onOpen();
     } catch (err) {
+      clearLoading();
       showToast("error", err.message);
     }
   }
@@ -268,12 +275,12 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
       const formattedData = userListsSnap.docs.map((item, index) => {
         if (
           listTypesSnap.docs[index].id ===
-          item.data().id_list_type.split("/")[1]
+          item.data().id_list_type.path.split("/")[1]
         ) {
           return {
             name: listTypesSnap.docs[index].data().name,
             movies: item.data().movies,
-            decade: item.data().id_list_type.split("/")[1].split("-")[0],
+            decade: item.data().id_list_type.path.split("/")[1].split("-")[0],
           };
         }
         return {};

@@ -11,10 +11,10 @@ export function MovieDetail({ field, value }: MovieDetailProps) {
   return (
     <Flex justify="center" align="center">
       <HStack spacing="1">
-        <Text fontWeight="medium" fontSize="sm">
+        <Text fontWeight="medium" fontSize="medium">
           {field}:
         </Text>
-        <Text fontWeight="light" fontSize="small">
+        <Text fontWeight="light" fontSize="md">
           {value}
         </Text>
       </HStack>

@@ -125,7 +125,9 @@ export default function Voting({ generalList }: VotingProps) {
 
   function handleMovieChange(movie: string, id: number, index: number) {
     const tmp = [...movieList];
-    const alreadyHasMovie = tmp.filter((item) => item.name === movie);
+    const alreadyHasMovie = tmp.filter(
+      (item) => item.name === movie && item.id === id
+    );
     if (alreadyHasMovie.length > 0) {
       showToast("warn", "Filme já adicionado");
       setMovieList(() => {
@@ -237,8 +239,13 @@ export default function Voting({ generalList }: VotingProps) {
         "general_list",
         generalList.idListType.split("/")[1]
       );
+      const listTypeRef = doc(
+        webDb,
+        "list_type",
+        `${generalList.idListType.split("/")[1]}`
+      );
       await setDoc(listsCollectionDocRef, {
-        id_list_type: generalList.idListType,
+        id_list_type: listTypeRef,
         movies: movieList,
       });
       const actualGeneral = await getDoc(generalListCollectionRef);
@@ -255,13 +262,16 @@ export default function Voting({ generalList }: VotingProps) {
               movies[i].voters.forEach((voter, voteI) => {
                 if (voter.place === `#${movieListPlace + 1}`) {
                   movies[i].voters[voteI].name.push(user.name);
-                  return;
                 }
+              });
+              const alreadyHas = movies[i].voters.filter(
+                (item) => item.place === `#${movieListPlace + 1}`
+              );
+              if (alreadyHas.length <= 0)
                 movies[i].voters.push({
                   name: [user.name],
                   place: `#${movieListPlace + 1}`,
                 });
-              });
               cloneMovieList.splice(Number(y), 1);
             }
           });
@@ -289,24 +299,29 @@ export default function Voting({ generalList }: VotingProps) {
           movies: updatedGeneralList.sort((a, b) => b.points - a.points),
         });
       } else {
-        const listTypeRef = doc(
-          webDb,
-          "list_type",
-          `${generalList.idListType.split("/")[1]}`
-        );
         const movies = movieList
           .sort((a, b) => b.points - a.points)
-          .map((item, index) => ({
-            id: item.id,
-            name: item.name,
-            points: item.points,
-            voters: [
-              {
-                name: [`${user.name}`],
-                place: `#${index + 1}` as fieldName,
-              },
-            ],
-          }));
+          .map((item, index) => {
+            const response = {
+              id: item.id,
+              name: item.name,
+              points: item.points,
+              voters: [
+                {
+                  name: [`${user.name}`],
+                  place: `#${index + 1}` as fieldName,
+                },
+              ],
+            };
+
+            if (!item.director) return response;
+
+            return {
+              ...response,
+              year: item?.year,
+              director: item?.director,
+            };
+          });
         const newGeneralList = new GeneralList({
           idListType: listTypeRef,
           movies,
@@ -429,8 +444,20 @@ export default function Voting({ generalList }: VotingProps) {
                         <Stack
                           spacing="4"
                           h="150px"
-                          overflow="auto"
+                          overflowY="scroll"
                           scrollBehavior="smooth"
+                          css={{
+                            "&::-webkit-scrollbar": {
+                              width: "3px",
+                            },
+                            "&::-webkit-scrollbar-track": {
+                              background: "transparent",
+                            },
+                            "&::-webkit-scrollbar-thumb": {
+                              backgroundColor: "rgb(48, 130, 206)",
+                              borderRadius: "12px",
+                            },
+                          }}
                         >
                           {tmdbList.map((result) => (
                             <ListItem
@@ -465,7 +492,7 @@ export default function Voting({ generalList }: VotingProps) {
                                 />
                                 {result.title.length >= 40
                                   ? `${result.title.substring(0, 25)}... `
-                                  : result.title}
+                                  : result.title}{" "}
                                 - {result.release_date.split("-")[0]}
                               </Button>
                             </ListItem>

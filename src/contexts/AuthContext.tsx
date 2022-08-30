@@ -8,7 +8,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { useRouter } from "next/router";
-import { destroyCookie, setCookie } from "nookies";
+import { destroyCookie, parseCookies, setCookie } from "nookies";
 
 import { getUserByEmail } from "~/helpers/get-user-by-email";
 import { showToast } from "~/helpers/showToast";
@@ -60,17 +60,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const token = await sessionUser.getIdToken();
           setCookie(undefined, "token", token, { path: "/" });
         }
-        // Improve auto signout method
-        if (!sessionUser && auth.currentUser) signOut();
       });
     } catch (err) {
       showToast("error", err.message);
     }
   }, []);
 
+  useEffect(() => {
+    const { token } = parseCookies(undefined);
+    if (!user && !auth.currentUser && token) {
+      destroyCookie(undefined, "token");
+      router.push("/");
+      showToast("warn", "Sua sessão expirou");
+    }
+
+    if (user && router.pathname === "/") {
+      if (user.role === "USER") router.push("/user");
+      if (user.role === "ADMIN") router.push("/admin");
+    }
+  }, [user]);
+
   async function signIn(email: string, password: string) {
     try {
-      handleLoading(15, 1000);
+      handleLoading(10, 1000);
       const { user: loggedUser } = await signInWithEmailAndPassword(
         auth,
         email,

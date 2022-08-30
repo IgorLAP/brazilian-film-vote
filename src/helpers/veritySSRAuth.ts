@@ -52,11 +52,13 @@ export function verifySSRAuth(fn: GetServerSideProps) {
 
       return fn(ctx);
     } catch (err) {
-      if (err.code === "auth/id-token-expired") {
-        destroyCookie(ctx, "token");
-        return fn(ctx);
-      }
-      throw Error(err.message);
+      destroyCookie(ctx, "token");
+      return {
+        redirect: {
+          destination: "/",
+          permanent: false,
+        },
+      };
     }
   };
 }

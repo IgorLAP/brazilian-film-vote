@@ -30,7 +30,7 @@ export function CustomLink({ href, icon, text, ...rest }: CustomLinkProps) {
       router.push(link);
       return;
     }
-    handleLoading(35, 500);
+    handleLoading(20, 500);
     router.push(link);
   }
 
