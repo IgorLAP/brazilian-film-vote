@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import {
   Flex,
@@ -20,10 +20,13 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
+import { LoadingContext } from "~/contexts/LoadingContext";
 import { showToast } from "~/helpers/showToast";
 import { User } from "~/models/User";
 
 export default function singnIn() {
+  const { handleLoading, clearLoading } = useContext(LoadingContext);
+
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -47,8 +50,9 @@ export default function singnIn() {
   }, []);
 
   async function handleSubmit() {
-    const auth = getAuth();
     try {
+      handleLoading(10, 1000);
+      const auth = getAuth();
       const { user } = await signInWithEmailLink(
         auth,
         email,
@@ -60,6 +64,7 @@ export default function singnIn() {
       await axios.post("/api/signin", { uid: user.uid, ...newUser });
       router.push("/profile");
     } catch (err) {
+      clearLoading();
       showToast("error", err.message);
     }
   }

@@ -16,10 +16,13 @@ export class User {
 
   role: Role;
 
+  createdAt: Date;
+
   constructor({ email, name, photoURL = "", role = "USER" }: UserI) {
     this.email = email;
     this.name = name;
     this.photoURL = photoURL;
     this.role = role;
+    this.createdAt = new Date();
   }
 }
