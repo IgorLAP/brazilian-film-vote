@@ -5,7 +5,6 @@ import {
   Flex,
   FormControl,
   FormLabel,
-  Heading,
   HStack,
   Input,
   Modal,
@@ -16,6 +15,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Select,
+  Spinner,
   Table,
   Tbody,
   Td,
@@ -24,6 +24,7 @@ import {
   Tr,
   useDisclosure,
 } from "@chakra-ui/react";
+import axios from "axios";
 import {
   collection,
   doc,
@@ -53,9 +54,16 @@ import { ListType } from "~/models/ListType";
 interface ListsProps {
   generalList: ExhibitGeneralListI[];
   validDecades: number[];
+  pagination: {
+    allPages: number;
+  };
 }
 
-export default function Lists({ generalList, validDecades }: ListsProps) {
+export default function Lists({
+  generalList,
+  validDecades,
+  pagination,
+}: ListsProps) {
   const router = useRouter();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -65,6 +73,10 @@ export default function Lists({ generalList, validDecades }: ListsProps) {
   const [modalMovieList, setModalMovieList] = useState<Movie[]>();
   const [gList, setGList] = useState(generalList);
   const [listName, setListName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [actualPage, setActualPage] = useState(1);
+  const [firstPageItem, setFirstPageItem] = useState<ExhibitGeneralListI[]>([]);
+  const [lastPageItem, setLastPageItem] = useState<ExhibitGeneralListI[]>([]);
 
   async function handleNewListType() {
     const isRequiredFieldsInvalid =
@@ -149,7 +161,6 @@ export default function Lists({ generalList, validDecades }: ListsProps) {
       setListName("");
       decadeSelectRef.current.value = "";
     } catch (err) {
-      console.log(err);
       showToast("error", err.message);
     }
   }
@@ -188,6 +199,46 @@ export default function Lists({ generalList, validDecades }: ListsProps) {
     }
   }
 
+  async function handleNextPage() {
+    try {
+      setLoading(true);
+      const last = gList.at(-1);
+      const { data } = await axios.post("/api/lists-pagination", {
+        startAfter: last.idListType.split("/")[1],
+      });
+      setLastPageItem((prev) => [...prev, gList.at(-1)]);
+      setFirstPageItem((prev) => [...prev, gList[0]]);
+      setGList(data.page as ExhibitGeneralListI[]);
+      setActualPage((prev) => prev + 1);
+    } catch (err) {
+      showToast("error", "Erro no carregamento");
+    }
+    setLoading(false);
+  }
+
+  async function handlePrevPage() {
+    try {
+      setLoading(true);
+      const firstPageLast = firstPageItem.at(-1).idListType.split("/")[1];
+      const lastPageLast = lastPageItem.at(-1).idListType.split("/")[1];
+      const { data } = await axios.post("/api/lists-pagination", {
+        startAt: firstPageLast,
+        endAt: lastPageLast,
+      });
+      setGList(data.page as ExhibitGeneralListI[]);
+      setLastPageItem((prev) =>
+        prev.filter((item) => item.idListType.split("/")[1] !== lastPageLast)
+      );
+      setFirstPageItem((prev) =>
+        prev.filter((item) => item.idListType.split("/")[1] !== firstPageLast)
+      );
+      setActualPage((prev) => prev - 1);
+    } catch (err) {
+      showToast("error", "Erro no carregamento");
+    }
+    setLoading(false);
+  }
+
   return (
     <>
       <Head>
@@ -198,6 +249,7 @@ export default function Lists({ generalList, validDecades }: ListsProps) {
           bg="gray.800"
           py="4"
           px="6"
+          mb="4"
           borderRadius={6}
           as="form"
           justify="flex-start"
@@ -236,8 +288,8 @@ export default function Lists({ generalList, validDecades }: ListsProps) {
             </CustomButton>
           </HStack>
         </Flex>
-        {gList.length > 0 ? (
-          <Table mt="4" variant="striped">
+        {gList.length > 0 && !loading && (
+          <Table my="8" variant="striped">
             <Thead>
               <Tr>
                 <Th>ID</Th>
@@ -282,10 +334,29 @@ export default function Lists({ generalList, validDecades }: ListsProps) {
               ))}
             </Tbody>
           </Table>
-        ) : (
-          <Heading mt="4" as="h2">
-            Ainda não há listas
-          </Heading>
+        )}
+        {loading && (
+          <Spinner size="lg" alignSelf="center" mt="4" color="blue.500" />
+        )}
+        {pagination.allPages > 1 && (
+          <Flex justify="space-between" mt="8">
+            <Button
+              disabled={!(actualPage > 1)}
+              variant="ghost"
+              colorScheme="blue"
+              onClick={handlePrevPage}
+            >
+              Voltar
+            </Button>
+            <Button
+              disabled={!(actualPage < pagination.allPages)}
+              variant="ghost"
+              colorScheme="blue"
+              onClick={handleNextPage}
+            >
+              Avançar
+            </Button>
+          </Flex>
         )}
         <Modal isOpen={isOpen} onClose={onClose}>
           <ModalOverlay />
@@ -325,13 +396,15 @@ export default function Lists({ generalList, validDecades }: ListsProps) {
 
 export const getServerSideProps: GetServerSideProps = verifySSRAuth(
   async () => {
-    const generalListRef = adminDb.collection("general_list");
-    const generalListSnap = await generalListRef.get();
-    const generalList = generalListSnap.docs.map((list) => ({
-      idListType: list.data().id_list_type.path,
-      movies: list.data().movies,
-      status: list.data().status,
-    }));
+    const generalList = await adminDb.collection("general_list").limit(2).get();
+    // const generalListSnap = await generalListRef.get();
+    const allPages = (await adminDb.collection("general_list").get()).docs
+      .length;
+    // const generalList = generalListSnap.docs.map((list) => ({
+    //   idListType: list.data().id_list_type.path,
+    //   movies: list.data()?.movies,
+    //   status: list.data()?.status,
+    // }));
 
     const decadesRef = adminDb.collection("decades");
     const decadesSnap = await decadesRef.get();
@@ -345,8 +418,15 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
 
     return {
       props: {
-        generalList,
+        generalList: generalList.docs.map((item) => ({
+          movies: item.data().movies,
+          idListType: item.data().id_list_type.path,
+          status: item.data().status,
+        })),
         validDecades: validDecades.availables,
+        pagination: {
+          allPages: Math.ceil(allPages / 2),
+        },
       },
     };
   }
