@@ -1,6 +1,4 @@
 import React, { useContext, useEffect, useState } from "react";
-import { BsFillPersonFill } from "react-icons/bs";
-import { GoSignOut } from "react-icons/go";
 
 import {
   Button,
@@ -14,6 +12,8 @@ import {
   PopoverTrigger,
   Text,
 } from "@chakra-ui/react";
+import { BsFillPersonFill } from "react-icons/bs";
+import { GoSignOut } from "react-icons/go";
 
 import AuthContext from "~/contexts/AuthContext";
 

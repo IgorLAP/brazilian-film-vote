@@ -15,6 +15,7 @@ export default function Document() {
           href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
           rel="stylesheet"
         />
+        <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
       </Head>
       <body>
         <ColorModeScript initialColorMode={theme.config.initialColorMode} />

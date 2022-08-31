@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import {
   Flex,
@@ -8,12 +8,16 @@ import {
   Image,
   Spinner,
   Stack,
+  Button,
+  Tooltip,
 } from "@chakra-ui/react";
+import axios from "axios";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 
 import { MovieDetail } from "~/components/MovieDetail";
 import { Pagination } from "~/components/Pagination";
+import { LoadingContext } from "~/contexts/LoadingContext";
 import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
 import { ExhibitGeneralListI } from "~/interfaces/GeneralList";
@@ -50,6 +54,8 @@ interface GeneralMovieList extends GLMovie {
 }
 
 export default function List({ generalList, listType }: ListProps) {
+  const { clearLoading } = useContext(LoadingContext);
+
   const [movieList, setMovieList] = useState<GeneralMovieList[]>([]);
   const [paginationList, setPaginationList] = useState<GeneralMovieList[]>([]);
   const [pagination, setPagination] = useState(1);
@@ -120,7 +126,8 @@ export default function List({ generalList, listType }: ListProps) {
       }
     }
     loadList();
-  }, []);
+    clearLoading();
+  }, [generalList]);
 
   function handlePrevPage(page: number) {
     setPagination(page);
@@ -132,17 +139,56 @@ export default function List({ generalList, listType }: ListProps) {
     setPaginationList(movieList.slice(page * 24 - 24, page * 24));
   }
 
+  async function handleGenerateCSVFile() {
+    try {
+      const onlyIdAndName = movieList.map((movie) => ({
+        id: movie.id,
+        name: movie.original_title,
+      }));
+      const { data } = await axios.post("/api/csv", {
+        list: onlyIdAndName,
+      });
+      const url = window.URL.createObjectURL(new Blob([data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `${listType.decade}_${listType.name.trim().replaceAll(" ", "_")}.csv`
+      );
+      document.body.appendChild(link);
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      showToast("error", err.message);
+    }
+  }
+
   const posterPathBase = "https://image.tmdb.org/t/p/w185";
+  const title = `${listType.name} - Brazilian film vote`;
 
   return (
     <>
       <Head>
-        <title>{listType.name} - Brazilian film vote</title>
+        <title>{title}</title>
       </Head>
       <Flex flexDir="column">
         <Heading textAlign="center" as="h1">
           {listType.decade} - {listType.name}
         </Heading>
+        <Tooltip
+          bg="black"
+          color="white"
+          placement="top"
+          label="Importe listas de arquivos .csv no Letterboxd"
+        >
+          <Button
+            alignSelf="flex-end"
+            variant="ghost"
+            onClick={handleGenerateCSVFile}
+          >
+            Exportar como CSV
+          </Button>
+        </Tooltip>
         {!loading && paginationList.length >= 0 ? (
           <>
             <Grid
@@ -249,7 +295,7 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
 
     const generalList = generalListSnap.data();
 
-    if (!generalList.status || generalList.movies.length <= 0) {
+    if (generalList.status || generalList.movies.length <= 0) {
       return {
         redirect: {
           destination: "/",

@@ -1,10 +1,10 @@
 import "react-toastify/dist/ReactToastify.css";
 
 import React from "react";
-import { ToastContainer } from "react-toastify";
 
 import { ChakraProvider } from "@chakra-ui/react";
 import { AppProps } from "next/app";
+import { ToastContainer } from "react-toastify";
 
 import { App } from "~/components/App";
 import { theme } from "~/styles/theme";

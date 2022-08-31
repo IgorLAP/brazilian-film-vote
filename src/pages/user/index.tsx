@@ -146,7 +146,10 @@ export default function MyLists({ lists }: MyListsProps) {
       const url = window.URL.createObjectURL(new Blob([data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `${user.name}_list.csv`);
+      link.setAttribute(
+        "download",
+        `${user.name.trim().replaceAll(" ", "_")}_list.csv`
+      );
       document.body.appendChild(link);
       link.click();
       window.URL.revokeObjectURL(url);
@@ -156,11 +159,12 @@ export default function MyLists({ lists }: MyListsProps) {
   }
 
   const posterPathBase = "https://image.tmdb.org/t/p/w185";
+  const title = `Minhas Listas - ${user?.name ?? ""}`;
 
   return (
     <>
       <Head>
-        <title>Minhas Listas - {user?.name}</title>
+        <title>{title}</title>
       </Head>
       {!lists ? (
         <Heading>Ainda não há listas</Heading>

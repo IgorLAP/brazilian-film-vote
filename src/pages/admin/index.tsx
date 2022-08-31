@@ -1,6 +1,4 @@
 import React, { FormEvent, useContext, useEffect, useState } from "react";
-import { AiOutlineSearch } from "react-icons/ai";
-import { FiTrash2 } from "react-icons/fi";
 
 import {
   Button,
@@ -36,6 +34,8 @@ import {
 } from "firebase/firestore";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
+import { AiOutlineSearch } from "react-icons/ai";
+import { FiTrash2 } from "react-icons/fi";
 
 import { CustomButton } from "~/components/CustomButton";
 import { LoadingContext } from "~/contexts/LoadingContext";

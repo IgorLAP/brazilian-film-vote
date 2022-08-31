@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 
 import {
   Button,
@@ -40,6 +40,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
+import { LoadingContext } from "~/contexts/LoadingContext";
 import { showAlert } from "~/helpers/showAlert";
 import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
@@ -64,6 +65,8 @@ export default function Lists({
   validDecades,
   pagination,
 }: ListsProps) {
+  const { handleLoading, clearLoading } = useContext(LoadingContext);
+
   const router = useRouter();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -79,6 +82,7 @@ export default function Lists({
   const [lastPageItem, setLastPageItem] = useState<ExhibitGeneralListI[]>([]);
 
   async function handleNewListType() {
+    handleLoading(20, 1000);
     const isRequiredFieldsInvalid =
       listName === "" || !decadeSelectRef.current.value;
     const decadeCurrentlyVoting = gList.filter((list) => {
@@ -149,13 +153,12 @@ export default function Lists({
           movies: newGeneralList.movies,
           status: newGeneralList.status,
         });
-        setGList((prevState) => [
-          ...prevState,
-          {
-            ...newGeneralList,
-            idListType: newGeneralList.idListType.path,
-          },
-        ]);
+
+        const tmp = [
+          ...gList,
+          { ...newGeneralList, idListType: newGeneralList.idListType.path },
+        ].sort((a, b) => (b.idListType < a.idListType ? 1 : -1));
+        setGList(tmp);
       }
       showToast("success", "Criado com sucesso");
       setListName("");
@@ -163,6 +166,7 @@ export default function Lists({
     } catch (err) {
       showToast("error", err.message);
     }
+    clearLoading();
   }
 
   function handleSeeList(movies: Movie[]) {

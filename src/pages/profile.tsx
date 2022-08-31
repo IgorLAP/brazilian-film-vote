@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from "react";
-import { HiPencilAlt } from "react-icons/hi";
 
 import {
   Box,
@@ -23,6 +22,7 @@ import {
 import { doc, updateDoc } from "firebase/firestore";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
+import { HiPencilAlt } from "react-icons/hi";
 
 import { CustomButton } from "~/components/CustomButton";
 import AuthContext from "~/contexts/AuthContext";
@@ -80,7 +80,7 @@ export default function Profile() {
   return (
     <>
       <Head>
-        <title>Brazilian filme vote - Perfil</title>
+        <title>Perfil - Brazilian filme vote</title>
       </Head>
       <Heading as="h1" textAlign="center">
         Perfil

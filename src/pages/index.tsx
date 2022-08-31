@@ -1,6 +1,4 @@
 import React, { FormEvent, useContext, useState } from "react";
-import { IoIosMail } from "react-icons/io";
-import { RiLock2Fill } from "react-icons/ri";
 
 import {
   Button,
@@ -14,6 +12,8 @@ import {
 } from "@chakra-ui/react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
+import { IoIosMail } from "react-icons/io";
+import { RiLock2Fill } from "react-icons/ri";
 
 import { CustomButton } from "~/components/CustomButton";
 import AuthContext from "~/contexts/AuthContext";
