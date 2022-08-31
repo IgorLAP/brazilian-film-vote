@@ -29,6 +29,9 @@
     "prettier/prettier": ["error", {
       "endOfLine": "auto"
     }],
+    "no-param-reassign": ["error", { 
+      "props": false
+    }],
     "no-restricted-syntax": [
       "off"
     ],
@@ -72,7 +75,7 @@
       {
         "newlinesBetween": "always",
         "groups": [
-          "/^react/",
+          "/^react(?!-)/",
           "module",
           "/^~//",
           [

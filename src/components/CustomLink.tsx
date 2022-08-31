@@ -1,5 +1,4 @@
 import React, { useContext } from "react";
-import { IconType } from "react-icons/lib";
 
 import {
   Flex,
@@ -10,6 +9,7 @@ import {
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
+import { IconType } from "react-icons/lib";
 
 import { LoadingContext } from "~/contexts/LoadingContext";
 
@@ -30,14 +30,19 @@ export function CustomLink({ href, icon, text, ...rest }: CustomLinkProps) {
       router.push(link);
       return;
     }
-    handleLoading(20, 500);
+    handleLoading(20, 1000);
     router.push(link);
   }
 
   return (
     <Flex
-      color={router.pathname === href ? "blue.500" : ""}
-      _hover={{ color: "blue.500" }}
+      color={
+        router.pathname === href ||
+        (router.pathname === "/list/[id]" && router.asPath.includes(href))
+          ? "blue.500"
+          : ""
+      }
+      _hover={{ color: "blue.500", cursor: "pointer" }}
       justify="flex-start"
     >
       <Icon fontSize="20" mr="2" as={icon} />
