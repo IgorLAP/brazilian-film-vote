@@ -67,13 +67,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const { token } = parseCookies(undefined);
-    if (!user && !auth.currentUser && token) {
-      destroyCookie(undefined, "token");
-      router.push("/");
-      showToast("warn", "Sua sessão expirou");
-    }
-
     if (user && router.pathname === "/") {
       if (user.role === "USER") router.push("/user");
       if (user.role === "ADMIN") router.push("/admin");
@@ -125,6 +118,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await firebaseSignOut(auth);
       setUser(null);
       destroyCookie(undefined, "token");
+      const token = parseCookies();
+      if (token)
+        document.cookie = `token=; Max-Age=0; path=/; domain=${window.location.hostname}`;
       router.push("/");
     } catch (err) {
       authError(err);
