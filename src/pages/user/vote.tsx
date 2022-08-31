@@ -229,26 +229,26 @@ export default function Voting({ generalList }: VotingProps) {
   async function handleVote() {
     handleLoading(25, 1000);
     try {
-      const listsCollectionDocRef = doc(
+      const userListDocRef = doc(
         webDb,
         `users/${user.uid}/lists`,
         generalList.idListType.split("/")[1]
       );
-      const generalListCollectionRef = doc(
+      const generalListDocRef = doc(
         webDb,
         "general_list",
         generalList.idListType.split("/")[1]
       );
-      const listTypeRef = doc(
+      const listTypeDocRef = doc(
         webDb,
         "list_type",
         `${generalList.idListType.split("/")[1]}`
       );
-      await setDoc(listsCollectionDocRef, {
-        id_list_type: listTypeRef,
+      await setDoc(userListDocRef, {
+        id_list_type: listTypeDocRef,
         movies: movieList,
       });
-      const actualGeneral = await getDoc(generalListCollectionRef);
+      const actualGeneral = await getDoc(generalListDocRef);
       if (actualGeneral.data().movies.length > 0) {
         const { movies } = actualGeneral.data();
         const cloneMovieList = [...movieList] as GLMovie[];
@@ -295,7 +295,7 @@ export default function Voting({ generalList }: VotingProps) {
               ...item,
             };
           });
-        await updateDoc(generalListCollectionRef, {
+        await updateDoc(generalListDocRef, {
           movies: updatedGeneralList.sort((a, b) => b.points - a.points),
         });
       } else {
@@ -323,11 +323,11 @@ export default function Voting({ generalList }: VotingProps) {
             };
           });
         const newGeneralList = new GeneralList({
-          idListType: listTypeRef,
+          idListType: listTypeDocRef,
           movies,
           status: true,
         });
-        await setDoc(generalListCollectionRef, {
+        await setDoc(generalListDocRef, {
           id_list_type: newGeneralList.idListType,
           movies: newGeneralList.movies,
           status: newGeneralList.status,
@@ -340,12 +340,14 @@ export default function Voting({ generalList }: VotingProps) {
     }
   }
 
+  const title = `Votação dos anos ${votingDecade} - ${
+    user?.name.split(" ")[0]
+  }`;
+
   return (
     <>
       <Head>
-        <title>
-          Votação dos anos {votingDecade} - {user?.name.split(" ")[0]}
-        </title>
+        <title>{title}</title>
       </Head>
       <Heading as="h1">Votação dos anos {votingDecade}</Heading>
       <Stack my="2" spacing="2">
