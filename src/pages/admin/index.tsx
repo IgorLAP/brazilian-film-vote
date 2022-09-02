@@ -9,13 +9,6 @@ import {
   IconButton,
   Image,
   Input,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Spinner,
   Stack,
   Table,
@@ -51,6 +44,7 @@ import { FiTrash2 } from "react-icons/fi";
 import { IoIosArrowBack } from "react-icons/io";
 
 import { CustomButton } from "~/components/CustomButton";
+import { Modal } from "~/components/Modal";
 import { MovieDetail } from "~/components/MovieDetail";
 import { LoadingContext } from "~/contexts/LoadingContext";
 import { showAlert } from "~/helpers/showAlert";
@@ -451,12 +445,8 @@ export default function Admin({ users, pagination }: AdminProps) {
         size={selectedList.length > 0 ? "4xl" : "xs"}
         isOpen={isOpen}
         onClose={onClose}
-      >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader />
-          <ModalCloseButton onClick={() => setModalList([])} />
-          <ModalBody>
+        bodyChildren={
+          <>
             {selectedList.length <= 0 && !loading && (
               <Table
                 display="flex"
@@ -544,14 +534,9 @@ export default function Admin({ users, pagination }: AdminProps) {
                 <Spinner size="lg" mt="4" color="blue.500" />
               </Flex>
             )}
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" onClick={onClose}>
-              Fechar
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+          </>
+        }
+      />
     </>
   );
 }

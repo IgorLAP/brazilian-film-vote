@@ -9,13 +9,6 @@ import {
   Heading,
   Icon,
   Input,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Stack,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -25,6 +18,7 @@ import Head from "next/head";
 import { HiPencilAlt } from "react-icons/hi";
 
 import { CustomButton } from "~/components/CustomButton";
+import { Modal } from "~/components/Modal";
 import AuthContext from "~/contexts/AuthContext";
 import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
@@ -112,35 +106,35 @@ export default function Profile() {
           </CustomButton>
         </Stack>
       </Flex>
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader fontSize="larger">Editar</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Stack spacing="2">
-              <FormControl>
-                <FormLabel>Nome</FormLabel>
-                <Input
-                  type="text"
-                  bg="gray.900"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Avatar</FormLabel>
-                <Input
-                  type="text"
-                  bg="gray.900"
-                  placeholder="URL"
-                  value={photoURL}
-                  onChange={(e) => setPhotoURL(e.target.value)}
-                />
-              </FormControl>
-            </Stack>
-          </ModalBody>
-          <ModalFooter>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        headerOptions={{ fontSize: "larger", title: "Editar" }}
+        bodyChildren={
+          <Stack spacing="2">
+            <FormControl>
+              <FormLabel>Nome</FormLabel>
+              <Input
+                type="text"
+                bg="gray.900"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Avatar</FormLabel>
+              <Input
+                type="text"
+                bg="gray.900"
+                placeholder="URL"
+                value={photoURL}
+                onChange={(e) => setPhotoURL(e.target.value)}
+              />
+            </FormControl>
+          </Stack>
+        }
+        footerChildren={
+          <>
             <Button variant="ghost" onClick={onClose}>
               Fechar
             </Button>
@@ -155,9 +149,9 @@ export default function Profile() {
             >
               Salvar
             </CustomButton>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+          </>
+        }
+      />
     </>
   );
 }

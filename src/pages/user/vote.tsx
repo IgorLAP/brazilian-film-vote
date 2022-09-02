@@ -13,13 +13,6 @@ import {
   Image,
   Input,
   ListItem,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Popover,
   PopoverAnchor,
   PopoverBody,
@@ -36,6 +29,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
+import { Modal } from "~/components/Modal";
 import AuthContext from "~/contexts/AuthContext";
 import { LoadingContext } from "~/contexts/LoadingContext";
 import { showToast } from "~/helpers/showToast";
@@ -523,12 +517,12 @@ export default function Voting({ generalList }: VotingProps) {
           Votar
         </CustomButton>
       </Flex>
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Completar informações</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        headerOptions={{ title: "Completar Informações" }}
+        bodyChildren={
+          <>
             <FormControl>
               <FormLabel ml="2">Nome</FormLabel>
               <Input
@@ -587,25 +581,25 @@ export default function Voting({ generalList }: VotingProps) {
                 />
               </FormControl>
             </HStack>
-          </ModalBody>
-          <ModalFooter>
-            <CustomButton
-              buttonType="primary"
-              disabled={
-                !String(notFoundMovie?.year).includes(
-                  String(votingDecade).substring(0, 3)
-                ) ||
-                String(notFoundMovie?.year).length < 4 ||
-                !notFoundMovie.director ||
-                !notFoundMovie.name
-              }
-              onClick={handleCompleteNotFoundMovie}
-            >
-              Salvar
-            </CustomButton>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+          </>
+        }
+        footerChildren={
+          <CustomButton
+            buttonType="primary"
+            disabled={
+              !String(notFoundMovie?.year).includes(
+                String(votingDecade).substring(0, 3)
+              ) ||
+              String(notFoundMovie?.year).length < 4 ||
+              !notFoundMovie.director ||
+              !notFoundMovie.name
+            }
+            onClick={handleCompleteNotFoundMovie}
+          >
+            Salvar
+          </CustomButton>
+        }
+      />
     </>
   );
 }

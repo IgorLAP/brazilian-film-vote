@@ -6,13 +6,6 @@ import {
   Grid,
   Heading,
   Image,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Table,
   Tbody,
   Td,
@@ -28,6 +21,7 @@ import { GetServerSideProps } from "next";
 import Head from "next/head";
 
 import { CustomButton } from "~/components/CustomButton";
+import { Modal } from "~/components/Modal";
 import { MovieDetail } from "~/components/MovieDetail";
 import AuthContext from "~/contexts/AuthContext";
 import { LoadingContext } from "~/contexts/LoadingContext";
@@ -177,52 +171,52 @@ export default function MyLists({ lists }: MyListsProps) {
               ))}
             </Tbody>
           </Table>
-          <Modal size="6xl" isOpen={isOpen} onClose={onClose}>
-            <ModalOverlay />
-            <ModalContent>
-              <ModalHeader />
-              <ModalCloseButton />
-              <ModalBody>
-                <Grid rowGap="4" gridTemplateColumns="repeat(3, 1fr)">
-                  {selectedList.map((movie) => (
-                    <Flex
-                      p="1"
-                      _hover={{ bg: "gray.900" }}
+          <Modal
+            size="6xl"
+            isOpen={isOpen}
+            onClose={onClose}
+            bodyChildren={
+              <Grid rowGap="4" gridTemplateColumns="repeat(3, 1fr)">
+                {selectedList.map((movie) => (
+                  <Flex
+                    p="1"
+                    _hover={{ bg: "gray.900" }}
+                    borderRadius={6}
+                    key={movie.original_title}
+                  >
+                    <Image
+                      boxSize="120px"
                       borderRadius={6}
-                      key={movie.original_title}
+                      objectFit="cover"
+                      objectPosition="top"
+                      src={
+                        movie.id !== "No ID"
+                          ? `${posterPathBase}${movie.poster_path}`
+                          : movie.poster_path
+                      }
+                    />
+                    <Flex
+                      justify="space-around"
+                      align="flex-start"
+                      flexDir="column"
+                      ml="2"
                     >
-                      <Image
-                        boxSize="120px"
-                        borderRadius={6}
-                        objectFit="cover"
-                        objectPosition="top"
-                        src={
-                          movie.id !== "No ID"
-                            ? `${posterPathBase}${movie.poster_path}`
-                            : movie.poster_path
-                        }
+                      <Text fontWeight="bold" fontSize="md">
+                        {movie.name}
+                      </Text>
+                      <MovieDetail field="Diretor" value={movie.director} />
+                      <MovieDetail
+                        field="Ano"
+                        value={movie.release_date.split("-")[0]}
                       />
-                      <Flex
-                        justify="space-around"
-                        align="flex-start"
-                        flexDir="column"
-                        ml="2"
-                      >
-                        <Text fontWeight="bold" fontSize="md">
-                          {movie.name}
-                        </Text>
-                        <MovieDetail field="Diretor" value={movie.director} />
-                        <MovieDetail
-                          field="Ano"
-                          value={movie.release_date.split("-")[0]}
-                        />
-                        <MovieDetail field="Pontos" value={movie.points} />
-                      </Flex>
+                      <MovieDetail field="Pontos" value={movie.points} />
                     </Flex>
-                  ))}
-                </Grid>
-              </ModalBody>
-              <ModalFooter>
+                  </Flex>
+                ))}
+              </Grid>
+            }
+            footerChildren={
+              <>
                 <Tooltip
                   bg="black"
                   color="white"
@@ -236,9 +230,9 @@ export default function MyLists({ lists }: MyListsProps) {
                 <CustomButton mx={3} buttonType="primary" onClick={onClose}>
                   Fechar
                 </CustomButton>
-              </ModalFooter>
-            </ModalContent>
-          </Modal>
+              </>
+            }
+          />
         </>
       )}
     </>

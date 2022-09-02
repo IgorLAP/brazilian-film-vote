@@ -7,13 +7,6 @@ import {
   FormLabel,
   HStack,
   Input,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Select,
   Spinner,
   Table,
@@ -40,6 +33,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
+import { Modal } from "~/components/Modal";
 import { LoadingContext } from "~/contexts/LoadingContext";
 import { showAlert } from "~/helpers/showAlert";
 import { showToast } from "~/helpers/showToast";
@@ -362,37 +356,29 @@ export default function Lists({
             </Button>
           </Flex>
         )}
-        <Modal isOpen={isOpen} onClose={onClose}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader />
-            <ModalCloseButton />
-            <ModalBody>
-              <Table variant="striped">
-                <Thead>
-                  <Tr>
-                    <Th>Nome</Th>
-                    <Th>Pontos</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {modalMovieList &&
-                    modalMovieList.slice(0, 10).map((movie) => (
-                      <Tr key={movie.name}>
-                        <Td>{movie.name}</Td>
-                        <Td>{movie.points}</Td>
-                      </Tr>
-                    ))}
-                </Tbody>
-              </Table>
-            </ModalBody>
-            <ModalFooter>
-              <Button variant="ghost" mr={3} onClick={onClose}>
-                Fechar
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+        <Modal
+          isOpen={isOpen}
+          onClose={onClose}
+          bodyChildren={
+            <Table variant="striped">
+              <Thead>
+                <Tr>
+                  <Th>Nome</Th>
+                  <Th>Pontos</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {modalMovieList &&
+                  modalMovieList.slice(0, 10).map((movie) => (
+                    <Tr key={movie.name}>
+                      <Td>{movie.name}</Td>
+                      <Td>{movie.points}</Td>
+                    </Tr>
+                  ))}
+              </Tbody>
+            </Table>
+          }
+        />
       </Flex>
     </>
   );
