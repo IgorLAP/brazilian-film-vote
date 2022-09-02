@@ -9,11 +9,7 @@ import {
   Input,
   Select,
   Spinner,
-  Table,
-  Tbody,
   Td,
-  Th,
-  Thead,
   Tr,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -34,6 +30,7 @@ import { useRouter } from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
 import { Modal } from "~/components/Modal";
+import { Table } from "~/components/Table";
 import { LoadingContext } from "~/contexts/LoadingContext";
 import { showAlert } from "~/helpers/showAlert";
 import { showToast } from "~/helpers/showToast";
@@ -287,50 +284,44 @@ export default function Lists({
           </HStack>
         </Flex>
         {gList.length > 0 && !loading && (
-          <Table my="8" variant="striped">
-            <Thead>
-              <Tr>
-                <Th>ID</Th>
-                <Th>Filmes</Th>
-                <Th>Status</Th>
-                <Th>Ações</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {gList.map((list) => (
-                <Tr key={list.idListType}>
-                  <Td>{list.idListType.split("/")[1]}</Td>
-                  <Td>
-                    <Button
-                      variant="link"
-                      onClick={() => handleSeeList(list.movies)}
+          <Table
+            my="8"
+            variant="striped"
+            tableHeaders={["ID", "Filmes", "Status", "Visualizar"]}
+          >
+            {gList.map((list) => (
+              <Tr key={list.idListType}>
+                <Td>{list.idListType.split("/")[1]}</Td>
+                <Td>
+                  <Button
+                    variant="link"
+                    onClick={() => handleSeeList(list.movies)}
+                  >
+                    Top 10
+                  </Button>
+                </Td>
+                <Td>{list.status ? "Ativo" : "Finalizado"}</Td>
+                <Td>
+                  {list.status ? (
+                    <CustomButton
+                      buttonType="danger"
+                      onClick={() => handleFinishList(list.idListType)}
                     >
-                      Top 10
-                    </Button>
-                  </Td>
-                  <Td>{list.status ? "Ativo" : "Finalizado"}</Td>
-                  <Td>
-                    {list.status ? (
-                      <CustomButton
-                        buttonType="danger"
-                        onClick={() => handleFinishList(list.idListType)}
-                      >
-                        Finalizar
-                      </CustomButton>
-                    ) : (
-                      <CustomButton
-                        buttonType="primary"
-                        onClick={() =>
-                          router.push(`/list/${list.idListType.split("/")[1]}`)
-                        }
-                      >
-                        Lista
-                      </CustomButton>
-                    )}
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
+                      Finalizar
+                    </CustomButton>
+                  ) : (
+                    <CustomButton
+                      buttonType="primary"
+                      onClick={() =>
+                        router.push(`/list/${list.idListType.split("/")[1]}`)
+                      }
+                    >
+                      Lista
+                    </CustomButton>
+                  )}
+                </Td>
+              </Tr>
+            ))}
           </Table>
         )}
         {loading && (
@@ -360,22 +351,14 @@ export default function Lists({
           isOpen={isOpen}
           onClose={onClose}
           bodyChildren={
-            <Table variant="striped">
-              <Thead>
-                <Tr>
-                  <Th>Nome</Th>
-                  <Th>Pontos</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {modalMovieList &&
-                  modalMovieList.slice(0, 10).map((movie) => (
-                    <Tr key={movie.name}>
-                      <Td>{movie.name}</Td>
-                      <Td>{movie.points}</Td>
-                    </Tr>
-                  ))}
-              </Tbody>
+            <Table variant="striped" tableHeaders={["Nome", "Pontos"]}>
+              {modalMovieList &&
+                modalMovieList.slice(0, 10).map((movie) => (
+                  <Tr key={movie.name}>
+                    <Td>{movie.name}</Td>
+                    <Td>{movie.points}</Td>
+                  </Tr>
+                ))}
             </Table>
           }
         />

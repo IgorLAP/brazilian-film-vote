@@ -136,7 +136,7 @@ export function Sidebar() {
             <Fade style={{ marginBottom: 8 }} in={isOpen}>
               {decades.length > 0 &&
                 decades.map((dec) => (
-                  <Box ml="1.5">
+                  <Box key={dec.name} ml="1.5">
                     <Flex
                       mb="2"
                       color={dec.show ? "blue.500" : ""}

@@ -11,13 +11,8 @@ import {
   Input,
   Spinner,
   Stack,
-  Table,
-  TableContainer,
-  Tbody,
   Td,
   Text,
-  Th,
-  Thead,
   Tr,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -41,11 +36,12 @@ import Head from "next/head";
 import { AiOutlineSearch } from "react-icons/ai";
 import { BsList } from "react-icons/bs";
 import { FiTrash2 } from "react-icons/fi";
-import { IoIosArrowBack } from "react-icons/io";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 
 import { CustomButton } from "~/components/CustomButton";
 import { Modal } from "~/components/Modal";
 import { MovieDetail } from "~/components/MovieDetail";
+import { Table } from "~/components/Table";
 import { LoadingContext } from "~/contexts/LoadingContext";
 import { showAlert } from "~/helpers/showAlert";
 import { showToast } from "~/helpers/showToast";
@@ -353,71 +349,56 @@ export default function Admin({ users, pagination }: AdminProps) {
           />
         </Flex>
         {usersList.length > 0 && !loading && resultList.length <= 0 && (
-          <TableContainer my="8" w="100%">
-            <Table variant="striped">
-              <Thead>
-                <Tr>
-                  <Th>Nome</Th>
-                  <Th>Email</Th>
-                  <Th>Listas</Th>
-                  <Th>Excluir</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {usersList.map((user) => (
-                  <Tr key={user.email}>
-                    <Td>{user?.name}</Td>
-                    <Td>{user.email}</Td>
-                    <Td>
-                      <CustomButton
-                        onClick={() => handleSeeUsersList(user.email)}
-                        buttonType="warn"
-                      >
-                        <Icon as={BsList} />
-                      </CustomButton>
-                    </Td>
-                    <Td>
-                      <CustomButton
-                        buttonType="danger"
-                        onClick={() => handleDeleteUser(user.email)}
-                      >
-                        <Icon as={FiTrash2} />
-                      </CustomButton>
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          </TableContainer>
+          <Table
+            my="8"
+            tableHeaders={["Nome", "Email", "Listas", "Excluir"]}
+            variant="striped"
+          >
+            {usersList.map((user) => (
+              <Tr key={user.email}>
+                <Td>{user?.name}</Td>
+                <Td>{user.email}</Td>
+                <Td>
+                  <CustomButton
+                    onClick={() => handleSeeUsersList(user.email)}
+                    buttonType="warn"
+                  >
+                    <Icon as={BsList} />
+                  </CustomButton>
+                </Td>
+                <Td>
+                  <CustomButton
+                    buttonType="danger"
+                    onClick={() => handleDeleteUser(user.email)}
+                  >
+                    <Icon as={FiTrash2} />
+                  </CustomButton>
+                </Td>
+              </Tr>
+            ))}
+          </Table>
         )}
         {resultList.length > 0 && (
-          <TableContainer my="8" w="100%">
-            <Table variant="striped">
-              <Thead>
-                <Tr>
-                  <Th>Nome</Th>
-                  <Th>Email</Th>
-                  <Th>Ações</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {resultList.map((user) => (
-                  <Tr key={user.email}>
-                    <Td>{user?.name}</Td>
-                    <Td>{user.email}</Td>
-                    <Td>
-                      <CustomButton
-                        buttonType="danger"
-                        onClick={() => handleDeleteUser(user.email)}
-                      >
-                        <Icon as={FiTrash2} />
-                      </CustomButton>
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          </TableContainer>
+          <Table
+            my="8"
+            variant="striped"
+            tableHeaders={["Nome", "Email", "Excluir"]}
+          >
+            {resultList.map((user) => (
+              <Tr key={user.email}>
+                <Td>{user?.name}</Td>
+                <Td>{user.email}</Td>
+                <Td>
+                  <CustomButton
+                    buttonType="danger"
+                    onClick={() => handleDeleteUser(user.email)}
+                  >
+                    <Icon as={FiTrash2} />
+                  </CustomButton>
+                </Td>
+              </Tr>
+            ))}
+          </Table>
         )}
         {loading && modalList.length <= 0 && (
           <Spinner size="lg" alignSelf="center" mt="4" color="blue.500" />
@@ -448,33 +429,20 @@ export default function Admin({ users, pagination }: AdminProps) {
         bodyChildren={
           <>
             {selectedList.length <= 0 && !loading && (
-              <Table
-                display="flex"
-                flexDirection="column"
-                justifyContent="center"
-                alignItems="center"
-                variant="simple"
-              >
-                <Thead>
-                  <Tr>
-                    <Th>Listas</Th>
+              <Table variant="simple" tableHeaders={["ID", "Visualizar"]}>
+                {modalList.map((list) => (
+                  <Tr key={list.idListType?.path.split("/")[1]}>
+                    <Td>{list.idListType.path.split("/")[1]}</Td>
+                    <Td>
+                      <Button
+                        onClick={() => handleDisplayList(list.movies)}
+                        variant="ghost"
+                      >
+                        <Icon w={5} h={5} as={IoIosArrowForward} />
+                      </Button>
+                    </Td>
                   </Tr>
-                </Thead>
-                <Tbody>
-                  {modalList.map((list) => (
-                    <Tr key={list.idListType?.path.split("/")[1]}>
-                      <Td>
-                        <Button
-                          onClick={() => handleDisplayList(list.movies)}
-                          variant="ghost"
-                          colorScheme="blue"
-                        >
-                          {list.idListType.path.split("/")[1]}
-                        </Button>
-                      </Td>
-                    </Tr>
-                  ))}
-                </Tbody>
+                ))}
               </Table>
             )}
             {selectedList.length > 0 && (

@@ -6,12 +6,8 @@ import {
   Grid,
   Heading,
   Image,
-  Table,
-  Tbody,
   Td,
   Text,
-  Th,
-  Thead,
   Tooltip,
   Tr,
   useDisclosure,
@@ -23,6 +19,7 @@ import Head from "next/head";
 import { CustomButton } from "~/components/CustomButton";
 import { Modal } from "~/components/Modal";
 import { MovieDetail } from "~/components/MovieDetail";
+import { Table } from "~/components/Table";
 import AuthContext from "~/contexts/AuthContext";
 import { LoadingContext } from "~/contexts/LoadingContext";
 import { showToast } from "~/helpers/showToast";
@@ -146,30 +143,25 @@ export default function MyLists({ lists }: MyListsProps) {
       ) : (
         <>
           <Heading as="h1">Minhas Listas</Heading>
-          <Table variant="striped">
-            <Thead>
-              <Tr>
-                <Th>Década</Th>
-                <Th>Nome</Th>
-                <Th>Filmes</Th>
+          <Table
+            my="8"
+            variant="striped"
+            tableHeaders={["Década", "Nome", "Filmes"]}
+          >
+            {lists.map((list) => (
+              <Tr key={list.name}>
+                <Td>{list.decade}</Td>
+                <Td>{list.name}</Td>
+                <Td>
+                  <CustomButton
+                    buttonType="primary"
+                    onClick={() => handleSeeList(list.movies)}
+                  >
+                    Ver Lista
+                  </CustomButton>
+                </Td>
               </Tr>
-            </Thead>
-            <Tbody>
-              {lists.map((list) => (
-                <Tr key={list.name}>
-                  <Td>{list.decade}</Td>
-                  <Td>{list.name}</Td>
-                  <Td>
-                    <CustomButton
-                      buttonType="primary"
-                      onClick={() => handleSeeList(list.movies)}
-                    >
-                      Ver Lista
-                    </CustomButton>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
+            ))}
           </Table>
           <Modal
             size="6xl"
