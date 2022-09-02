@@ -68,6 +68,10 @@ interface TmdbSearch {
   results: TmdbList[];
 }
 
+interface CompleteNotFoundMovie extends Movie {
+  index: number;
+}
+
 const movieListPlaceholder: Movie[] = [
   { name: "", id: 0, points: 20 },
   { name: "", id: 0, points: 19 },
@@ -107,7 +111,8 @@ export default function Voting({ generalList }: VotingProps) {
   const [loading, setLoading] = useState(false);
   const [tmdbList, setTmdbList] = useState<TmdbList[]>([]);
   const [search, setSearch] = useState("");
-  const [notFoundMovie, setNotFoundMovie] = useState<Movie | null>();
+  const [notFoundMovie, setNotFoundMovie] =
+    useState<CompleteNotFoundMovie | null>();
 
   const debouncedSearch = useDebounce(search, 500);
 
@@ -122,6 +127,9 @@ export default function Voting({ generalList }: VotingProps) {
     generalList.idListType.split("/")[1].split("-")[0]
   );
   const posterPathBase = "https://image.tmdb.org/t/p/w92";
+  const title = `Votação dos anos ${votingDecade} - ${
+    user?.name.split(" ")[0]
+  }`;
 
   function handleMovieChange(movie: string, id: number, index: number) {
     const tmp = [...movieList];
@@ -208,13 +216,13 @@ export default function Voting({ generalList }: VotingProps) {
         return clone;
       });
     } else {
-      setNotFoundMovie(clone[index]);
+      setNotFoundMovie({ ...clone[index], index });
       onOpen();
     }
   }
 
-  function handleCompleteNotFoundMovie(movieName: string) {
-    const index = movieList.findIndex((movie) => movie.name === movieName);
+  function handleCompleteNotFoundMovie() {
+    const { index } = notFoundMovie;
     setMovieList((prevState) => {
       const tmp = [...prevState];
       tmp[index].id = "No ID";
@@ -339,10 +347,6 @@ export default function Voting({ generalList }: VotingProps) {
       showToast("error", err.message);
     }
   }
-
-  const title = `Votação dos anos ${votingDecade} - ${
-    user?.name.split(" ")[0]
-  }`;
 
   return (
     <>
@@ -534,6 +538,7 @@ export default function Voting({ generalList }: VotingProps) {
                 mb="4"
                 value={notFoundMovie?.name}
                 onChange={(e) => {
+                  if (e.target.value.length <= 0) return;
                   const clone = [...movieList];
                   const index = clone.findIndex(
                     (movie) => movie.name === notFoundMovie.name
@@ -594,7 +599,7 @@ export default function Voting({ generalList }: VotingProps) {
                 !notFoundMovie.director ||
                 !notFoundMovie.name
               }
-              onClick={() => handleCompleteNotFoundMovie(notFoundMovie.name)}
+              onClick={handleCompleteNotFoundMovie}
             >
               Salvar
             </CustomButton>
