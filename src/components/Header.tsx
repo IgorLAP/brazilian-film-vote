@@ -91,7 +91,7 @@ export function Header() {
                 <CustomLink
                   href="/profile"
                   icon={BsFillPersonFill}
-                  text="Profile"
+                  text="Perfil"
                 />
                 <Divider />
                 <Button

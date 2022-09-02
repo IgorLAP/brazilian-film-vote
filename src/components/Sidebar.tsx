@@ -96,7 +96,11 @@ export function Sidebar() {
               text="Usuários"
               icon={AiOutlineUsergroupDelete}
             />
-            <CustomLink href="/admin/lists" text="Listas" icon={BsList} />
+            <CustomLink
+              href="/admin/lists"
+              text="Gerenciar Listas"
+              icon={BsList}
+            />
           </>
         )}
         {user?.role === "USER" && (

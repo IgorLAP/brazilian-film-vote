@@ -33,16 +33,10 @@ import AuthContext from "~/contexts/AuthContext";
 import { LoadingContext } from "~/contexts/LoadingContext";
 import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
-import { Movie } from "~/interfaces/Movie";
+import { Movie, ShowMovie } from "~/interfaces/Movie";
+import { TmdbMovie, TmdbMovieCredit } from "~/interfaces/Tmdb";
 import { db as adminDb, auth } from "~/lib/firebase-admin";
 import { tmdbApi } from "~/lib/tmdb";
-
-interface ShowMovieList extends Movie {
-  director: string;
-  poster_path: string;
-  original_title: string;
-  release_date: string;
-}
 
 interface MyListsProps {
   lists?: {
@@ -53,26 +47,13 @@ interface MyListsProps {
   }[];
 }
 
-interface TmdbMovie {
-  original_title: string;
-  poster_path: string;
-  release_date: string;
-}
-
-interface TmdbMovieCredit {
-  crew: {
-    job: "Director";
-    name: string;
-  }[];
-}
-
 export default function MyLists({ lists }: MyListsProps) {
   const { user } = useContext(AuthContext);
   const { handleLoading, clearLoading } = useContext(LoadingContext);
 
   const { isOpen, onClose, onOpen } = useDisclosure();
 
-  const [selectedList, setSelectedList] = useState<ShowMovieList[]>([]);
+  const [selectedList, setSelectedList] = useState<ShowMovie[]>([]);
 
   async function handleSeeList(movieList: Movie[]) {
     handleLoading(45, 1000);

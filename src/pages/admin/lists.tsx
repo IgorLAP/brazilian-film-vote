@@ -387,9 +387,9 @@ export default function Lists({
               </Table>
             </ModalBody>
             <ModalFooter>
-              <CustomButton buttonType="primary" mr={3} onClick={onClose}>
+              <Button variant="ghost" mr={3} onClick={onClose}>
                 Fechar
-              </CustomButton>
+              </Button>
             </ModalFooter>
           </ModalContent>
         </Modal>
@@ -401,14 +401,8 @@ export default function Lists({
 export const getServerSideProps: GetServerSideProps = verifySSRAuth(
   async () => {
     const generalList = await adminDb.collection("general_list").limit(2).get();
-    // const generalListSnap = await generalListRef.get();
     const allPages = (await adminDb.collection("general_list").get()).docs
       .length;
-    // const generalList = generalListSnap.docs.map((list) => ({
-    //   idListType: list.data().id_list_type.path,
-    //   movies: list.data()?.movies,
-    //   status: list.data()?.status,
-    // }));
 
     const decadesRef = adminDb.collection("decades");
     const decadesSnap = await decadesRef.get();
