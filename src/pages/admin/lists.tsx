@@ -7,20 +7,9 @@ import {
   FormLabel,
   HStack,
   Input,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Select,
   Spinner,
-  Table,
-  Tbody,
   Td,
-  Th,
-  Thead,
   Tr,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -40,6 +29,8 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
+import { Modal } from "~/components/Modal";
+import { Table } from "~/components/Table";
 import { LoadingContext } from "~/contexts/LoadingContext";
 import { showAlert } from "~/helpers/showAlert";
 import { showToast } from "~/helpers/showToast";
@@ -209,6 +200,7 @@ export default function Lists({
       const last = gList.at(-1);
       const { data } = await axios.post("/api/lists-pagination", {
         startAfter: last.idListType.split("/")[1],
+        collection: "general_list",
       });
       setLastPageItem((prev) => [...prev, gList.at(-1)]);
       setFirstPageItem((prev) => [...prev, gList[0]]);
@@ -228,6 +220,7 @@ export default function Lists({
       const { data } = await axios.post("/api/lists-pagination", {
         startAt: firstPageLast,
         endAt: lastPageLast,
+        collection: "general_list",
       });
       setGList(data.page as ExhibitGeneralListI[]);
       setLastPageItem((prev) =>
@@ -293,50 +286,44 @@ export default function Lists({
           </HStack>
         </Flex>
         {gList.length > 0 && !loading && (
-          <Table my="8" variant="striped">
-            <Thead>
-              <Tr>
-                <Th>ID</Th>
-                <Th>Filmes</Th>
-                <Th>Status</Th>
-                <Th>Ações</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {gList.map((list) => (
-                <Tr key={list.idListType}>
-                  <Td>{list.idListType.split("/")[1]}</Td>
-                  <Td>
-                    <Button
-                      variant="link"
-                      onClick={() => handleSeeList(list.movies)}
+          <Table
+            my="8"
+            variant="striped"
+            tableHeaders={["ID", "Filmes", "Status", "Visualizar"]}
+          >
+            {gList.map((list) => (
+              <Tr key={list.idListType}>
+                <Td>{list.idListType.split("/")[1]}</Td>
+                <Td>
+                  <Button
+                    variant="link"
+                    onClick={() => handleSeeList(list.movies)}
+                  >
+                    Top 10
+                  </Button>
+                </Td>
+                <Td>{list.status ? "Ativo" : "Finalizado"}</Td>
+                <Td>
+                  {list.status ? (
+                    <CustomButton
+                      buttonType="danger"
+                      onClick={() => handleFinishList(list.idListType)}
                     >
-                      Top 10
-                    </Button>
-                  </Td>
-                  <Td>{list.status ? "Ativo" : "Finalizado"}</Td>
-                  <Td>
-                    {list.status ? (
-                      <CustomButton
-                        buttonType="danger"
-                        onClick={() => handleFinishList(list.idListType)}
-                      >
-                        Finalizar
-                      </CustomButton>
-                    ) : (
-                      <CustomButton
-                        buttonType="primary"
-                        onClick={() =>
-                          router.push(`/list/${list.idListType.split("/")[1]}`)
-                        }
-                      >
-                        Lista
-                      </CustomButton>
-                    )}
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
+                      Finalizar
+                    </CustomButton>
+                  ) : (
+                    <CustomButton
+                      buttonType="primary"
+                      onClick={() =>
+                        router.push(`/list/${list.idListType.split("/")[1]}`)
+                      }
+                    >
+                      Lista
+                    </CustomButton>
+                  )}
+                </Td>
+              </Tr>
+            ))}
           </Table>
         )}
         {loading && (
@@ -362,37 +349,21 @@ export default function Lists({
             </Button>
           </Flex>
         )}
-        <Modal isOpen={isOpen} onClose={onClose}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader />
-            <ModalCloseButton />
-            <ModalBody>
-              <Table variant="striped">
-                <Thead>
-                  <Tr>
-                    <Th>Nome</Th>
-                    <Th>Pontos</Th>
+        <Modal
+          isOpen={isOpen}
+          onClose={onClose}
+          bodyChildren={
+            <Table variant="striped" tableHeaders={["Nome", "Pontos"]}>
+              {modalMovieList &&
+                modalMovieList.slice(0, 10).map((movie) => (
+                  <Tr key={movie.name}>
+                    <Td>{movie.name}</Td>
+                    <Td>{movie.points}</Td>
                   </Tr>
-                </Thead>
-                <Tbody>
-                  {modalMovieList &&
-                    modalMovieList.slice(0, 10).map((movie) => (
-                      <Tr key={movie.name}>
-                        <Td>{movie.name}</Td>
-                        <Td>{movie.points}</Td>
-                      </Tr>
-                    ))}
-                </Tbody>
-              </Table>
-            </ModalBody>
-            <ModalFooter>
-              <CustomButton buttonType="primary" mr={3} onClick={onClose}>
-                Fechar
-              </CustomButton>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+                ))}
+            </Table>
+          }
+        />
       </Flex>
     </>
   );
@@ -400,15 +371,12 @@ export default function Lists({
 
 export const getServerSideProps: GetServerSideProps = verifySSRAuth(
   async () => {
-    const generalList = await adminDb.collection("general_list").limit(2).get();
-    // const generalListSnap = await generalListRef.get();
+    const generalList = await adminDb
+      .collection("general_list")
+      .limit(20)
+      .get();
     const allPages = (await adminDb.collection("general_list").get()).docs
       .length;
-    // const generalList = generalListSnap.docs.map((list) => ({
-    //   idListType: list.data().id_list_type.path,
-    //   movies: list.data()?.movies,
-    //   status: list.data()?.status,
-    // }));
 
     const decadesRef = adminDb.collection("decades");
     const decadesSnap = await decadesRef.get();

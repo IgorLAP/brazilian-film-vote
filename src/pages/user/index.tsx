@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 
 import {
   Button,
@@ -6,19 +6,9 @@ import {
   Grid,
   Heading,
   Image,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Table,
-  Tbody,
+  Spinner,
   Td,
   Text,
-  Th,
-  Thead,
   Tooltip,
   Tr,
   useDisclosure,
@@ -26,53 +16,55 @@ import {
 import axios from "axios";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
+import { useRouter } from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
+import { Modal } from "~/components/Modal";
 import { MovieDetail } from "~/components/MovieDetail";
+import { Table } from "~/components/Table";
 import AuthContext from "~/contexts/AuthContext";
 import { LoadingContext } from "~/contexts/LoadingContext";
 import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
-import { Movie } from "~/interfaces/Movie";
+import { Movie, ShowMovie } from "~/interfaces/Movie";
+import { TmdbMovie, TmdbMovieCredit } from "~/interfaces/Tmdb";
 import { db as adminDb, auth } from "~/lib/firebase-admin";
 import { tmdbApi } from "~/lib/tmdb";
-
-interface ShowMovieList extends Movie {
-  director: string;
-  poster_path: string;
-  original_title: string;
-  release_date: string;
-}
 
 interface MyListsProps {
   lists?: {
     name: string;
-    decade: string;
+    idListType: string;
     movies: Movie[];
     points: number;
   }[];
+  pagination: {
+    allPages: number;
+  };
 }
 
-interface TmdbMovie {
-  original_title: string;
-  poster_path: string;
-  release_date: string;
-}
+export default function MyLists({ lists, pagination }: MyListsProps) {
+  const router = useRouter();
 
-interface TmdbMovieCredit {
-  crew: {
-    job: "Director";
-    name: string;
-  }[];
-}
-
-export default function MyLists({ lists }: MyListsProps) {
   const { user } = useContext(AuthContext);
   const { handleLoading, clearLoading } = useContext(LoadingContext);
 
   const { isOpen, onClose, onOpen } = useDisclosure();
 
-  const [selectedList, setSelectedList] = useState<ShowMovieList[]>([]);
+  const [userList, setUserList] = useState(lists);
+  const [selectedMovieList, setSelectedMovieList] = useState<ShowMovie[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [actualPage, setActualPage] = useState(1);
+  const [firstPageItem, setFirstPageItem] = useState<typeof lists>([]);
+  const [lastPageItem, setLastPageItem] = useState<typeof lists>([]);
+
+  useEffect(() => {
+    const { redirect } = router.query;
+    if (redirect) {
+      clearLoading();
+      showToast("warn", "Sua votação já foi finalizada");
+    }
+  }, []);
 
   async function handleSeeList(movieList: Movie[]) {
     handleLoading(45, 1000);
@@ -125,7 +117,7 @@ export default function MyLists({ lists }: MyListsProps) {
         original_title: posterYears[index].original_title,
         release_date: posterYears[index].release_date,
       }));
-      setSelectedList(moviesWithDirectors);
+      setSelectedMovieList(moviesWithDirectors);
       clearLoading();
       onOpen();
     } catch (err) {
@@ -136,7 +128,7 @@ export default function MyLists({ lists }: MyListsProps) {
 
   async function handleGenerateCSVFile() {
     try {
-      const onlyIdAndName = selectedList.map((movie) => ({
+      const onlyIdAndName = selectedMovieList.map((movie) => ({
         id: movie.id,
         name: movie.original_title,
       }));
@@ -158,6 +150,48 @@ export default function MyLists({ lists }: MyListsProps) {
     }
   }
 
+  async function handleNextPage() {
+    try {
+      setLoading(true);
+      const last = userList.at(-1);
+      const { data } = await axios.post("/api/lists-pagination", {
+        startAfter: last.idListType.split("/")[1],
+        collection: `users/${user?.uid}/lists`,
+      });
+      setLastPageItem((prev) => [...prev, userList.at(-1)]);
+      setFirstPageItem((prev) => [...prev, userList[0]]);
+      setUserList(data.page as typeof lists);
+      setActualPage((prev) => prev + 1);
+    } catch (err) {
+      showToast("error", "Erro no carregamento");
+    }
+    setLoading(false);
+  }
+
+  async function handlePrevPage() {
+    try {
+      setLoading(true);
+      const firstPageLast = firstPageItem.at(-1).idListType.split("/")[1];
+      const lastPageLast = lastPageItem.at(-1).idListType.split("/")[1];
+      const { data } = await axios.post("/api/lists-pagination", {
+        startAt: firstPageLast,
+        endAt: lastPageLast,
+        collection: `users/${user?.uid}/lists`,
+      });
+      setUserList(data.page as typeof lists);
+      setLastPageItem((prev) =>
+        prev.filter((item) => item.idListType.split("/")[1] !== lastPageLast)
+      );
+      setFirstPageItem((prev) =>
+        prev.filter((item) => item.idListType.split("/")[1] !== firstPageLast)
+      );
+      setActualPage((prev) => prev - 1);
+    } catch (err) {
+      showToast("error", "Erro no carregamento");
+    }
+    setLoading(false);
+  }
+
   const posterPathBase = "https://image.tmdb.org/t/p/w185";
   const title = `Minhas Listas - ${user?.name ?? ""}`;
 
@@ -166,23 +200,20 @@ export default function MyLists({ lists }: MyListsProps) {
       <Head>
         <title>{title}</title>
       </Head>
-      {!lists ? (
+      {!userList ? (
         <Heading>Ainda não há listas</Heading>
       ) : (
         <>
           <Heading as="h1">Minhas Listas</Heading>
-          <Table variant="striped">
-            <Thead>
-              <Tr>
-                <Th>Década</Th>
-                <Th>Nome</Th>
-                <Th>Filmes</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {lists.map((list) => (
-                <Tr key={list.name}>
-                  <Td>{list.decade}</Td>
+          {!loading && (
+            <Table
+              my="8"
+              variant="striped"
+              tableHeaders={["Década", "Nome", "Filmes"]}
+            >
+              {userList.map((list) => (
+                <Tr key={list.idListType}>
+                  <Td>{list.idListType.split("/")[1].split("-")[0]}</Td>
                   <Td>{list.name}</Td>
                   <Td>
                     <CustomButton
@@ -194,54 +225,79 @@ export default function MyLists({ lists }: MyListsProps) {
                   </Td>
                 </Tr>
               ))}
-            </Tbody>
-          </Table>
-          <Modal size="6xl" isOpen={isOpen} onClose={onClose}>
-            <ModalOverlay />
-            <ModalContent>
-              <ModalHeader />
-              <ModalCloseButton />
-              <ModalBody>
-                <Grid rowGap="4" gridTemplateColumns="repeat(3, 1fr)">
-                  {selectedList.map((movie) => (
-                    <Flex
-                      p="1"
-                      _hover={{ bg: "gray.900" }}
+            </Table>
+          )}
+          {loading && (
+            <Flex justify="center" align="center">
+              <Spinner size="lg" mt="4" color="blue.500" />
+            </Flex>
+          )}
+          {actualPage > 1 && (
+            <Flex justify="space-between" mt="8">
+              <Button
+                disabled={!(actualPage > 1)}
+                variant="ghost"
+                colorScheme="blue"
+                onClick={handlePrevPage}
+              >
+                Voltar
+              </Button>
+              <Button
+                disabled={!(actualPage < pagination.allPages)}
+                variant="ghost"
+                colorScheme="blue"
+                onClick={handleNextPage}
+              >
+                Avançar
+              </Button>
+            </Flex>
+          )}
+          <Modal
+            size="6xl"
+            isOpen={isOpen}
+            onClose={onClose}
+            bodyChildren={
+              <Grid rowGap="4" gridTemplateColumns="repeat(3, 1fr)">
+                {selectedMovieList.map((movie) => (
+                  <Flex
+                    p="1"
+                    _hover={{ bg: "gray.900" }}
+                    borderRadius={6}
+                    key={movie.original_title}
+                  >
+                    <Image
+                      boxSize="120px"
                       borderRadius={6}
-                      key={movie.original_title}
+                      objectFit="cover"
+                      objectPosition="top"
+                      src={
+                        movie.id !== "No ID"
+                          ? `${posterPathBase}${movie.poster_path}`
+                          : movie.poster_path
+                      }
+                    />
+                    <Flex
+                      justify="space-around"
+                      align="flex-start"
+                      flexDir="column"
+                      ml="2"
                     >
-                      <Image
-                        boxSize="120px"
-                        borderRadius={6}
-                        objectFit="cover"
-                        objectPosition="top"
-                        src={
-                          movie.id !== "No ID"
-                            ? `${posterPathBase}${movie.poster_path}`
-                            : movie.poster_path
-                        }
+                      <Text fontWeight="bold" fontSize="md">
+                        {movie.name}
+                      </Text>
+                      <MovieDetail field="Diretor" value={movie.director} />
+                      <MovieDetail
+                        field="Ano"
+                        value={movie.release_date.split("-")[0]}
                       />
-                      <Flex
-                        justify="space-around"
-                        align="flex-start"
-                        flexDir="column"
-                        ml="2"
-                      >
-                        <Text fontWeight="bold" fontSize="md">
-                          {movie.name}
-                        </Text>
-                        <MovieDetail field="Diretor" value={movie.director} />
-                        <MovieDetail
-                          field="Ano"
-                          value={movie.release_date.split("-")[0]}
-                        />
-                        <MovieDetail field="Pontos" value={movie.points} />
-                      </Flex>
+                      <MovieDetail field="Pontos" value={movie.points} />
                     </Flex>
-                  ))}
-                </Grid>
-              </ModalBody>
-              <ModalFooter>
+                  </Flex>
+                ))}
+              </Grid>
+            }
+            footerChildren={
+              <>
                 <Tooltip
                   bg="black"
                   color="white"
@@ -255,9 +311,9 @@ export default function MyLists({ lists }: MyListsProps) {
                 <CustomButton mx={3} buttonType="primary" onClick={onClose}>
                   Fechar
                 </CustomButton>
-              </ModalFooter>
-            </ModalContent>
-          </Modal>
+              </>
+            }
+          />
         </>
       )}
     </>
@@ -272,7 +328,11 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
       .collection("users")
       .doc(uid)
       .collection("lists")
+      .limit(20)
       .get();
+    const allLists = (
+      await adminDb.collection("users").doc(uid).collection("lists").get()
+    ).docs.length;
 
     if (!userListsSnap.empty) {
       const listTypesSnap = await adminDb.collection("list_type").get();
@@ -284,7 +344,7 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
           return {
             name: listTypesSnap.docs[index].data().name,
             movies: item.data().movies,
-            decade: item.data().id_list_type.path.split("/")[1].split("-")[0],
+            idListType: item.data().id_list_type.path,
           };
         }
         return {};
@@ -292,6 +352,9 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
       return {
         props: {
           lists: formattedData,
+          pagination: {
+            allPages: Math.ceil(allLists / 2),
+          },
         },
       };
     }

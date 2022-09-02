@@ -96,7 +96,11 @@ export function Sidebar() {
               text="Usuários"
               icon={AiOutlineUsergroupDelete}
             />
-            <CustomLink href="/admin/lists" text="Listas" icon={BsList} />
+            <CustomLink
+              href="/admin/lists"
+              text="Gerenciar Listas"
+              icon={BsList}
+            />
           </>
         )}
         {user?.role === "USER" && (
@@ -132,7 +136,7 @@ export function Sidebar() {
             <Fade style={{ marginBottom: 8 }} in={isOpen}>
               {decades.length > 0 &&
                 decades.map((dec) => (
-                  <Box ml="1.5">
+                  <Box key={dec.name} ml="1.5">
                     <Flex
                       mb="2"
                       color={dec.show ? "blue.500" : ""}

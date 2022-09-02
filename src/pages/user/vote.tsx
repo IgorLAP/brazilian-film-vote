@@ -13,13 +13,6 @@ import {
   Image,
   Input,
   ListItem,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Popover,
   PopoverAnchor,
   PopoverBody,
@@ -36,6 +29,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
+import { Modal } from "~/components/Modal";
 import AuthContext from "~/contexts/AuthContext";
 import { LoadingContext } from "~/contexts/LoadingContext";
 import { showToast } from "~/helpers/showToast";
@@ -66,6 +60,10 @@ interface TmdbList {
 interface TmdbSearch {
   page: number;
   results: TmdbList[];
+}
+
+interface CompleteNotFoundMovie extends Movie {
+  index: number;
 }
 
 const movieListPlaceholder: Movie[] = [
@@ -107,7 +105,8 @@ export default function Voting({ generalList }: VotingProps) {
   const [loading, setLoading] = useState(false);
   const [tmdbList, setTmdbList] = useState<TmdbList[]>([]);
   const [search, setSearch] = useState("");
-  const [notFoundMovie, setNotFoundMovie] = useState<Movie | null>();
+  const [notFoundMovie, setNotFoundMovie] =
+    useState<CompleteNotFoundMovie | null>();
 
   const debouncedSearch = useDebounce(search, 500);
 
@@ -122,6 +121,9 @@ export default function Voting({ generalList }: VotingProps) {
     generalList.idListType.split("/")[1].split("-")[0]
   );
   const posterPathBase = "https://image.tmdb.org/t/p/w92";
+  const title = `Votação dos anos ${votingDecade} - ${
+    user?.name.split(" ")[0]
+  }`;
 
   function handleMovieChange(movie: string, id: number, index: number) {
     const tmp = [...movieList];
@@ -208,13 +210,13 @@ export default function Voting({ generalList }: VotingProps) {
         return clone;
       });
     } else {
-      setNotFoundMovie(clone[index]);
+      setNotFoundMovie({ ...clone[index], index });
       onOpen();
     }
   }
 
-  function handleCompleteNotFoundMovie(movieName: string) {
-    const index = movieList.findIndex((movie) => movie.name === movieName);
+  function handleCompleteNotFoundMovie() {
+    const { index } = notFoundMovie;
     setMovieList((prevState) => {
       const tmp = [...prevState];
       tmp[index].id = "No ID";
@@ -339,10 +341,6 @@ export default function Voting({ generalList }: VotingProps) {
       showToast("error", err.message);
     }
   }
-
-  const title = `Votação dos anos ${votingDecade} - ${
-    user?.name.split(" ")[0]
-  }`;
 
   return (
     <>
@@ -519,12 +517,12 @@ export default function Voting({ generalList }: VotingProps) {
           Votar
         </CustomButton>
       </Flex>
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Completar informações</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        headerOptions={{ title: "Completar Informações" }}
+        bodyChildren={
+          <>
             <FormControl>
               <FormLabel ml="2">Nome</FormLabel>
               <Input
@@ -534,6 +532,7 @@ export default function Voting({ generalList }: VotingProps) {
                 mb="4"
                 value={notFoundMovie?.name}
                 onChange={(e) => {
+                  if (e.target.value.length <= 0) return;
                   const clone = [...movieList];
                   const index = clone.findIndex(
                     (movie) => movie.name === notFoundMovie.name
@@ -582,25 +581,25 @@ export default function Voting({ generalList }: VotingProps) {
                 />
               </FormControl>
             </HStack>
-          </ModalBody>
-          <ModalFooter>
-            <CustomButton
-              buttonType="primary"
-              disabled={
-                !String(notFoundMovie?.year).includes(
-                  String(votingDecade).substring(0, 3)
-                ) ||
-                String(notFoundMovie?.year).length < 4 ||
-                !notFoundMovie.director ||
-                !notFoundMovie.name
-              }
-              onClick={() => handleCompleteNotFoundMovie(notFoundMovie.name)}
-            >
-              Salvar
-            </CustomButton>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+          </>
+        }
+        footerChildren={
+          <CustomButton
+            buttonType="primary"
+            disabled={
+              !String(notFoundMovie?.year).includes(
+                String(votingDecade).substring(0, 3)
+              ) ||
+              String(notFoundMovie?.year).length < 4 ||
+              !notFoundMovie.director ||
+              !notFoundMovie.name
+            }
+            onClick={handleCompleteNotFoundMovie}
+          >
+            Salvar
+          </CustomButton>
+        }
+      />
     </>
   );
 }
@@ -643,7 +642,7 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
     if (userActualList.exists) {
       return {
         redirect: {
-          destination: "/user",
+          destination: "/user?redirect=s",
           permanent: false,
         },
       };

@@ -4,18 +4,17 @@ import {
   Button,
   Flex,
   FormControl,
+  Grid,
   Icon,
   IconButton,
+  Image,
   Input,
   Spinner,
   Stack,
-  Table,
-  TableContainer,
-  Tbody,
   Td,
-  Th,
-  Thead,
+  Text,
   Tr,
+  useDisclosure,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { getAuth, sendSignInLinkToEmail } from "firebase/auth";
@@ -35,20 +34,33 @@ import {
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { AiOutlineSearch } from "react-icons/ai";
+import { BsList } from "react-icons/bs";
 import { FiTrash2 } from "react-icons/fi";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 
 import { CustomButton } from "~/components/CustomButton";
+import { Modal } from "~/components/Modal";
+import { MovieDetail } from "~/components/MovieDetail";
+import { Table } from "~/components/Table";
 import { LoadingContext } from "~/contexts/LoadingContext";
 import { showAlert } from "~/helpers/showAlert";
 import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
+import { GeneralListI } from "~/interfaces/GeneralList";
+import { Movie, ShowMovie } from "~/interfaces/Movie";
+import { TmdbMovie, TmdbMovieCredit } from "~/interfaces/Tmdb";
 import { db as webDb } from "~/lib/firebase";
 import { db } from "~/lib/firebase-admin";
+import { tmdbApi } from "~/lib/tmdb";
 
 interface User {
   name?: string;
   email: string;
   createdAt: string;
+}
+
+interface UserList extends Omit<GeneralListI, "movies"> {
+  movies?: Movie[];
 }
 
 interface AdminProps {
@@ -66,6 +78,8 @@ const actionCodeSetting = {
 export default function Admin({ users, pagination }: AdminProps) {
   const { handleLoading, clearLoading } = useContext(LoadingContext);
 
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   const [usersList, setUsersList] = useState(users);
   const [newUserEmail, setNewUserEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -74,6 +88,8 @@ export default function Admin({ users, pagination }: AdminProps) {
   const [actualPage, setActualPage] = useState(1);
   const [firstPageItem, setFirstPageItem] = useState<User[]>([]);
   const [lastPageItem, setLastPageItem] = useState<User[]>([]);
+  const [modalList, setModalList] = useState<UserList[]>([]);
+  const [selectedList, setSelectedList] = useState<ShowMovie[]>([]);
 
   useEffect(() => {
     if (userSearch === "") setResultList([]);
@@ -135,7 +151,7 @@ export default function Admin({ users, pagination }: AdminProps) {
         collection(webDb, "users"),
         orderBy("createdAt"),
         startAfter(last.createdAt),
-        limit(2)
+        limit(20)
       );
       const { docs } = await getDocs(q);
       const newList = docs.map((i) => i.data());
@@ -159,7 +175,7 @@ export default function Admin({ users, pagination }: AdminProps) {
         orderBy("createdAt"),
         startAt(firstPageLast),
         endAt(lastPageLast),
-        limit(2)
+        limit(20)
       );
       const { docs } = await getDocs(q);
       const newList = docs.map((i) => i.data());
@@ -195,8 +211,94 @@ export default function Admin({ users, pagination }: AdminProps) {
     }
   }
 
+  async function handleSeeUsersList(email: string) {
+    handleLoading(30, 1000);
+    try {
+      const q = query(collection(webDb, "users"), where("email", "==", email));
+      const [user] = (await getDocs(q)).docs;
+      const usersListsRef = collection(webDb, `users/${user.id}/lists`);
+      const listq = query(usersListsRef);
+      const usersLists = await getDocs(listq);
+      if (usersLists.empty) {
+        clearLoading();
+        showToast("warn", "Usuário não possui listas");
+        return;
+      }
+      setModalList(
+        usersLists.docs.map((item) => ({
+          idListType: item.data().id_list_type,
+          movies: item.data().movies,
+          status: item.data().status,
+        })) as GeneralListI[]
+      );
+      onOpen();
+    } catch (err) {
+      showToast("error", "Erro ao carregar informações");
+    }
+    clearLoading();
+  }
+
+  async function handleDisplayList(movieList: Movie[]) {
+    setLoading(true);
+    try {
+      const dirPromises = movieList.map((movie) => {
+        if (movie.id === "No ID") {
+          return new Promise<{ name: string }>((resolve) => {
+            resolve({
+              name: movie?.director,
+            });
+          });
+        }
+        return tmdbApi
+          .get<TmdbMovieCredit>(`movie/${movie.id}/credits`)
+          .then((results) =>
+            results.data.crew
+              .filter((member) => member.job === "Director")
+              .pop()
+          );
+      });
+      const posterYearsPromises = movieList.map((movie) => {
+        if (movie.id === "No ID") {
+          return new Promise<TmdbMovie>((resolve) => {
+            resolve({
+              original_title: movie.name,
+              poster_path: "/images/poster_placeholder.jpg",
+              release_date: String(movie?.year),
+            });
+          });
+        }
+
+        return tmdbApi.get<TmdbMovie>(`movie/${movie.id}`).then((results) => ({
+          original_title: results.data.original_title,
+          poster_path: results.data.poster_path,
+          release_date: results.data.release_date,
+        }));
+      });
+      const directors = await Promise.all(dirPromises).then(
+        (results) => results
+      );
+      const posterYears = await Promise.all(posterYearsPromises).then(
+        (results) => results
+      );
+      const moviesWithDirectors = directors.map((item, index) => ({
+        director: item?.name,
+        id: movieList[index].id,
+        name: movieList[index].name,
+        points: movieList[index].points,
+        poster_path: posterYears[index].poster_path,
+        original_title: posterYears[index].original_title,
+        release_date: posterYears[index].release_date,
+      }));
+      setSelectedList(moviesWithDirectors);
+    } catch (err) {
+      showToast("error", err.message);
+    }
+    setLoading(false);
+  }
+
   const emailRegex = /^[\w-\\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
   const validEmail = newUserEmail.match(emailRegex);
+  const posterPathBase = "https://image.tmdb.org/t/p/w185";
 
   return (
     <>
@@ -247,64 +349,58 @@ export default function Admin({ users, pagination }: AdminProps) {
           />
         </Flex>
         {usersList.length > 0 && !loading && resultList.length <= 0 && (
-          <TableContainer my="8" w="100%">
-            <Table variant="striped">
-              <Thead>
-                <Tr>
-                  <Th>Nome</Th>
-                  <Th>Email</Th>
-                  <Th>Ações</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {usersList.map((user) => (
-                  <Tr key={user.email}>
-                    <Td>{user?.name}</Td>
-                    <Td>{user.email}</Td>
-                    <Td>
-                      <CustomButton
-                        buttonType="danger"
-                        onClick={() => handleDeleteUser(user.email)}
-                      >
-                        <Icon as={FiTrash2} />
-                      </CustomButton>
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          </TableContainer>
+          <Table
+            my="8"
+            tableHeaders={["Nome", "Email", "Listas", "Excluir"]}
+            variant="striped"
+          >
+            {usersList.map((user) => (
+              <Tr key={user.email}>
+                <Td>{user?.name}</Td>
+                <Td>{user.email}</Td>
+                <Td>
+                  <CustomButton
+                    onClick={() => handleSeeUsersList(user.email)}
+                    buttonType="warn"
+                  >
+                    <Icon as={BsList} />
+                  </CustomButton>
+                </Td>
+                <Td>
+                  <CustomButton
+                    buttonType="danger"
+                    onClick={() => handleDeleteUser(user.email)}
+                  >
+                    <Icon as={FiTrash2} />
+                  </CustomButton>
+                </Td>
+              </Tr>
+            ))}
+          </Table>
         )}
         {resultList.length > 0 && (
-          <TableContainer my="8" w="100%">
-            <Table variant="striped">
-              <Thead>
-                <Tr>
-                  <Th>Nome</Th>
-                  <Th>Email</Th>
-                  <Th>Ações</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {resultList.map((user) => (
-                  <Tr key={user.email}>
-                    <Td>{user?.name}</Td>
-                    <Td>{user.email}</Td>
-                    <Td>
-                      <CustomButton
-                        buttonType="danger"
-                        onClick={() => handleDeleteUser(user.email)}
-                      >
-                        <Icon as={FiTrash2} />
-                      </CustomButton>
-                    </Td>
-                  </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          </TableContainer>
+          <Table
+            my="8"
+            variant="striped"
+            tableHeaders={["Nome", "Email", "Excluir"]}
+          >
+            {resultList.map((user) => (
+              <Tr key={user.email}>
+                <Td>{user?.name}</Td>
+                <Td>{user.email}</Td>
+                <Td>
+                  <CustomButton
+                    buttonType="danger"
+                    onClick={() => handleDeleteUser(user.email)}
+                  >
+                    <Icon as={FiTrash2} />
+                  </CustomButton>
+                </Td>
+              </Tr>
+            ))}
+          </Table>
         )}
-        {loading && (
+        {loading && modalList.length <= 0 && (
           <Spinner size="lg" alignSelf="center" mt="4" color="blue.500" />
         )}
         <Flex justify="space-between" mt="8">
@@ -326,23 +422,106 @@ export default function Admin({ users, pagination }: AdminProps) {
           </Button>
         </Flex>
       </Flex>
+      <Modal
+        size={selectedList.length > 0 ? "4xl" : "xs"}
+        isOpen={isOpen}
+        onClose={onClose}
+        bodyChildren={
+          <>
+            {selectedList.length <= 0 && !loading && (
+              <Table variant="simple" tableHeaders={["ID", "Visualizar"]}>
+                {modalList.map((list) => (
+                  <Tr key={list.idListType?.path.split("/")[1]}>
+                    <Td>{list.idListType.path.split("/")[1]}</Td>
+                    <Td>
+                      <Button
+                        onClick={() => handleDisplayList(list.movies)}
+                        variant="ghost"
+                      >
+                        <Icon w={5} h={5} as={IoIosArrowForward} />
+                      </Button>
+                    </Td>
+                  </Tr>
+                ))}
+              </Table>
+            )}
+            {selectedList.length > 0 && (
+              <>
+                <Button
+                  variant="ghost"
+                  w={7}
+                  h={7}
+                  mb="2"
+                  size="xs"
+                  onClick={() => setSelectedList([])}
+                >
+                  <Icon w={5} h={5} as={IoIosArrowBack} />
+                </Button>
+                <Grid rowGap="4" gridTemplateColumns="repeat(3, 1fr)">
+                  {selectedList.map((movie) => (
+                    <Flex
+                      p="1"
+                      _hover={{ bg: "gray.900" }}
+                      borderRadius={6}
+                      key={movie.original_title}
+                    >
+                      <Image
+                        boxSize="120px"
+                        borderRadius={6}
+                        objectFit="cover"
+                        objectPosition="top"
+                        src={
+                          movie.id !== "No ID"
+                            ? `${posterPathBase}${movie.poster_path}`
+                            : movie.poster_path
+                        }
+                      />
+                      <Flex
+                        justify="space-around"
+                        align="flex-start"
+                        flexDir="column"
+                        ml="2"
+                      >
+                        <Text fontWeight="bold" fontSize="md">
+                          {movie.name}
+                        </Text>
+                        <MovieDetail field="Diretor" value={movie.director} />
+                        <MovieDetail
+                          field="Ano"
+                          value={movie.release_date?.split("-")[0]}
+                        />
+                        <MovieDetail field="Pontos" value={movie.points} />
+                      </Flex>
+                    </Flex>
+                  ))}
+                </Grid>
+              </>
+            )}
+            {loading && (
+              <Flex justify="center" align="center">
+                <Spinner size="lg" mt="4" color="blue.500" />
+              </Flex>
+            )}
+          </>
+        }
+      />
     </>
   );
 }
 
 export const getServerSideProps: GetServerSideProps = verifySSRAuth(
   async () => {
-    const allPages = (await db.collection("users").get()).docs.filter(
+    const allItems = (await db.collection("users").get()).docs.filter(
       (user) => user.data().role !== "ADMIN"
     ).length;
-    const usersRef = db.collection("users").orderBy("createdAt").limit(2);
+    const usersRef = db.collection("users").orderBy("createdAt").limit(20);
     const users = await usersRef.get();
 
     return {
       props: {
         users: users.docs.map((user) => user.data()),
         pagination: {
-          allPages: Math.ceil(allPages / 2),
+          allPages: Math.ceil(allItems / 2),
         },
       },
     };
