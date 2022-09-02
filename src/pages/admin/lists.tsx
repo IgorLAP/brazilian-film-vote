@@ -239,7 +239,7 @@ export default function Lists({
   return (
     <>
       <Head>
-        <title>Listas - Brazilian film vote</title>
+        <title>Listas - Brazilian Film Vote</title>
       </Head>
       <Flex flexDir="column">
         <Flex
@@ -397,7 +397,7 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
         })),
         validDecades: validDecades.availables,
         pagination: {
-          allPages: Math.ceil(allPages / 2),
+          allPages: Math.ceil(allPages / 20),
         },
       },
     };

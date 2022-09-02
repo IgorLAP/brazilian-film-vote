@@ -303,7 +303,7 @@ export default function Admin({ users, pagination }: AdminProps) {
   return (
     <>
       <Head>
-        <title>Admin Dashboard - Brazilian film vote</title>
+        <title>Admin Dashboard - Brazilian Film Vote</title>
       </Head>
       <Flex w="100%" flexDir="column">
         <Stack spacing="4" borderRadius="4">
@@ -521,7 +521,7 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
       props: {
         users: users.docs.map((user) => user.data()),
         pagination: {
-          allPages: Math.ceil(allItems / 2),
+          allPages: Math.ceil(allItems / 20),
         },
       },
     };

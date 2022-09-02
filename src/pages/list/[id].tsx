@@ -164,7 +164,7 @@ export default function List({ generalList, listType }: ListProps) {
   }
 
   const posterPathBase = "https://image.tmdb.org/t/p/w185";
-  const title = `${listType.name} - Brazilian film vote`;
+  const title = `${listType.name} - Brazilian Film Vote`;
 
   return (
     <>

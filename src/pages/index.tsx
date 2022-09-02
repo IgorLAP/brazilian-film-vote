@@ -45,7 +45,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Brazilian film vote</title>
+        <title>Brazilian Film Vote</title>
       </Head>
       <Grid
         as="main"

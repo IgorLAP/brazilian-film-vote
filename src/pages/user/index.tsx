@@ -353,7 +353,7 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
         props: {
           lists: formattedData,
           pagination: {
-            allPages: Math.ceil(allLists / 2),
+            allPages: Math.ceil(allLists / 20),
           },
         },
       };
