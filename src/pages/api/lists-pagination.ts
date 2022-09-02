@@ -8,19 +8,19 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     res.status(405).end();
   }
 
-  const { startAfter, startAt, endAt } = req.body;
+  const { startAfter, startAt, endAt, collection } = req.body;
 
-  if (!startAfter && !startAt && !endAt) {
+  if (!startAfter && !startAt && !endAt && !collection) {
     res.status(400).json({ error: "missing params" });
   }
 
   try {
     if (startAfter) {
       const snapshot = await db
-        .collection("general_list")
+        .collection(collection)
         .orderBy(FieldPath.documentId())
         .startAfter(startAfter)
-        .limit(2)
+        .limit(20)
         .get();
 
       res.json({
@@ -34,11 +34,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (startAt && endAt) {
       const snapshot = await db
-        .collection("general_list")
+        .collection(collection)
         .orderBy(FieldPath.documentId())
         .startAt(startAt)
         .endAt(endAt)
-        .limit(2)
+        .limit(20)
         .get();
 
       res.json({

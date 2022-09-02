@@ -151,7 +151,7 @@ export default function Admin({ users, pagination }: AdminProps) {
         collection(webDb, "users"),
         orderBy("createdAt"),
         startAfter(last.createdAt),
-        limit(2)
+        limit(20)
       );
       const { docs } = await getDocs(q);
       const newList = docs.map((i) => i.data());
@@ -175,7 +175,7 @@ export default function Admin({ users, pagination }: AdminProps) {
         orderBy("createdAt"),
         startAt(firstPageLast),
         endAt(lastPageLast),
-        limit(2)
+        limit(20)
       );
       const { docs } = await getDocs(q);
       const newList = docs.map((i) => i.data());
@@ -511,17 +511,17 @@ export default function Admin({ users, pagination }: AdminProps) {
 
 export const getServerSideProps: GetServerSideProps = verifySSRAuth(
   async () => {
-    const allPages = (await db.collection("users").get()).docs.filter(
+    const allItems = (await db.collection("users").get()).docs.filter(
       (user) => user.data().role !== "ADMIN"
     ).length;
-    const usersRef = db.collection("users").orderBy("createdAt").limit(2);
+    const usersRef = db.collection("users").orderBy("createdAt").limit(20);
     const users = await usersRef.get();
 
     return {
       props: {
         users: users.docs.map((user) => user.data()),
         pagination: {
-          allPages: Math.ceil(allPages / 2),
+          allPages: Math.ceil(allItems / 2),
         },
       },
     };

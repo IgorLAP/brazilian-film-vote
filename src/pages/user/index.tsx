@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 
 import {
   Button,
@@ -6,6 +6,7 @@ import {
   Grid,
   Heading,
   Image,
+  Spinner,
   Td,
   Text,
   Tooltip,
@@ -15,6 +16,7 @@ import {
 import axios from "axios";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
+import { useRouter } from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
 import { Modal } from "~/components/Modal";
@@ -32,19 +34,37 @@ import { tmdbApi } from "~/lib/tmdb";
 interface MyListsProps {
   lists?: {
     name: string;
-    decade: string;
+    idListType: string;
     movies: Movie[];
     points: number;
   }[];
+  pagination: {
+    allPages: number;
+  };
 }
 
-export default function MyLists({ lists }: MyListsProps) {
+export default function MyLists({ lists, pagination }: MyListsProps) {
+  const router = useRouter();
+
   const { user } = useContext(AuthContext);
   const { handleLoading, clearLoading } = useContext(LoadingContext);
 
   const { isOpen, onClose, onOpen } = useDisclosure();
 
-  const [selectedList, setSelectedList] = useState<ShowMovie[]>([]);
+  const [userList, setUserList] = useState(lists);
+  const [selectedMovieList, setSelectedMovieList] = useState<ShowMovie[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [actualPage, setActualPage] = useState(1);
+  const [firstPageItem, setFirstPageItem] = useState<typeof lists>([]);
+  const [lastPageItem, setLastPageItem] = useState<typeof lists>([]);
+
+  useEffect(() => {
+    const { redirect } = router.query;
+    if (redirect) {
+      clearLoading();
+      showToast("warn", "Sua votação já foi finalizada");
+    }
+  }, []);
 
   async function handleSeeList(movieList: Movie[]) {
     handleLoading(45, 1000);
@@ -97,7 +117,7 @@ export default function MyLists({ lists }: MyListsProps) {
         original_title: posterYears[index].original_title,
         release_date: posterYears[index].release_date,
       }));
-      setSelectedList(moviesWithDirectors);
+      setSelectedMovieList(moviesWithDirectors);
       clearLoading();
       onOpen();
     } catch (err) {
@@ -108,7 +128,7 @@ export default function MyLists({ lists }: MyListsProps) {
 
   async function handleGenerateCSVFile() {
     try {
-      const onlyIdAndName = selectedList.map((movie) => ({
+      const onlyIdAndName = selectedMovieList.map((movie) => ({
         id: movie.id,
         name: movie.original_title,
       }));
@@ -130,6 +150,48 @@ export default function MyLists({ lists }: MyListsProps) {
     }
   }
 
+  async function handleNextPage() {
+    try {
+      setLoading(true);
+      const last = userList.at(-1);
+      const { data } = await axios.post("/api/lists-pagination", {
+        startAfter: last.idListType.split("/")[1],
+        collection: `users/${user?.uid}/lists`,
+      });
+      setLastPageItem((prev) => [...prev, userList.at(-1)]);
+      setFirstPageItem((prev) => [...prev, userList[0]]);
+      setUserList(data.page as typeof lists);
+      setActualPage((prev) => prev + 1);
+    } catch (err) {
+      showToast("error", "Erro no carregamento");
+    }
+    setLoading(false);
+  }
+
+  async function handlePrevPage() {
+    try {
+      setLoading(true);
+      const firstPageLast = firstPageItem.at(-1).idListType.split("/")[1];
+      const lastPageLast = lastPageItem.at(-1).idListType.split("/")[1];
+      const { data } = await axios.post("/api/lists-pagination", {
+        startAt: firstPageLast,
+        endAt: lastPageLast,
+        collection: `users/${user?.uid}/lists`,
+      });
+      setUserList(data.page as typeof lists);
+      setLastPageItem((prev) =>
+        prev.filter((item) => item.idListType.split("/")[1] !== lastPageLast)
+      );
+      setFirstPageItem((prev) =>
+        prev.filter((item) => item.idListType.split("/")[1] !== firstPageLast)
+      );
+      setActualPage((prev) => prev - 1);
+    } catch (err) {
+      showToast("error", "Erro no carregamento");
+    }
+    setLoading(false);
+  }
+
   const posterPathBase = "https://image.tmdb.org/t/p/w185";
   const title = `Minhas Listas - ${user?.name ?? ""}`;
 
@@ -138,38 +200,65 @@ export default function MyLists({ lists }: MyListsProps) {
       <Head>
         <title>{title}</title>
       </Head>
-      {!lists ? (
+      {!userList ? (
         <Heading>Ainda não há listas</Heading>
       ) : (
         <>
           <Heading as="h1">Minhas Listas</Heading>
-          <Table
-            my="8"
-            variant="striped"
-            tableHeaders={["Década", "Nome", "Filmes"]}
-          >
-            {lists.map((list) => (
-              <Tr key={list.name}>
-                <Td>{list.decade}</Td>
-                <Td>{list.name}</Td>
-                <Td>
-                  <CustomButton
-                    buttonType="primary"
-                    onClick={() => handleSeeList(list.movies)}
-                  >
-                    Ver Lista
-                  </CustomButton>
-                </Td>
-              </Tr>
-            ))}
-          </Table>
+          {!loading && (
+            <Table
+              my="8"
+              variant="striped"
+              tableHeaders={["Década", "Nome", "Filmes"]}
+            >
+              {userList.map((list) => (
+                <Tr key={list.idListType}>
+                  <Td>{list.idListType.split("/")[1].split("-")[0]}</Td>
+                  <Td>{list.name}</Td>
+                  <Td>
+                    <CustomButton
+                      buttonType="primary"
+                      onClick={() => handleSeeList(list.movies)}
+                    >
+                      Ver Lista
+                    </CustomButton>
+                  </Td>
+                </Tr>
+              ))}
+            </Table>
+          )}
+          {loading && (
+            <Flex justify="center" align="center">
+              <Spinner size="lg" mt="4" color="blue.500" />
+            </Flex>
+          )}
+          {actualPage > 1 && (
+            <Flex justify="space-between" mt="8">
+              <Button
+                disabled={!(actualPage > 1)}
+                variant="ghost"
+                colorScheme="blue"
+                onClick={handlePrevPage}
+              >
+                Voltar
+              </Button>
+              <Button
+                disabled={!(actualPage < pagination.allPages)}
+                variant="ghost"
+                colorScheme="blue"
+                onClick={handleNextPage}
+              >
+                Avançar
+              </Button>
+            </Flex>
+          )}
           <Modal
             size="6xl"
             isOpen={isOpen}
             onClose={onClose}
             bodyChildren={
               <Grid rowGap="4" gridTemplateColumns="repeat(3, 1fr)">
-                {selectedList.map((movie) => (
+                {selectedMovieList.map((movie) => (
                   <Flex
                     p="1"
                     _hover={{ bg: "gray.900" }}
@@ -239,7 +328,11 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
       .collection("users")
       .doc(uid)
       .collection("lists")
+      .limit(20)
       .get();
+    const allLists = (
+      await adminDb.collection("users").doc(uid).collection("lists").get()
+    ).docs.length;
 
     if (!userListsSnap.empty) {
       const listTypesSnap = await adminDb.collection("list_type").get();
@@ -251,7 +344,7 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
           return {
             name: listTypesSnap.docs[index].data().name,
             movies: item.data().movies,
-            decade: item.data().id_list_type.path.split("/")[1].split("-")[0],
+            idListType: item.data().id_list_type.path,
           };
         }
         return {};
@@ -259,6 +352,9 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
       return {
         props: {
           lists: formattedData,
+          pagination: {
+            allPages: Math.ceil(allLists / 2),
+          },
         },
       };
     }

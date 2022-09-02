@@ -200,6 +200,7 @@ export default function Lists({
       const last = gList.at(-1);
       const { data } = await axios.post("/api/lists-pagination", {
         startAfter: last.idListType.split("/")[1],
+        collection: "general_list",
       });
       setLastPageItem((prev) => [...prev, gList.at(-1)]);
       setFirstPageItem((prev) => [...prev, gList[0]]);
@@ -219,6 +220,7 @@ export default function Lists({
       const { data } = await axios.post("/api/lists-pagination", {
         startAt: firstPageLast,
         endAt: lastPageLast,
+        collection: "general_list",
       });
       setGList(data.page as ExhibitGeneralListI[]);
       setLastPageItem((prev) =>
@@ -369,7 +371,10 @@ export default function Lists({
 
 export const getServerSideProps: GetServerSideProps = verifySSRAuth(
   async () => {
-    const generalList = await adminDb.collection("general_list").limit(2).get();
+    const generalList = await adminDb
+      .collection("general_list")
+      .limit(20)
+      .get();
     const allPages = (await adminDb.collection("general_list").get()).docs
       .length;
 
