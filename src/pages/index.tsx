@@ -1,21 +1,11 @@
 import React, { FormEvent, useContext, useState } from "react";
 
-import {
-  Button,
-  Flex,
-  Grid,
-  Heading,
-  Input,
-  Stack,
-  Text,
-  Icon,
-} from "@chakra-ui/react";
+import { Grid } from "@chakra-ui/react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
-import { IoIosMail } from "react-icons/io";
-import { RiLock2Fill } from "react-icons/ri";
 
-import { CustomButton } from "~/components/CustomButton";
+import { LogoHome } from "~/components/Home/LogoHome";
+import { SignInForm } from "~/components/Home/SignInForm";
 import AuthContext from "~/contexts/AuthContext";
 import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
@@ -45,93 +35,35 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Brazilian film vote</title>
+        <title>Brazilian Film Vote</title>
       </Head>
       <Grid
         as="main"
         h="100vh"
-        templateColumns="1fr 480px 420px 1fr"
-        templateRows="1fr 480px 1fr"
-        templateAreas="
-        '. . . .'
-        '. text form .'
-        '. . . .'
-      "
+        mx={{ base: "4", md: "0" }}
+        templateColumns={{
+          base: "1fr",
+          md: "1fr 380px 360px 1fr",
+          lg: "1fr 480px 420px 1fr",
+        }}
+        templateRows={{ base: "repeat(2, 1fr)", md: "1fr 480px 1fr" }}
+        templateAreas={{
+          base: "'text''form'",
+          md: "'. . . .''. text form .''. . . .'",
+        }}
         justifyContent="center"
         alignItems="center"
       >
-        <Flex gridArea="text" flexDir="column" alignItems="flex-end" mr="4">
-          <Heading as="h1">
-            🎬
-            <Text color="green.500" as="span">
-              b
-            </Text>
-            <Text color="yellow.500" as="span">
-              r
-            </Text>
-            azilian film vote
-          </Heading>
-          <Text mt="2" textAlign="end" fontSize="lg">
-            Faça login na plataforma para eleger os melhores filmes junto à
-            cinfefilia brasileira
-          </Text>
-        </Flex>
-        <Flex
-          bg="gray.800"
+        <LogoHome gridArea="text" />
+        <SignInForm
           gridArea="form"
-          align="center"
-          justify="center"
-          p="8"
-          borderRadius={8}
-        >
-          <Flex h="100%" as="form" flexDir="column" onSubmit={handleLogin}>
-            <Stack spacing="4">
-              <Flex justify="center" align="center">
-                <Icon as={IoIosMail} w={6} h={6} />
-                <Input
-                  placeholder="E-mail"
-                  type="email"
-                  border="blue.50"
-                  bg="gray.900"
-                  w="320px"
-                  ml="2"
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </Flex>
-              <Flex justify="center" align="center">
-                <Icon as={RiLock2Fill} w={6} h={6} />
-                <Input
-                  placeholder="Senha"
-                  type="password"
-                  border="blue.60"
-                  bg="gray.900"
-                  w="320px"
-                  ml="2"
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </Flex>
-              <Button
-                variant="unstyled"
-                textAlign="start"
-                size="xs"
-                fontWeight="bold"
-                color="blue.500"
-                _hover={{ color: "blue.600" }}
-              >
-                Esqueci minha senha
-              </Button>
-              <CustomButton
-                type="submit"
-                buttonType="primary"
-                disabled={
-                  !(!!validEmail && passRequiredMinimunLength) || loading
-                }
-              >
-                Entrar
-              </CustomButton>
-            </Stack>
-          </Flex>
-        </Flex>
+          handleLogin={handleLogin}
+          loading={loading}
+          passRequiredMinimunLength={passRequiredMinimunLength}
+          setEmail={setEmail}
+          setPassword={setPassword}
+          validEmail={validEmail}
+        />
       </Grid>
     </>
   );

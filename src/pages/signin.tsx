@@ -72,7 +72,7 @@ export default function singnIn() {
   return (
     <>
       <Head>
-        <title>Cadastre-se - Brazilian film vote</title>
+        <title>Cadastre-se - Brazilian Film Vote</title>
       </Head>
       <Flex
         maxW="1180px"
