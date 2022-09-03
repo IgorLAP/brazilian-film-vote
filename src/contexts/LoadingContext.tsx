@@ -35,15 +35,18 @@ export function LoadingProvider({ children }: loadingProviderProps) {
   }, [router.pathname]);
 
   function handleLoading(percentage: number, intervalTime: number) {
-    setIntervalID(
-      setInterval(() => {
-        setLoadingStatus((prev) => prev + percentage);
-      }, intervalTime)
-    );
+    if (!intervalID) {
+      setIntervalID(
+        setInterval(() => {
+          setLoadingStatus((prev) => prev + percentage);
+        }, intervalTime)
+      );
+    }
   }
 
   function clearLoading() {
     window.clearInterval(intervalID);
+    setIntervalID(undefined);
     if (loadingStatus !== 100) setLoadingStatus(100);
     setTimeout(() => setLoadingStatus(0), 250);
   }
