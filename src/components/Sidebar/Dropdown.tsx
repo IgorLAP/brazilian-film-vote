@@ -1,30 +1,87 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
-import { Box, Button, Fade, Flex, Text } from "@chakra-ui/react";
+import { Box, Button, Fade, Flex, Text, useDisclosure } from "@chakra-ui/react";
+import { collection, getDocs } from "firebase/firestore";
 import { MdLocalMovies } from "react-icons/md";
 import { RiArrowDownSLine, RiArrowRightSLine } from "react-icons/ri";
+
+import { db as webDb } from "~/lib/firebase";
+import { Decades } from "~/models/Decades";
 
 import { CustomLink } from "../CustomLink";
 
 interface DropdownProps {
-  isOpen: boolean;
-  decades: { name: string; show: boolean }[];
-  dropdown: string[] | [];
-  onToggle: () => void;
-  handleToggle: (name: string) => void;
+  onResponsiveMenuClose?: () => void;
 }
 
-export function Dropdown({
-  isOpen,
-  onToggle,
-  decades,
-  dropdown,
-  handleToggle,
-}: DropdownProps) {
-  const dropDownIcon = isOpen ? RiArrowDownSLine : RiArrowRightSLine;
+export function Dropdown({ onResponsiveMenuClose }: DropdownProps) {
+  const { onToggle, isOpen } = useDisclosure();
+
+  const [dropdown, setDropdown] = useState<string[] | []>([]);
+  const [decades, setDecades] = useState<{ name: string; show: boolean }[]>([]);
+
+  useEffect(() => {
+    async function handleDropdown() {
+      const snap = await getDocs(collection(webDb, "general_list"));
+      const array = snap.docs.map((item) => {
+        if (!item.data().status) return item.id;
+        return [];
+      });
+      return array.filter((item) => typeof item === "string");
+    }
+    const handle = async () => {
+      setDropdown((await handleDropdown()) as string[] | []);
+    };
+    handle();
+  }, []);
+
+  useEffect(() => {
+    if (dropdown.length > 0) {
+      const decs: number[] = new Decades().valid_decades.availables;
+      const tmp: string[] = [];
+      for (const drop of dropdown) {
+        for (const dec of decs) {
+          const alreadyHas = decades.filter(
+            (item) => item.name === String(dec)
+          );
+          if (drop.includes(String(dec)) && alreadyHas.length <= 0) {
+            tmp.push(String(dec));
+          }
+        }
+      }
+      const newDecNames = [...new Set(tmp)];
+      setDecades(() => {
+        return newDecNames.map((item) => ({
+          name: item,
+          show: false,
+        }));
+      });
+    }
+  }, [dropdown]);
+
+  function handleToggle(dec: string) {
+    setDecades((prev) => {
+      const tmp = [...prev];
+      const index = prev.findIndex((item) => item.name === dec);
+      tmp[index].show = !tmp[index].show;
+      tmp.forEach((item, i) => {
+        if (item.show && i !== index) item.show = !item.show;
+      });
+      return tmp;
+    });
+  }
+
+  function resetDropdown() {
+    const tmp = [...decades];
+    tmp.forEach((item) => {
+      if (item.show) item.show = false;
+    });
+    setDecades(tmp);
+    onToggle();
+  }
 
   return (
-    <>
+    <Flex flexDir="column">
       <Flex
         color={isOpen ? "blue.500" : ""}
         _hover={{ color: "blue.600", cursor: "pointer" }}
@@ -35,7 +92,7 @@ export function Dropdown({
           size="xs"
           mr="1"
           ml="-1.5"
-          as={dropDownIcon}
+          as={isOpen ? RiArrowDownSLine : RiArrowRightSLine}
         />
         <Text as="span">Listas</Text>
       </Flex>
@@ -63,7 +120,15 @@ export function Dropdown({
                   dropdown
                     .filter((drop: string) => drop.includes(dec.name))
                     .map((slug) => (
-                      <Box key={slug} ml="2" my="2">
+                      <Box
+                        key={slug}
+                        ml="2"
+                        my="2"
+                        onClick={() => {
+                          onResponsiveMenuClose();
+                          resetDropdown();
+                        }}
+                      >
                         <CustomLink
                           key={slug}
                           href={`/list/${slug}`}
@@ -76,6 +141,6 @@ export function Dropdown({
             </Box>
           ))}
       </Fade>
-    </>
+    </Flex>
   );
 }
