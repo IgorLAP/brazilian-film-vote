@@ -39,12 +39,12 @@ export function ProfileMenu({ loggedUser, signOut }: ProfileMenuProps) {
 
   return (
     <Flex
-      justify={{ base: "space-between", md: "center" }}
-      w={{ base: "100%", md: "auto" }}
-      maxW={{ base: "340px", md: "inherit" }}
+      justify={{ base: "space-between", lg: "center" }}
+      w={{ base: "100%", lg: "auto" }}
+      maxW={{ base: "340px", lg: "inherit" }}
       px="1"
     >
-      <Box display={{ base: "block", md: "none" }}>
+      <Box display={{ base: "block", lg: "none" }}>
         <Menu>
           {({ onClose }) => (
             <>
@@ -101,7 +101,7 @@ export function ProfileMenu({ loggedUser, signOut }: ProfileMenuProps) {
         </Menu>
       </Box>
       <Flex
-        display={{ base: "none", md: "block" }}
+        display={{ base: "none", lg: "block" }}
         fontSize="small"
         color="gray.400"
         flexDir="column"

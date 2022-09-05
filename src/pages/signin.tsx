@@ -20,12 +20,14 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
+import AuthContext from "~/contexts/AuthContext";
 import { LoadingContext } from "~/contexts/LoadingContext";
 import { showToast } from "~/helpers/showToast";
 import { User } from "~/models/User";
 
 export default function singnIn() {
   const { handleLoading, clearLoading } = useContext(LoadingContext);
+  const { user: loggedUser } = useContext(AuthContext);
 
   const router = useRouter();
 
@@ -40,12 +42,13 @@ export default function singnIn() {
     if (!isSignInWithEmailLink(auth, window.location.href)) {
       setCanSignIn(false);
       router.push("/");
-      showToast("warn", "Link inválido, solicite outro");
+      showToast("warn", "Link de registro inválido");
     }
 
     if (auth.currentUser) {
       setCanSignIn(false);
-      router.push("/user");
+      if (loggedUser?.role === "USER") router.push("/user");
+      if (loggedUser?.role === "ADMIN") router.push("/admin");
     }
   }, []);
 
@@ -77,7 +80,7 @@ export default function singnIn() {
       <Flex
         maxW="1180px"
         my="0"
-        mx="auto"
+        mx={{ base: "2", md: "auto" }}
         flexDir="column"
         justify="center"
         align="center"
@@ -88,16 +91,19 @@ export default function singnIn() {
           bg="gray.700"
           as="form"
           flexDir="column"
-          w="580px"
-          py="8"
+          maxW="580px"
+          w="100%"
+          py={{ base: "4", md: "8" }}
           px="6"
           mt="2"
           borderRadius={8}
         >
           <Stack spacing="3">
-            <FormControl>
+            <FormControl borderRadius={4}>
               <FormLabel>Nome</FormLabel>
               <Input
+                size={{ base: "sm", md: "md" }}
+                px={{ base: "0", md: "4" }}
                 type="text"
                 bg="gray.900"
                 value={name}
@@ -107,6 +113,8 @@ export default function singnIn() {
             <FormControl>
               <FormLabel>Email</FormLabel>
               <Input
+                size={{ base: "sm", md: "md" }}
+                px={{ base: "0", md: "4" }}
                 type="email"
                 bg="gray.900"
                 value={email}
@@ -116,6 +124,8 @@ export default function singnIn() {
             <FormControl>
               <FormLabel>Senha</FormLabel>
               <Input
+                size={{ base: "sm", md: "md" }}
+                px={{ base: "0", md: "4" }}
                 type="password"
                 value={password}
                 bg="gray.900"
@@ -125,6 +135,8 @@ export default function singnIn() {
             <FormControl>
               <FormLabel>Confirmar senha</FormLabel>
               <Input
+                size={{ base: "sm", md: "md" }}
+                px={{ base: "0", md: "4" }}
                 type="password"
                 value={confirmPassword}
                 bg="gray.900"
@@ -132,6 +144,7 @@ export default function singnIn() {
               />
             </FormControl>
             <CustomButton
+              size={{ base: "sm", md: "md" }}
               buttonType="primary"
               alignSelf="flex-end"
               type="button"

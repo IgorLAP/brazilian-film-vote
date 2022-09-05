@@ -81,7 +81,6 @@ export default function Profile() {
           Perfil
         </Heading>
         <Flex
-          as="main"
           mt="2"
           w={{ base: "100%", md: "480px" }}
           justify="center"

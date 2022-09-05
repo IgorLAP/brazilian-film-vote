@@ -16,7 +16,7 @@ export function Sidebar() {
 
   return (
     <Box
-      display={{ base: "none", md: "block" }}
+      display={{ base: "none", lg: "block" }}
       ml={{ base: "5", xl: "0" }}
       as="aside"
       w="60"

@@ -15,7 +15,6 @@ export default function Home() {
         <title>Brazilian Film Vote</title>
       </Head>
       <Grid
-        as="main"
         h="100vh"
         mx={{ base: "4", md: "0" }}
         templateColumns={{
