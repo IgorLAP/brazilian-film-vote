@@ -76,35 +76,48 @@ export default function Profile() {
       <Head>
         <title>Perfil - Brazilian filme vote</title>
       </Head>
-      <Heading as="h1" textAlign="center">
-        Perfil
-      </Heading>
-      <Flex as="main" mt="2" justify="center" align="center">
-        <Stack
-          bg="gray.800"
-          py="4"
-          px="6"
-          w="480px"
-          borderRadius={6}
-          spacing="4"
+      <Flex flexDir="column" justify="center" align="center">
+        <Heading as="h1" textAlign="center">
+          Perfil
+        </Heading>
+        <Flex
+          as="main"
+          mt="2"
+          w={{ base: "100%", md: "480px" }}
+          justify="center"
+          align="center"
         >
-          <Box>
-            <FormLabel>Nome</FormLabel>
-            <Input bg="gray.900" readOnly value={name} />
-          </Box>
-          <Box>
-            <FormLabel>Email</FormLabel>
-            <Input bg="gray.900" readOnly value={email} />
-          </Box>
-          <Box>
-            <FormLabel>Avatar</FormLabel>
-            <Input bg="gray.900" readOnly value={photoURL ?? "Sem avatar"} />
-          </Box>
-          <CustomButton buttonType="warn" alignSelf="flex-end" onClick={onOpen}>
-            <Icon as={HiPencilAlt} mr="2" />
-            Editar
-          </CustomButton>
-        </Stack>
+          <Stack
+            w={{ base: "80%", md: "100%" }}
+            bg="gray.800"
+            py="4"
+            px="6"
+            borderRadius={6}
+            spacing="4"
+          >
+            <Box>
+              <FormLabel>Nome</FormLabel>
+              <Input bg="gray.900" readOnly value={name} />
+            </Box>
+            <Box>
+              <FormLabel>Email</FormLabel>
+              <Input bg="gray.900" readOnly value={email} />
+            </Box>
+            <Box>
+              <FormLabel>Avatar</FormLabel>
+              <Input bg="gray.900" readOnly value={photoURL ?? "Sem avatar"} />
+            </Box>
+            <CustomButton
+              size={{ base: "sm", sm: "md" }}
+              buttonType="warn"
+              alignSelf="flex-end"
+              onClick={onOpen}
+            >
+              <Icon as={HiPencilAlt} mr="2" />
+              Editar
+            </CustomButton>
+          </Stack>
+        </Flex>
       </Flex>
       <Modal
         isOpen={isOpen}
@@ -135,10 +148,15 @@ export default function Profile() {
         }
         footerChildren={
           <>
-            <Button variant="ghost" onClick={onClose}>
+            <Button
+              size={{ base: "sm", sm: "md" }}
+              variant="ghost"
+              onClick={onClose}
+            >
               Fechar
             </Button>
             <CustomButton
+              size={{ base: "sm", sm: "md" }}
               disabled={
                 name?.length <= 5 ||
                 (photoURL === loggedUser?.photoURL && name === loggedUser?.name)
