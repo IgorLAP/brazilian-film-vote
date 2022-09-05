@@ -41,11 +41,10 @@ export function Modal({
           {bodyChildren}
         </ModalBody>
         <ModalFooter>
-          {footerChildren ?? (
-            <Button variant="ghost" onClick={onClose}>
-              Fechar
-            </Button>
-          )}
+          {footerChildren}
+          <Button variant="ghost" onClick={onClose}>
+            Fechar
+          </Button>
         </ModalFooter>
       </ModalContent>
     </ChakraModal>

@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from "react";
 
 import {
+  Box,
   Button,
   Flex,
   Grid,
@@ -203,8 +204,10 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
       {!userList ? (
         <Heading>Ainda não há listas</Heading>
       ) : (
-        <>
-          <Heading as="h1">Minhas Listas</Heading>
+        <Box mx={{ base: "4", xl: "0" }}>
+          <Heading as="h1" size={{ base: "lg", sm: "xl" }}>
+            Minhas Listas
+          </Heading>
           {!loading && (
             <Table
               my="8"
@@ -217,6 +220,7 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
                   <Td>{list.name}</Td>
                   <Td>
                     <CustomButton
+                      size={{ base: "sm", md: "md" }}
                       buttonType="primary"
                       onClick={() => handleSeeList(list.movies)}
                     >
@@ -235,6 +239,7 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
           {actualPage > 1 && (
             <Flex justify="space-between" mt="8">
               <Button
+                size={{ base: "sm", md: "md" }}
                 disabled={!(actualPage > 1)}
                 variant="ghost"
                 colorScheme="blue"
@@ -243,6 +248,7 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
                 Voltar
               </Button>
               <Button
+                size={{ base: "sm", md: "md" }}
                 disabled={!(actualPage < pagination.allPages)}
                 variant="ghost"
                 colorScheme="blue"
@@ -253,11 +259,18 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
             </Flex>
           )}
           <Modal
-            size="6xl"
+            size={{ base: "lg", md: "3xl", lg: "6xl" }}
             isOpen={isOpen}
             onClose={onClose}
             bodyChildren={
-              <Grid rowGap="4" gridTemplateColumns="repeat(3, 1fr)">
+              <Grid
+                rowGap="4"
+                gridTemplateColumns={{
+                  base: "1fr",
+                  md: "repeat(2, 1fr)",
+                  lg: "repeat(3, 1fr)",
+                }}
+              >
                 {selectedMovieList.map((movie) => (
                   <Flex
                     p="1"
@@ -266,7 +279,7 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
                     key={movie.original_title}
                   >
                     <Image
-                      boxSize="120px"
+                      boxSize={{ base: "90px", md: "120px" }}
                       borderRadius={6}
                       objectFit="cover"
                       objectPosition="top"
@@ -277,6 +290,7 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
                       }
                     />
                     <Flex
+                      flex="1"
                       justify="space-around"
                       align="flex-start"
                       flexDir="column"
@@ -297,24 +311,24 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
               </Grid>
             }
             footerChildren={
-              <>
-                <Tooltip
-                  bg="black"
-                  color="white"
-                  placement="top"
-                  label="Importe listas de arquivos .csv no Letterboxd"
+              <Tooltip
+                bg="black"
+                color="white"
+                placement="top"
+                label="Importe listas de arquivos .csv no Letterboxd"
+              >
+                <Button
+                  variant="solid"
+                  bg="blue.500"
+                  _hover={{ bg: "blue.600" }}
+                  onClick={handleGenerateCSVFile}
                 >
-                  <Button variant="ghost" onClick={handleGenerateCSVFile}>
-                    Exportar como CSV
-                  </Button>
-                </Tooltip>
-                <CustomButton mx={3} buttonType="primary" onClick={onClose}>
-                  Fechar
-                </CustomButton>
-              </>
+                  Exportar como CSV
+                </Button>
+              </Tooltip>
             }
           />
-        </>
+        </Box>
       )}
     </>
   );
