@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useContext, FormEvent } from "react";
 
 import {
   Button,
@@ -11,26 +11,33 @@ import {
 import { IoIosMail } from "react-icons/io";
 import { RiLock2Fill } from "react-icons/ri";
 
+import AuthContext from "~/contexts/AuthContext";
+import { showToast } from "~/helpers/showToast";
+
 import { CustomButton } from "../CustomButton";
 
-interface SignInFormProps extends HTMLChakraProps<"div"> {
-  handleLogin: (event: React.FormEvent) => Promise<void>;
-  passRequiredMinimunLength: boolean;
-  loading: boolean;
-  validEmail: RegExpMatchArray;
-  setEmail: React.Dispatch<React.SetStateAction<string>>;
-  setPassword: React.Dispatch<React.SetStateAction<string>>;
-}
+export function SignInForm(props: HTMLChakraProps<"div">) {
+  const { signIn } = useContext(AuthContext);
 
-export function SignInForm({
-  handleLogin,
-  setEmail,
-  setPassword,
-  loading,
-  passRequiredMinimunLength,
-  validEmail,
-  ...rest
-}: SignInFormProps) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const emailRegex = /^[\w-\\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
+  const validEmail = email.match(emailRegex);
+  const passRequiredMinimunLength = password !== "" && password.length >= 6;
+
+  async function handleLogin(event: FormEvent) {
+    event.preventDefault();
+    try {
+      setLoading(true);
+      await signIn(email, password);
+    } catch (err) {
+      showToast("error", err.message);
+      setLoading(false);
+    }
+  }
+
   return (
     <Flex
       bg="gray.800"
@@ -41,9 +48,8 @@ export function SignInForm({
       mx="auto"
       my="0"
       p={{ base: "4", md: "8" }}
-      mb={{ base: "8", md: "0" }}
       borderRadius={8}
-      {...rest}
+      {...props}
     >
       <Flex
         w={{ base: "90%", md: "inherit" }}
