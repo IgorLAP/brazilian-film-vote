@@ -45,8 +45,10 @@ export function LoadingProvider({ children }: loadingProviderProps) {
   }
 
   function clearLoading() {
-    window.clearInterval(intervalID);
-    setIntervalID(undefined);
+    if (intervalID) {
+      window.clearInterval(intervalID);
+      setIntervalID(undefined);
+    }
     if (loadingStatus !== 100) setLoadingStatus(100);
     setTimeout(() => setLoadingStatus(0), 250);
   }
