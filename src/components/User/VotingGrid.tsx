@@ -38,14 +38,6 @@ interface TmdbSearch {
   results: TmdbList[];
 }
 
-interface TmdbList {
-  id: number;
-  title: string;
-  release_date: string;
-  poster_path: string;
-  genre_ids: number[];
-}
-
 interface VotingGridProps {
   movieList: Movie[];
   setMovieList: React.Dispatch<React.SetStateAction<Movie[]>>;

@@ -2,15 +2,10 @@ import React, { useContext, useState, useEffect } from "react";
 
 import {
   Box,
-  Button,
   Flex,
-  Grid,
   Heading,
-  Image,
   Spinner,
   Td,
-  Text,
-  Tooltip,
   Tr,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -20,9 +15,9 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
-import { Modal } from "~/components/Modal";
-import { MovieDetail } from "~/components/MovieDetail";
+import { NextPrevPagination } from "~/components/NextPrevPagination";
 import { Table } from "~/components/Table";
+import { PersonalListModal } from "~/components/User/PersonalListModal";
 import AuthContext from "~/contexts/AuthContext";
 import { LoadingContext } from "~/contexts/LoadingContext";
 import { showToast } from "~/helpers/showToast";
@@ -127,30 +122,6 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
     }
   }
 
-  async function handleGenerateCSVFile() {
-    try {
-      const onlyIdAndName = selectedMovieList.map((movie) => ({
-        id: movie.id,
-        name: movie.original_title,
-      }));
-      const { data } = await axios.post("/api/csv", {
-        list: onlyIdAndName,
-      });
-      const url = window.URL.createObjectURL(new Blob([data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute(
-        "download",
-        `${user.name.trim().replaceAll(" ", "_")}_list.csv`
-      );
-      document.body.appendChild(link);
-      link.click();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      showToast("error", err.message);
-    }
-  }
-
   async function handleNextPage() {
     try {
       setLoading(true);
@@ -193,7 +164,6 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
     setLoading(false);
   }
 
-  const posterPathBase = "https://image.tmdb.org/t/p/w185";
   const title = `Minhas Listas - ${user?.name ?? ""}`;
 
   return (
@@ -237,96 +207,17 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
             </Flex>
           )}
           {actualPage > 1 && (
-            <Flex justify="space-between" mt="8">
-              <Button
-                size={{ base: "sm", md: "md" }}
-                disabled={!(actualPage > 1)}
-                variant="ghost"
-                colorScheme="blue"
-                onClick={handlePrevPage}
-              >
-                Voltar
-              </Button>
-              <Button
-                size={{ base: "sm", md: "md" }}
-                disabled={!(actualPage < pagination.allPages)}
-                variant="ghost"
-                colorScheme="blue"
-                onClick={handleNextPage}
-              >
-                Avançar
-              </Button>
-            </Flex>
+            <NextPrevPagination
+              actualPage={actualPage}
+              allPages={pagination.allPages}
+              handleNextPage={handleNextPage}
+              handlePrevPage={handlePrevPage}
+            />
           )}
-          <Modal
-            size={{ base: "lg", md: "3xl", lg: "6xl" }}
+          <PersonalListModal
             isOpen={isOpen}
             onClose={onClose}
-            bodyChildren={
-              <Grid
-                rowGap="4"
-                gridTemplateColumns={{
-                  base: "1fr",
-                  md: "repeat(2, 1fr)",
-                  lg: "repeat(3, 1fr)",
-                }}
-              >
-                {selectedMovieList.map((movie) => (
-                  <Flex
-                    p="1"
-                    _hover={{ bg: "gray.900" }}
-                    borderRadius={6}
-                    key={movie.original_title}
-                  >
-                    <Image
-                      boxSize={{ base: "90px", md: "120px" }}
-                      borderRadius={6}
-                      objectFit="cover"
-                      objectPosition="top"
-                      src={
-                        movie.id !== "No ID"
-                          ? `${posterPathBase}${movie.poster_path}`
-                          : movie.poster_path
-                      }
-                    />
-                    <Flex
-                      flex="1"
-                      justify="space-around"
-                      align="flex-start"
-                      flexDir="column"
-                      ml="2"
-                    >
-                      <Text fontWeight="bold" fontSize="md">
-                        {movie.name}
-                      </Text>
-                      <MovieDetail field="Diretor" value={movie.director} />
-                      <MovieDetail
-                        field="Ano"
-                        value={movie.release_date.split("-")[0]}
-                      />
-                      <MovieDetail field="Pontos" value={movie.points} />
-                    </Flex>
-                  </Flex>
-                ))}
-              </Grid>
-            }
-            footerChildren={
-              <Tooltip
-                bg="black"
-                color="white"
-                placement="top"
-                label="Importe listas de arquivos .csv no Letterboxd"
-              >
-                <Button
-                  variant="solid"
-                  bg="blue.500"
-                  _hover={{ bg: "blue.600" }}
-                  onClick={handleGenerateCSVFile}
-                >
-                  Exportar como CSV
-                </Button>
-              </Tooltip>
-            }
+            movieList={selectedMovieList}
           />
         </Box>
       )}

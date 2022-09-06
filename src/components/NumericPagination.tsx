@@ -1,22 +1,41 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { Box, Button } from "@chakra-ui/react";
 
+import { GLMovie } from "~/interfaces/Movie";
+
 import { CustomButton } from "./CustomButton";
 
-interface PaginationProps {
-  actualPage: number;
-  allPages: number;
-  handlePrevPage: (index: number) => void;
-  handleNextPage: (index: number) => void;
+interface GeneralMovieList extends GLMovie {
+  director: string;
+  poster_path: string;
+  original_title: string;
+  release_date: string;
 }
 
-export function Pagination({
-  actualPage,
+interface NumericPaginationProps {
+  allPages: number;
+  movieList: GeneralMovieList[];
+  setPaginationList: React.Dispatch<React.SetStateAction<GeneralMovieList[]>>;
+}
+
+export function NumericPagination({
   allPages,
-  handlePrevPage,
-  handleNextPage,
-}: PaginationProps) {
+  movieList,
+  setPaginationList,
+}: NumericPaginationProps) {
+  const [actualPage, setActualPage] = useState(1);
+
+  function handlePrevPage(page: number) {
+    setActualPage(page);
+    setPaginationList(movieList.slice(page * 24 - 24, page * 24));
+  }
+
+  function handleNextPage(page: number) {
+    setActualPage(page);
+    setPaginationList(movieList.slice(page * 24 - 24, page * 24));
+  }
+
   return (
     <Box mx="auto">
       {actualPage - 2 >= 1 && (
@@ -33,7 +52,9 @@ export function Pagination({
           {actualPage - 1}
         </Button>
       )}
-      <CustomButton buttonType="primary">{actualPage}</CustomButton>
+      <CustomButton w="fit-content" buttonType="primary">
+        {actualPage}
+      </CustomButton>
       {actualPage + 1 <= allPages && (
         <Button variant="ghost" onClick={() => handleNextPage(actualPage + 1)}>
           {actualPage + 1}

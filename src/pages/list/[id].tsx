@@ -16,12 +16,13 @@ import { GetServerSideProps } from "next";
 import Head from "next/head";
 
 import { MovieDetail } from "~/components/MovieDetail";
-import { Pagination } from "~/components/Pagination";
+import { NumericPagination } from "~/components/NumericPagination";
 import { LoadingContext } from "~/contexts/LoadingContext";
 import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
 import { ExhibitGeneralListI } from "~/interfaces/GeneralList";
 import { GLMovie } from "~/interfaces/Movie";
+import { TmdbMovie, TmdbMovieCredit } from "~/interfaces/Tmdb";
 import { db } from "~/lib/firebase-admin";
 import { tmdbApi } from "~/lib/tmdb";
 
@@ -31,19 +32,6 @@ interface ListProps {
     decade: string;
     name: string;
   };
-}
-
-interface TmdbMovieCredit {
-  crew: {
-    job: "Director";
-    name: string;
-  }[];
-}
-
-interface TmdbMovie {
-  original_title: string;
-  poster_path: string;
-  release_date: string;
 }
 
 interface GeneralMovieList extends GLMovie {
@@ -58,7 +46,6 @@ export default function List({ generalList, listType }: ListProps) {
 
   const [movieList, setMovieList] = useState<GeneralMovieList[]>([]);
   const [paginationList, setPaginationList] = useState<GeneralMovieList[]>([]);
-  const [pagination, setPagination] = useState(1);
   const [allPages, setAllPages] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -129,16 +116,6 @@ export default function List({ generalList, listType }: ListProps) {
     clearLoading();
   }, [generalList]);
 
-  function handlePrevPage(page: number) {
-    setPagination(page);
-    setPaginationList(movieList.slice(page * 24 - 24, page * 24));
-  }
-
-  function handleNextPage(page: number) {
-    setPagination(page);
-    setPaginationList(movieList.slice(page * 24 - 24, page * 24));
-  }
-
   async function handleGenerateCSVFile() {
     try {
       const onlyIdAndName = movieList.map((movie) => ({
@@ -172,7 +149,11 @@ export default function List({ generalList, listType }: ListProps) {
         <title>{title}</title>
       </Head>
       <Flex flexDir="column">
-        <Heading textAlign="center" as="h1">
+        <Heading
+          fontSize={{ base: "2xl", md: "4xl" }}
+          textAlign="center"
+          as="h1"
+        >
           {listType.decade} - {listType.name}
         </Heading>
         <Tooltip
@@ -182,6 +163,9 @@ export default function List({ generalList, listType }: ListProps) {
           label="Importe listas de arquivos .csv no Letterboxd"
         >
           <Button
+            size={{ base: "sm", md: "md" }}
+            mt={{ base: "10", sm: "0" }}
+            mb={{ base: "-10", sm: "0" }}
             alignSelf="flex-end"
             variant="ghost"
             onClick={handleGenerateCSVFile}
@@ -193,15 +177,20 @@ export default function List({ generalList, listType }: ListProps) {
           <>
             <Grid
               my="6"
-              rowGap="8"
+              mx={{ base: "4", lg: "0" }}
+              rowGap={{ base: "6", lg: "4" }}
               columnGap="4"
-              gridTemplateColumns="repeat(2,1fr)"
+              gridTemplateColumns={{ base: "1fr", md: "repeat(2,1fr)" }}
             >
               {paginationList.map((movie) => (
-                <Flex key={movie.original_title}>
+                <Flex
+                  justify="center"
+                  align="center"
+                  key={movie.original_title}
+                >
                   <Image
-                    h="280px"
-                    w="190px"
+                    h={{ base: "160px", sm: "240px", md: "280px" }}
+                    w={{ base: "110px", sm: "150px", md: "190px" }}
                     src={
                       movie.id === "No ID"
                         ? movie.poster_path
@@ -215,10 +204,12 @@ export default function List({ generalList, listType }: ListProps) {
                     mr="2"
                   />
                   <Flex
+                    flex="1"
                     flexDir="column"
+                    justify="center"
                     align="flex-start"
                     overflowY="scroll"
-                    h="320"
+                    h={{ base: "220", md: "320" }}
                     css={{
                       "&::-webkit-scrollbar": {
                         width: "3px",
@@ -260,11 +251,10 @@ export default function List({ generalList, listType }: ListProps) {
                 </Flex>
               ))}
             </Grid>
-            <Pagination
+            <NumericPagination
+              movieList={movieList}
               allPages={allPages}
-              handleNextPage={handleNextPage}
-              handlePrevPage={handlePrevPage}
-              actualPage={pagination}
+              setPaginationList={setPaginationList}
             />
           </>
         ) : (

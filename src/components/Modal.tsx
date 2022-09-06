@@ -37,12 +37,19 @@ export function Modal({
           {headerOptions?.title ?? ""}
         </ModalHeader>
         <ModalCloseButton />
-        <ModalBody py={{ base: "1", md: "2" }} px={{ base: "4", md: "6" }}>
+        <ModalBody
+          py={{ base: "1", md: "2" }}
+          px={{ base: "0", sm: "4", md: "6" }}
+        >
           {bodyChildren}
         </ModalBody>
         <ModalFooter>
           {footerChildren}
-          <Button variant="ghost" onClick={onClose}>
+          <Button
+            size={{ base: "xs", sm: "sm", md: "md" }}
+            variant="ghost"
+            onClick={onClose}
+          >
             Fechar
           </Button>
         </ModalFooter>

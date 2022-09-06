@@ -14,6 +14,7 @@ import {
   Td,
   Text,
   Tr,
+  useBreakpointValue,
   useDisclosure,
 } from "@chakra-ui/react";
 import axios from "axios";
@@ -34,13 +35,14 @@ import {
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { AiOutlineSearch } from "react-icons/ai";
-import { BsList } from "react-icons/bs";
 import { FiTrash2 } from "react-icons/fi";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import { RiFileUserFill } from "react-icons/ri";
 
 import { CustomButton } from "~/components/CustomButton";
 import { Modal } from "~/components/Modal";
 import { MovieDetail } from "~/components/MovieDetail";
+import { NextPrevPagination } from "~/components/NextPrevPagination";
 import { Table } from "~/components/Table";
 import { LoadingContext } from "~/contexts/LoadingContext";
 import { showAlert } from "~/helpers/showAlert";
@@ -77,6 +79,11 @@ const actionCodeSetting = {
 
 export default function Admin({ users, pagination }: AdminProps) {
   const { handleLoading, clearLoading } = useContext(LoadingContext);
+
+  const responsiveText = useBreakpointValue({
+    base: true,
+    sm: false,
+  });
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -306,18 +313,21 @@ export default function Admin({ users, pagination }: AdminProps) {
         <title>Admin Dashboard - Brazilian Film Vote</title>
       </Head>
       <Flex w="100%" flexDir="column">
-        <Stack spacing="4" borderRadius="4">
+        <Stack ml={{ base: "4", xl: "0" }} spacing="4" borderRadius="4">
           <CustomButton
+            size={{ base: "sm", md: "md" }}
+            w="fit-content"
             buttonType="primary"
             alignSelf="flex-start"
             disabled={!validEmail}
             onClick={handleNewUser}
           >
-            Enviar email de cadastro
+            Enviar email {responsiveText ? "" : "de cadastro"}
           </CustomButton>
 
-          <FormControl w="420px">
+          <FormControl w={{ base: "160px", sm: "240px", md: "420px" }}>
             <Input
+              size={{ base: "sm", sm: "md" }}
               bg="white"
               color="black"
               _placeholder={{ color: "gray.500" }}
@@ -328,11 +338,18 @@ export default function Admin({ users, pagination }: AdminProps) {
             />
           </FormControl>
         </Stack>
-        <Flex alignSelf="flex-end" mt="8" as="form" onSubmit={handleUserSearch}>
+        <Flex
+          mr={{ base: "4", xl: "0" }}
+          alignSelf="flex-end"
+          mt="8"
+          as="form"
+          onSubmit={handleUserSearch}
+        >
           <Input
             type="text"
             placeholder="123@gmail.com"
-            w="180px"
+            size={{ base: "sm", sm: "md" }}
+            w={{ base: "80px", md: "180px" }}
             bg="white"
             color="black"
             _placeholder={{ color: "gray.500" }}
@@ -340,6 +357,7 @@ export default function Admin({ users, pagination }: AdminProps) {
             onChange={(e) => setUserSearch(e.target.value)}
           />
           <IconButton
+            size={{ base: "sm", sm: "md" }}
             aria-label="search user"
             type="submit"
             ml="0.5"
@@ -351,6 +369,7 @@ export default function Admin({ users, pagination }: AdminProps) {
         {usersList.length > 0 && !loading && resultList.length <= 0 && (
           <Table
             my="8"
+            mx={{ base: "4", xl: "0" }}
             tableHeaders={["Nome", "Email", "Listas", "Excluir"]}
             variant="striped"
           >
@@ -360,14 +379,16 @@ export default function Admin({ users, pagination }: AdminProps) {
                 <Td>{user.email}</Td>
                 <Td>
                   <CustomButton
-                    onClick={() => handleSeeUsersList(user.email)}
+                    w="fit-content"
                     buttonType="warn"
+                    onClick={() => handleSeeUsersList(user.email)}
                   >
-                    <Icon as={BsList} />
+                    <Icon as={RiFileUserFill} />
                   </CustomButton>
                 </Td>
                 <Td>
                   <CustomButton
+                    w="fit-content"
                     buttonType="danger"
                     onClick={() => handleDeleteUser(user.email)}
                   >
@@ -403,27 +424,19 @@ export default function Admin({ users, pagination }: AdminProps) {
         {loading && modalList.length <= 0 && (
           <Spinner size="lg" alignSelf="center" mt="4" color="blue.500" />
         )}
-        <Flex justify="space-between" mt="8">
-          <Button
-            disabled={!(actualPage > 1)}
-            variant="ghost"
-            colorScheme="blue"
-            onClick={handlePrevPage}
-          >
-            Voltar
-          </Button>
-          <Button
-            disabled={!(actualPage < pagination.allPages)}
-            variant="ghost"
-            colorScheme="blue"
-            onClick={handleNextPage}
-          >
-            Avançar
-          </Button>
-        </Flex>
+        {pagination.allPages > 1 && (
+          <NextPrevPagination
+            actualPage={actualPage}
+            allPages={pagination.allPages}
+            handleNextPage={handleNextPage}
+            handlePrevPage={handlePrevPage}
+          />
+        )}
       </Flex>
       <Modal
-        size={selectedList.length > 0 ? "4xl" : "xs"}
+        size={
+          selectedList.length > 0 ? { base: "lg", md: "3xl", lg: "6xl" } : "xs"
+        }
         isOpen={isOpen}
         onClose={onClose}
         bodyChildren={
@@ -457,7 +470,14 @@ export default function Admin({ users, pagination }: AdminProps) {
                 >
                   <Icon w={5} h={5} as={IoIosArrowBack} />
                 </Button>
-                <Grid rowGap="4" gridTemplateColumns="repeat(3, 1fr)">
+                <Grid
+                  rowGap="4"
+                  gridTemplateColumns={{
+                    base: "1fr",
+                    md: "repeat(2, 1fr)",
+                    lg: "repeat(3, 1fr)",
+                  }}
+                >
                   {selectedList.map((movie) => (
                     <Flex
                       p="1"
@@ -466,7 +486,7 @@ export default function Admin({ users, pagination }: AdminProps) {
                       key={movie.original_title}
                     >
                       <Image
-                        boxSize="120px"
+                        boxSize={{ base: "90px", md: "120px" }}
                         borderRadius={6}
                         objectFit="cover"
                         objectPosition="top"
@@ -477,6 +497,7 @@ export default function Admin({ users, pagination }: AdminProps) {
                         }
                       />
                       <Flex
+                        flex="1"
                         justify="space-around"
                         align="flex-start"
                         flexDir="column"

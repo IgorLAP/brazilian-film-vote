@@ -1,6 +1,6 @@
 import React from "react";
 
-import { FormControl, FormLabel, HStack, Input } from "@chakra-ui/react";
+import { Box, Flex, FormControl, FormLabel, Input } from "@chakra-ui/react";
 
 import { Modal } from "~/components/Modal";
 import { Movie } from "~/interfaces/Movie";
@@ -49,13 +49,14 @@ export function NotFoundMovieModal({
       onClose={onClose}
       headerOptions={{ title: "Completar Informações" }}
       bodyChildren={
-        <>
+        <Box mx={{ base: "2", sm: "0" }}>
           <FormControl>
             <FormLabel ml="2">Nome</FormLabel>
             <Input
               type="text"
               bg="gray.900"
               placeholder="Nome"
+              mx="auto"
               mb="4"
               value={notFoundMovie?.name}
               onChange={(e) => {
@@ -73,11 +74,15 @@ export function NotFoundMovieModal({
               }}
             />
           </FormControl>
-          <HStack spacing="2">
-            <FormControl>
+          <Flex
+            justify="center"
+            align="center"
+            flexDir={{ base: "column", md: "row" }}
+          >
+            <FormControl mb={{ base: "4", md: "0" }}>
               <FormLabel ml="2">Ano</FormLabel>
               <Input
-                w="150"
+                w={{ base: "100%", md: "150" }}
                 type="text"
                 bg="gray.900"
                 placeholder="Ano"
@@ -107,8 +112,8 @@ export function NotFoundMovieModal({
                 }
               />
             </FormControl>
-          </HStack>
-        </>
+          </Flex>
+        </Box>
       }
       footerChildren={
         <CustomButton

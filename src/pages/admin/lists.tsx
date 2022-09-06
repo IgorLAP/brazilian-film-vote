@@ -5,7 +5,6 @@ import {
   Flex,
   FormControl,
   FormLabel,
-  HStack,
   Input,
   Select,
   Spinner,
@@ -30,6 +29,7 @@ import { useRouter } from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
 import { Modal } from "~/components/Modal";
+import { NextPrevPagination } from "~/components/NextPrevPagination";
 import { Table } from "~/components/Table";
 import { LoadingContext } from "~/contexts/LoadingContext";
 import { showAlert } from "~/helpers/showAlert";
@@ -241,31 +241,42 @@ export default function Lists({
       <Head>
         <title>Listas - Brazilian Film Vote</title>
       </Head>
-      <Flex flexDir="column">
+      <Flex mx={{ base: "4", xl: "0" }} flexDir="column">
         <Flex
           bg="gray.800"
-          py="4"
-          px="6"
+          py={{ base: "2", md: "4" }}
+          px={{ base: "4", md: "6" }}
           mb="4"
           borderRadius={6}
           as="form"
-          justify="flex-start"
+          justify={{ base: "center", sm: "flex-start" }}
           align="center"
-          alignSelf="flex-start"
+          alignSelf={{ base: "", sm: "flex-start" }}
         >
-          <HStack spacing="4">
+          <Flex
+            justify="center"
+            align="center"
+            flexDir={{ base: "column", sm: "row" }}
+          >
             <FormControl>
-              <FormLabel>Nome da lista</FormLabel>
+              <FormLabel fontSize={{ base: "sm", md: "md" }}>
+                Nome da lista
+              </FormLabel>
               <Input
+                size={{ base: "sm", md: "md" }}
                 bg="gray.900"
                 type="text"
                 value={listName}
                 onChange={(e) => setListName(e.target.value)}
               />
             </FormControl>
-            <FormControl>
-              <FormLabel>Década</FormLabel>
-              <Select ref={decadeSelectRef} bg="gray.900">
+            <FormControl mx="4" py={{ base: "4", md: "0" }}>
+              <FormLabel fontSize={{ base: "sm", md: "md" }}>Década</FormLabel>
+              <Select
+                size={{ base: "sm", md: "md" }}
+                ref={decadeSelectRef}
+                bg="gray.900"
+              >
                 <option value="">Selecione</option>
                 {validDecades.map((decadeOpt) => (
                   <option value={decadeOpt} key={decadeOpt}>
@@ -283,7 +294,7 @@ export default function Lists({
             >
               Criar
             </CustomButton>
-          </HStack>
+          </Flex>
         </Flex>
         {gList.length > 0 && !loading && (
           <Table
@@ -330,24 +341,12 @@ export default function Lists({
           <Spinner size="lg" alignSelf="center" mt="4" color="blue.500" />
         )}
         {pagination.allPages > 1 && (
-          <Flex justify="space-between" mt="8">
-            <Button
-              disabled={!(actualPage > 1)}
-              variant="ghost"
-              colorScheme="blue"
-              onClick={handlePrevPage}
-            >
-              Voltar
-            </Button>
-            <Button
-              disabled={!(actualPage < pagination.allPages)}
-              variant="ghost"
-              colorScheme="blue"
-              onClick={handleNextPage}
-            >
-              Avançar
-            </Button>
-          </Flex>
+          <NextPrevPagination
+            actualPage={actualPage}
+            allPages={pagination.allPages}
+            handleNextPage={handleNextPage}
+            handlePrevPage={handlePrevPage}
+          />
         )}
         <Modal
           isOpen={isOpen}

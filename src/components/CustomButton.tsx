@@ -12,20 +12,39 @@ export function CustomButton({
   children,
   ...rest
 }: CustomButtonProps) {
+  const hasW = !!rest.w;
   return (
     <>
       {buttonType === "primary" && (
-        <Button bg="blue.500" _hover={{ bg: "blue.600" }} {...rest}>
+        <Button
+          size={{ base: "xs", sm: "sm", md: "md" }}
+          w={hasW ? rest.w : "6rem"}
+          bg="blue.500"
+          _hover={{ bg: "blue.600" }}
+          {...rest}
+        >
           {children}
         </Button>
       )}
       {buttonType === "danger" && (
-        <Button bg="red.500" _hover={{ bg: "red.600" }} {...rest}>
+        <Button
+          size={{ base: "xs", sm: "sm", md: "md" }}
+          w={hasW ? rest.w : "6rem"}
+          bg="red.500"
+          _hover={{ bg: "red.600" }}
+          {...rest}
+        >
           {children}
         </Button>
       )}
       {buttonType === "warn" && (
-        <Button bg="yellow.500" _hover={{ bg: "yellow.600" }} {...rest}>
+        <Button
+          size={{ base: "xs", sm: "sm", md: "md" }}
+          bg="yellow.500"
+          w={hasW ? rest.w : "6rem"}
+          _hover={{ bg: "yellow.600" }}
+          {...rest}
+        >
           {children}
         </Button>
       )}
