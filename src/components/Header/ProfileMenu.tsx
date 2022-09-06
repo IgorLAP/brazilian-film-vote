@@ -42,7 +42,7 @@ export function ProfileMenu({ loggedUser, signOut }: ProfileMenuProps) {
       justify={{ base: "space-between", lg: "center" }}
       w={{ base: "100%", lg: "auto" }}
       maxW={{ base: "340px", lg: "inherit" }}
-      px="1"
+      px="4"
     >
       <Box display={{ base: "block", lg: "none" }}>
         <Menu>
@@ -52,7 +52,7 @@ export function ProfileMenu({ loggedUser, signOut }: ProfileMenuProps) {
                 as={IconButton}
                 aria-label="Menu"
                 variant="ghost"
-                icon={<IoMdMenu size="40" />}
+                icon={<IoMdMenu size="36" />}
               />
               {user && (
                 <MenuList>
@@ -115,8 +115,8 @@ export function ProfileMenu({ loggedUser, signOut }: ProfileMenuProps) {
       <Menu>
         <MenuButton aria-label="Menu">
           <Image
-            h={{ base: "40px", md: "48px" }}
-            w={{ base: "40px", md: "48px" }}
+            h={{ base: "36px", md: "48px" }}
+            w={{ base: "36px", md: "48px" }}
             objectFit="cover"
             objectPosition="center"
             borderRadius={10}

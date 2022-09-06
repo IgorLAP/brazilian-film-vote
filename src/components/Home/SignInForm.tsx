@@ -47,12 +47,13 @@ export function SignInForm(props: HTMLChakraProps<"div">) {
       maxW="460px"
       mx="auto"
       my="0"
-      p={{ base: "4", md: "8" }}
+      py={{ base: "4", md: "8" }}
+      px={{ base: "6", md: "8" }}
       borderRadius={8}
       {...props}
     >
       <Flex
-        w={{ base: "90%", md: "inherit" }}
+        w={{ base: "100%", md: "inherit" }}
         h="100%"
         as="form"
         flexDir="column"
@@ -60,24 +61,34 @@ export function SignInForm(props: HTMLChakraProps<"div">) {
       >
         <Stack spacing="4">
           <Flex justify="center" align="center">
-            <Icon as={IoIosMail} w={6} h={6} />
+            <Icon
+              as={IoIosMail}
+              w={{ base: 5, sm: 6 }}
+              h={{ base: 5, sm: 6 }}
+            />
             <Input
               placeholder="E-mail"
               type="email"
               border="blue.50"
               bg="gray.900"
+              size={{ base: "sm", sm: "md" }}
               w={{ base: "100%", md: "320px" }}
               ml="2"
               onChange={(e) => setEmail(e.target.value)}
             />
           </Flex>
           <Flex justify="center" align="center">
-            <Icon as={RiLock2Fill} w={6} h={6} />
+            <Icon
+              as={RiLock2Fill}
+              w={{ base: 5, sm: 6 }}
+              h={{ base: 5, sm: 6 }}
+            />
             <Input
               placeholder="Senha"
               type="password"
               border="blue.60"
               bg="gray.900"
+              size={{ base: "sm", sm: "md" }}
               w={{ base: "100%", md: "320px" }}
               ml="2"
               onChange={(e) => setPassword(e.target.value)}
@@ -94,6 +105,7 @@ export function SignInForm(props: HTMLChakraProps<"div">) {
             Esqueci minha senha
           </Button>
           <CustomButton
+            w="100%"
             type="submit"
             buttonType="primary"
             disabled={!(!!validEmail && passRequiredMinimunLength) || loading}

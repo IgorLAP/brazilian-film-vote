@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from "react";
 
 import {
   Box,
-  Button,
   Flex,
   FormControl,
   FormLabel,
@@ -123,7 +122,7 @@ export default function Profile() {
         onClose={onClose}
         headerOptions={{ fontSize: "larger", title: "Editar" }}
         bodyChildren={
-          <Stack spacing="2">
+          <Stack mx="4" spacing="2">
             <FormControl>
               <FormLabel>Nome</FormLabel>
               <Input
@@ -146,27 +145,17 @@ export default function Profile() {
           </Stack>
         }
         footerChildren={
-          <>
-            <Button
-              size={{ base: "sm", sm: "md" }}
-              variant="ghost"
-              onClick={onClose}
-            >
-              Fechar
-            </Button>
-            <CustomButton
-              size={{ base: "sm", sm: "md" }}
-              disabled={
-                name?.length <= 5 ||
-                (photoURL === loggedUser?.photoURL && name === loggedUser?.name)
-              }
-              ml="2"
-              buttonType="primary"
-              onClick={handleUpdate}
-            >
-              Salvar
-            </CustomButton>
-          </>
+          <CustomButton
+            disabled={
+              name?.length <= 5 ||
+              (photoURL === loggedUser?.photoURL && name === loggedUser?.name)
+            }
+            ml="2"
+            buttonType="primary"
+            onClick={handleUpdate}
+          >
+            Salvar
+          </CustomButton>
         }
       />
     </>
