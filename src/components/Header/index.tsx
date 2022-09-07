@@ -19,11 +19,14 @@ export function Header() {
   return (
     <Flex
       as="header"
-      maxW="1280px"
-      my="0"
-      mx="auto"
+      w="100%"
+      maxW={{ xl: "1280px" }}
+      pt={{ base: "2", lg: "0" }}
+      ml={{ base: "0", xl: "auto" }}
+      mr="5"
       h="100px"
       display="flex"
+      flexDir={{ base: "column", lg: "row" }}
       justify="space-between"
       align="center"
     >

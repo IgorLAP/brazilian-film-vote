@@ -1,6 +1,6 @@
 import { NextApiResponse, NextApiRequest } from "next";
 
-import { db, auth } from "~/lib/firebase-admin";
+import { adminDb, auth } from "~/lib/firebase-admin";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== "POST") {
@@ -18,7 +18,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   try {
-    await db.collection("users").doc(uid).set({
+    await adminDb.collection("users").doc(uid).set({
       email,
       name,
       photoURL,

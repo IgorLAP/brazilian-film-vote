@@ -1,7 +1,7 @@
 import { FieldPath } from "firebase-admin/firestore";
 import { NextApiResponse, NextApiRequest } from "next";
 
-import { db } from "~/lib/firebase-admin";
+import { adminDb } from "~/lib/firebase-admin";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== "POST") {
@@ -16,7 +16,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     if (startAfter) {
-      const snapshot = await db
+      const snapshot = await adminDb
         .collection(collection)
         .orderBy(FieldPath.documentId())
         .startAfter(startAfter)
@@ -33,7 +33,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     if (startAt && endAt) {
-      const snapshot = await db
+      const snapshot = await adminDb
         .collection(collection)
         .orderBy(FieldPath.documentId())
         .startAt(startAt)

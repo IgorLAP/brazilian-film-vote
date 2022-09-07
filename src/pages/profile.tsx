@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from "react";
 
 import {
   Box,
-  Button,
   Flex,
   FormControl,
   FormLabel,
@@ -20,13 +19,14 @@ import { HiPencilAlt } from "react-icons/hi";
 import { CustomButton } from "~/components/CustomButton";
 import { Modal } from "~/components/Modal";
 import AuthContext from "~/contexts/AuthContext";
-import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
-import { db as webDb } from "~/lib/firebase";
+import { useToast } from "~/hooks/useToast";
+import { webDb } from "~/lib/firebase";
 
 export default function Profile() {
   const { user: loggedUser, onUpdate } = useContext(AuthContext);
 
+  const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const [name, setName] = useState("");
@@ -53,7 +53,7 @@ export default function Profile() {
   async function handleUpdate() {
     if (photoURL) {
       if (!(await doesImageExist(photoURL))) {
-        showToast("error", "Imagem inválida");
+        toast("error", "Imagem inválida");
         return;
       }
     }
@@ -67,7 +67,7 @@ export default function Profile() {
       onUpdate(name, photoURL);
       onClose();
     } catch (err) {
-      showToast("error", err.message);
+      toast("error", err.message);
     }
   }
 
@@ -76,42 +76,54 @@ export default function Profile() {
       <Head>
         <title>Perfil - Brazilian filme vote</title>
       </Head>
-      <Heading as="h1" textAlign="center">
-        Perfil
-      </Heading>
-      <Flex as="main" mt="2" justify="center" align="center">
-        <Stack
-          bg="gray.800"
-          py="4"
-          px="6"
-          w="480px"
-          borderRadius={6}
-          spacing="4"
+      <Flex flexDir="column" justify="center" align="center">
+        <Heading as="h1" textAlign="center">
+          Perfil
+        </Heading>
+        <Flex
+          mt="2"
+          w={{ base: "100%", md: "480px" }}
+          justify="center"
+          align="center"
         >
-          <Box>
-            <FormLabel>Nome</FormLabel>
-            <Input bg="gray.900" readOnly value={name} />
-          </Box>
-          <Box>
-            <FormLabel>Email</FormLabel>
-            <Input bg="gray.900" readOnly value={email} />
-          </Box>
-          <Box>
-            <FormLabel>Avatar</FormLabel>
-            <Input bg="gray.900" readOnly value={photoURL ?? "Sem avatar"} />
-          </Box>
-          <CustomButton buttonType="warn" alignSelf="flex-end" onClick={onOpen}>
-            <Icon as={HiPencilAlt} mr="2" />
-            Editar
-          </CustomButton>
-        </Stack>
+          <Stack
+            w={{ base: "80%", md: "100%" }}
+            bg="gray.800"
+            py="4"
+            px="6"
+            borderRadius={6}
+            spacing="4"
+          >
+            <Box>
+              <FormLabel>Nome</FormLabel>
+              <Input bg="gray.900" readOnly value={name} />
+            </Box>
+            <Box>
+              <FormLabel>Email</FormLabel>
+              <Input bg="gray.900" readOnly value={email} />
+            </Box>
+            <Box>
+              <FormLabel>Avatar</FormLabel>
+              <Input bg="gray.900" readOnly value={photoURL ?? "Sem avatar"} />
+            </Box>
+            <CustomButton
+              size={{ base: "sm", sm: "md" }}
+              buttonType="warn"
+              alignSelf="flex-end"
+              onClick={onOpen}
+            >
+              <Icon as={HiPencilAlt} mr="2" />
+              Editar
+            </CustomButton>
+          </Stack>
+        </Flex>
       </Flex>
       <Modal
         isOpen={isOpen}
         onClose={onClose}
         headerOptions={{ fontSize: "larger", title: "Editar" }}
         bodyChildren={
-          <Stack spacing="2">
+          <Stack mx="4" spacing="2">
             <FormControl>
               <FormLabel>Nome</FormLabel>
               <Input
@@ -134,22 +146,17 @@ export default function Profile() {
           </Stack>
         }
         footerChildren={
-          <>
-            <Button variant="ghost" onClick={onClose}>
-              Fechar
-            </Button>
-            <CustomButton
-              disabled={
-                name?.length <= 5 ||
-                (photoURL === loggedUser?.photoURL && name === loggedUser?.name)
-              }
-              ml="2"
-              buttonType="primary"
-              onClick={handleUpdate}
-            >
-              Salvar
-            </CustomButton>
-          </>
+          <CustomButton
+            disabled={
+              name?.length <= 5 ||
+              (photoURL === loggedUser?.photoURL && name === loggedUser?.name)
+            }
+            ml="2"
+            buttonType="primary"
+            onClick={handleUpdate}
+          >
+            Salvar
+          </CustomButton>
         }
       />
     </>

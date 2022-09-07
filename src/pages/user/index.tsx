@@ -1,15 +1,11 @@
 import React, { useContext, useState, useEffect } from "react";
 
 import {
-  Button,
+  Box,
   Flex,
-  Grid,
   Heading,
-  Image,
   Spinner,
   Td,
-  Text,
-  Tooltip,
   Tr,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -19,16 +15,16 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 
 import { CustomButton } from "~/components/CustomButton";
-import { Modal } from "~/components/Modal";
-import { MovieDetail } from "~/components/MovieDetail";
+import { NextPrevPagination } from "~/components/NextPrevPagination";
 import { Table } from "~/components/Table";
+import { PersonalListModal } from "~/components/User/PersonalListModal";
 import AuthContext from "~/contexts/AuthContext";
 import { LoadingContext } from "~/contexts/LoadingContext";
-import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
+import { useToast } from "~/hooks/useToast";
 import { Movie, ShowMovie } from "~/interfaces/Movie";
 import { TmdbMovie, TmdbMovieCredit } from "~/interfaces/Tmdb";
-import { db as adminDb, auth } from "~/lib/firebase-admin";
+import { adminDb, auth } from "~/lib/firebase-admin";
 import { tmdbApi } from "~/lib/tmdb";
 
 interface MyListsProps {
@@ -49,6 +45,7 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
   const { user } = useContext(AuthContext);
   const { handleLoading, clearLoading } = useContext(LoadingContext);
 
+  const toast = useToast();
   const { isOpen, onClose, onOpen } = useDisclosure();
 
   const [userList, setUserList] = useState(lists);
@@ -62,7 +59,7 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
     const { redirect } = router.query;
     if (redirect) {
       clearLoading();
-      showToast("warn", "Sua votação já foi finalizada");
+      toast("warn", "Sua votação já foi finalizada");
     }
   }, []);
 
@@ -122,31 +119,7 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
       onOpen();
     } catch (err) {
       clearLoading();
-      showToast("error", err.message);
-    }
-  }
-
-  async function handleGenerateCSVFile() {
-    try {
-      const onlyIdAndName = selectedMovieList.map((movie) => ({
-        id: movie.id,
-        name: movie.original_title,
-      }));
-      const { data } = await axios.post("/api/csv", {
-        list: onlyIdAndName,
-      });
-      const url = window.URL.createObjectURL(new Blob([data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute(
-        "download",
-        `${user.name.trim().replaceAll(" ", "_")}_list.csv`
-      );
-      document.body.appendChild(link);
-      link.click();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      showToast("error", err.message);
+      toast("error", err.message);
     }
   }
 
@@ -163,7 +136,7 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
       setUserList(data.page as typeof lists);
       setActualPage((prev) => prev + 1);
     } catch (err) {
-      showToast("error", "Erro no carregamento");
+      toast("error", "Erro no carregamento");
     }
     setLoading(false);
   }
@@ -187,12 +160,11 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
       );
       setActualPage((prev) => prev - 1);
     } catch (err) {
-      showToast("error", "Erro no carregamento");
+      toast("error", "Erro no carregamento");
     }
     setLoading(false);
   }
 
-  const posterPathBase = "https://image.tmdb.org/t/p/w185";
   const title = `Minhas Listas - ${user?.name ?? ""}`;
 
   return (
@@ -203,8 +175,10 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
       {!userList ? (
         <Heading>Ainda não há listas</Heading>
       ) : (
-        <>
-          <Heading as="h1">Minhas Listas</Heading>
+        <Box mx={{ base: "4", xl: "0" }}>
+          <Heading as="h1" size={{ base: "lg", sm: "xl" }}>
+            Minhas Listas
+          </Heading>
           {!loading && (
             <Table
               my="8"
@@ -217,6 +191,7 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
                   <Td>{list.name}</Td>
                   <Td>
                     <CustomButton
+                      size={{ base: "sm", md: "md" }}
                       buttonType="primary"
                       onClick={() => handleSeeList(list.movies)}
                     >
@@ -233,88 +208,19 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
             </Flex>
           )}
           {actualPage > 1 && (
-            <Flex justify="space-between" mt="8">
-              <Button
-                disabled={!(actualPage > 1)}
-                variant="ghost"
-                colorScheme="blue"
-                onClick={handlePrevPage}
-              >
-                Voltar
-              </Button>
-              <Button
-                disabled={!(actualPage < pagination.allPages)}
-                variant="ghost"
-                colorScheme="blue"
-                onClick={handleNextPage}
-              >
-                Avançar
-              </Button>
-            </Flex>
+            <NextPrevPagination
+              actualPage={actualPage}
+              allPages={pagination.allPages}
+              handleNextPage={handleNextPage}
+              handlePrevPage={handlePrevPage}
+            />
           )}
-          <Modal
-            size="6xl"
+          <PersonalListModal
             isOpen={isOpen}
             onClose={onClose}
-            bodyChildren={
-              <Grid rowGap="4" gridTemplateColumns="repeat(3, 1fr)">
-                {selectedMovieList.map((movie) => (
-                  <Flex
-                    p="1"
-                    _hover={{ bg: "gray.900" }}
-                    borderRadius={6}
-                    key={movie.original_title}
-                  >
-                    <Image
-                      boxSize="120px"
-                      borderRadius={6}
-                      objectFit="cover"
-                      objectPosition="top"
-                      src={
-                        movie.id !== "No ID"
-                          ? `${posterPathBase}${movie.poster_path}`
-                          : movie.poster_path
-                      }
-                    />
-                    <Flex
-                      justify="space-around"
-                      align="flex-start"
-                      flexDir="column"
-                      ml="2"
-                    >
-                      <Text fontWeight="bold" fontSize="md">
-                        {movie.name}
-                      </Text>
-                      <MovieDetail field="Diretor" value={movie.director} />
-                      <MovieDetail
-                        field="Ano"
-                        value={movie.release_date.split("-")[0]}
-                      />
-                      <MovieDetail field="Pontos" value={movie.points} />
-                    </Flex>
-                  </Flex>
-                ))}
-              </Grid>
-            }
-            footerChildren={
-              <>
-                <Tooltip
-                  bg="black"
-                  color="white"
-                  placement="top"
-                  label="Importe listas de arquivos .csv no Letterboxd"
-                >
-                  <Button variant="ghost" onClick={handleGenerateCSVFile}>
-                    Exportar como CSV
-                  </Button>
-                </Tooltip>
-                <CustomButton mx={3} buttonType="primary" onClick={onClose}>
-                  Fechar
-                </CustomButton>
-              </>
-            }
+            movieList={selectedMovieList}
           />
-        </>
+        </Box>
       )}
     </>
   );

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useContext, FormEvent } from "react";
 
 import {
   Button,
@@ -11,26 +11,35 @@ import {
 import { IoIosMail } from "react-icons/io";
 import { RiLock2Fill } from "react-icons/ri";
 
+import AuthContext from "~/contexts/AuthContext";
+import { useToast } from "~/hooks/useToast";
+
 import { CustomButton } from "../CustomButton";
 
-interface SignInFormProps extends HTMLChakraProps<"div"> {
-  handleLogin: (event: React.FormEvent) => Promise<void>;
-  passRequiredMinimunLength: boolean;
-  loading: boolean;
-  validEmail: RegExpMatchArray;
-  setEmail: React.Dispatch<React.SetStateAction<string>>;
-  setPassword: React.Dispatch<React.SetStateAction<string>>;
-}
+export function SignInForm(props: HTMLChakraProps<"div">) {
+  const { signIn } = useContext(AuthContext);
 
-export function SignInForm({
-  handleLogin,
-  setEmail,
-  setPassword,
-  loading,
-  passRequiredMinimunLength,
-  validEmail,
-  ...rest
-}: SignInFormProps) {
+  const toast = useToast();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const emailRegex = /^[\w-\\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
+  const validEmail = email.match(emailRegex);
+  const passRequiredMinimunLength = password !== "" && password.length >= 6;
+
+  async function handleLogin(event: FormEvent) {
+    event.preventDefault();
+    try {
+      setLoading(true);
+      await signIn(email, password);
+    } catch (err) {
+      toast("error", err.message);
+      setLoading(false);
+    }
+  }
+
   return (
     <Flex
       bg="gray.800"
@@ -40,13 +49,13 @@ export function SignInForm({
       maxW="460px"
       mx="auto"
       my="0"
-      p={{ base: "4", md: "8" }}
-      mb={{ base: "8", md: "0" }}
+      py={{ base: "4", md: "8" }}
+      px={{ base: "6", md: "8" }}
       borderRadius={8}
-      {...rest}
+      {...props}
     >
       <Flex
-        w={{ base: "90%", md: "inherit" }}
+        w={{ base: "100%", md: "inherit" }}
         h="100%"
         as="form"
         flexDir="column"
@@ -54,24 +63,34 @@ export function SignInForm({
       >
         <Stack spacing="4">
           <Flex justify="center" align="center">
-            <Icon as={IoIosMail} w={6} h={6} />
+            <Icon
+              as={IoIosMail}
+              w={{ base: 5, sm: 6 }}
+              h={{ base: 5, sm: 6 }}
+            />
             <Input
               placeholder="E-mail"
               type="email"
               border="blue.50"
               bg="gray.900"
+              size={{ base: "sm", sm: "md" }}
               w={{ base: "100%", md: "320px" }}
               ml="2"
               onChange={(e) => setEmail(e.target.value)}
             />
           </Flex>
           <Flex justify="center" align="center">
-            <Icon as={RiLock2Fill} w={6} h={6} />
+            <Icon
+              as={RiLock2Fill}
+              w={{ base: 5, sm: 6 }}
+              h={{ base: 5, sm: 6 }}
+            />
             <Input
               placeholder="Senha"
               type="password"
               border="blue.60"
               bg="gray.900"
+              size={{ base: "sm", sm: "md" }}
               w={{ base: "100%", md: "320px" }}
               ml="2"
               onChange={(e) => setPassword(e.target.value)}
@@ -88,6 +107,7 @@ export function SignInForm({
             Esqueci minha senha
           </Button>
           <CustomButton
+            w="100%"
             type="submit"
             buttonType="primary"
             disabled={!(!!validEmail && passRequiredMinimunLength) || loading}

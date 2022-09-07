@@ -14,7 +14,7 @@ if (!firebaseAdmin.apps.length) {
   });
 }
 
-const db = getFirestore();
+const adminDb = getFirestore();
 const auth = firebaseAdmin.auth();
 
-export { auth, db };
+export { auth, adminDb };

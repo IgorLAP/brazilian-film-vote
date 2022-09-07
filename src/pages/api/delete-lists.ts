@@ -1,6 +1,6 @@
 import { NextApiResponse, NextApiRequest } from "next";
 
-import { db } from "~/lib/firebase-admin";
+import { adminDb } from "~/lib/firebase-admin";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== "POST") {
@@ -15,12 +15,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   try {
-    const usersListsSnap = await db
+    const usersListsSnap = await adminDb
       .collection("users")
       .doc(userID)
       .collection("lists")
       .get();
-    const batch = db.batch();
+    const batch = adminDb.batch();
     usersListsSnap.docs.forEach((doc) => {
       batch.delete(doc.ref);
     });

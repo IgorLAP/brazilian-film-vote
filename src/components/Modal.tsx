@@ -30,20 +30,28 @@ export function Modal({
   ...rest
 }: ModalProps) {
   return (
-    <ChakraModal onClose={onClose} {...rest}>
+    <ChakraModal size={{ base: "xs", sm: "md" }} onClose={onClose} {...rest}>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mx={{ base: "2", md: "0" }}>
         <ModalHeader fontSize={headerOptions?.fontSize ?? ""}>
           {headerOptions?.title ?? ""}
         </ModalHeader>
         <ModalCloseButton />
-        <ModalBody>{bodyChildren}</ModalBody>
+        <ModalBody
+          py={{ base: "1", md: "2" }}
+          px={{ base: "0", sm: "4", md: "6" }}
+        >
+          {bodyChildren}
+        </ModalBody>
         <ModalFooter>
-          {footerChildren ?? (
-            <Button variant="ghost" onClick={onClose}>
-              Fechar
-            </Button>
-          )}
+          {footerChildren}
+          <Button
+            size={{ base: "xs", sm: "sm", md: "md" }}
+            variant="ghost"
+            onClick={onClose}
+          >
+            Fechar
+          </Button>
         </ModalFooter>
       </ModalContent>
     </ChakraModal>

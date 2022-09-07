@@ -25,7 +25,7 @@ export function Table({
 }: TableProps) {
   return (
     <TableContainer {...rest}>
-      <ChakraTable variant={variant}>
+      <ChakraTable size={{ base: "sm", md: "md" }} variant={variant}>
         <Thead>
           <Tr>
             {tableHeaders.map((th) => (

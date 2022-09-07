@@ -1,28 +1,18 @@
 import React, { useContext, useEffect, useState } from "react";
 
-import {
-  Flex,
-  Grid,
-  Text,
-  Heading,
-  Image,
-  Spinner,
-  Stack,
-  Button,
-  Tooltip,
-} from "@chakra-ui/react";
+import { Flex, Heading, Spinner, Button, Tooltip } from "@chakra-ui/react";
 import axios from "axios";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 
-import { MovieDetail } from "~/components/MovieDetail";
-import { Pagination } from "~/components/Pagination";
+import { GeneralMovieList } from "~/components/List/GeneralMovieList";
 import { LoadingContext } from "~/contexts/LoadingContext";
-import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
+import { useToast } from "~/hooks/useToast";
 import { ExhibitGeneralListI } from "~/interfaces/GeneralList";
 import { GLMovie } from "~/interfaces/Movie";
-import { db } from "~/lib/firebase-admin";
+import { TmdbMovie, TmdbMovieCredit } from "~/interfaces/Tmdb";
+import { adminDb } from "~/lib/firebase-admin";
 import { tmdbApi } from "~/lib/tmdb";
 
 interface ListProps {
@@ -31,19 +21,6 @@ interface ListProps {
     decade: string;
     name: string;
   };
-}
-
-interface TmdbMovieCredit {
-  crew: {
-    job: "Director";
-    name: string;
-  }[];
-}
-
-interface TmdbMovie {
-  original_title: string;
-  poster_path: string;
-  release_date: string;
 }
 
 interface GeneralMovieList extends GLMovie {
@@ -56,9 +33,10 @@ interface GeneralMovieList extends GLMovie {
 export default function List({ generalList, listType }: ListProps) {
   const { clearLoading } = useContext(LoadingContext);
 
+  const toast = useToast();
+
   const [movieList, setMovieList] = useState<GeneralMovieList[]>([]);
   const [paginationList, setPaginationList] = useState<GeneralMovieList[]>([]);
-  const [pagination, setPagination] = useState(1);
   const [allPages, setAllPages] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -122,22 +100,12 @@ export default function List({ generalList, listType }: ListProps) {
         setLoading(false);
       } catch (err) {
         setLoading(false);
-        showToast("error", "Erro na exibição, recarregue a página");
+        toast("error", "Erro na exibição, recarregue a página");
       }
     }
     loadList();
     clearLoading();
   }, [generalList]);
-
-  function handlePrevPage(page: number) {
-    setPagination(page);
-    setPaginationList(movieList.slice(page * 24 - 24, page * 24));
-  }
-
-  function handleNextPage(page: number) {
-    setPagination(page);
-    setPaginationList(movieList.slice(page * 24 - 24, page * 24));
-  }
 
   async function handleGenerateCSVFile() {
     try {
@@ -159,11 +127,10 @@ export default function List({ generalList, listType }: ListProps) {
       link.click();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      showToast("error", err.message);
+      toast("error", err.message);
     }
   }
 
-  const posterPathBase = "https://image.tmdb.org/t/p/w185";
   const title = `${listType.name} - Brazilian Film Vote`;
 
   return (
@@ -172,7 +139,11 @@ export default function List({ generalList, listType }: ListProps) {
         <title>{title}</title>
       </Head>
       <Flex flexDir="column">
-        <Heading textAlign="center" as="h1">
+        <Heading
+          fontSize={{ base: "2xl", md: "4xl" }}
+          textAlign="center"
+          as="h1"
+        >
           {listType.decade} - {listType.name}
         </Heading>
         <Tooltip
@@ -182,6 +153,9 @@ export default function List({ generalList, listType }: ListProps) {
           label="Importe listas de arquivos .csv no Letterboxd"
         >
           <Button
+            size={{ base: "sm", md: "md" }}
+            mt={{ base: "10", sm: "0" }}
+            mb={{ base: "-10", sm: "0" }}
             alignSelf="flex-end"
             variant="ghost"
             onClick={handleGenerateCSVFile}
@@ -190,83 +164,12 @@ export default function List({ generalList, listType }: ListProps) {
           </Button>
         </Tooltip>
         {!loading && paginationList.length >= 0 ? (
-          <>
-            <Grid
-              my="6"
-              rowGap="8"
-              columnGap="4"
-              gridTemplateColumns="repeat(2,1fr)"
-            >
-              {paginationList.map((movie) => (
-                <Flex key={movie.original_title}>
-                  <Image
-                    h="280px"
-                    w="190px"
-                    src={
-                      movie.id === "No ID"
-                        ? movie.poster_path
-                        : posterPathBase + movie.poster_path
-                    }
-                    objectFit="cover"
-                    objectPosition="center"
-                    borderRadius={6}
-                    border="2px"
-                    borderColor="blue.500"
-                    mr="2"
-                  />
-                  <Flex
-                    flexDir="column"
-                    align="flex-start"
-                    overflowY="scroll"
-                    h="320"
-                    css={{
-                      "&::-webkit-scrollbar": {
-                        width: "3px",
-                      },
-                      "&::-webkit-scrollbar-track": {
-                        background: "transparent",
-                      },
-                      "&::-webkit-scrollbar-thumb": {
-                        backgroundColor: "rgba(48, 130, 206, .7)",
-                        borderRadius: "12px",
-                      },
-                    }}
-                  >
-                    <Stack display="flex" alignItems="flex-start" spacing="2">
-                      <MovieDetail field="Título" value={movie.name} />
-                      <MovieDetail field="Pontos" value={movie.points} />
-                      <MovieDetail field="Diretor" value={movie.director} />
-                      <MovieDetail
-                        field="Ano"
-                        value={movie.year ?? movie.release_date.split("-")[0]}
-                      />
-                      {movie.voters
-                        .sort(
-                          (a, b) =>
-                            Number(a.place.at(-1)) - Number(b.place.at(-1))
-                        )
-                        .map((voter, i) => (
-                          <Text
-                            fontSize="md"
-                            letterSpacing="wide"
-                            // eslint-disable-next-line react/no-array-index-key
-                            key={`${i}${voter.name[0]}`}
-                          >
-                            {voter.place}: {voter.name.join(", ")}
-                          </Text>
-                        ))}
-                    </Stack>
-                  </Flex>
-                </Flex>
-              ))}
-            </Grid>
-            <Pagination
-              allPages={allPages}
-              handleNextPage={handleNextPage}
-              handlePrevPage={handlePrevPage}
-              actualPage={pagination}
-            />
-          </>
+          <GeneralMovieList
+            paginationList={paginationList}
+            movieList={movieList}
+            allPages={allPages}
+            setPaginationList={setPaginationList}
+          />
         ) : (
           <Spinner alignSelf="center" mt="12" size="lg" color="blue.500" />
         )}
@@ -279,7 +182,7 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
   async ({ params }) => {
     const { id } = params;
 
-    const generalListSnap = await db
+    const generalListSnap = await adminDb
       .collection("general_list")
       .doc(id as string)
       .get();
@@ -305,7 +208,7 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
     }
 
     const listType = (
-      await db
+      await adminDb
         .collection("list_type")
         .doc(generalList.id_list_type.path.split("/")[1])
         .get()
