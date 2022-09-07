@@ -2,9 +2,8 @@ import React, { useState } from "react";
 
 import { Box, Button } from "@chakra-ui/react";
 
+import { CustomButton } from "~/components/CustomButton";
 import { GLMovie } from "~/interfaces/Movie";
-
-import { CustomButton } from "./CustomButton";
 
 interface GeneralMovieList extends GLMovie {
   director: string;

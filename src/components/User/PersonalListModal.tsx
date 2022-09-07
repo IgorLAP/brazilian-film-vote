@@ -5,7 +5,7 @@ import axios from "axios";
 
 import { Modal } from "~/components/Modal";
 import AuthContext from "~/contexts/AuthContext";
-import { showToast } from "~/helpers/showToast";
+import { useToast } from "~/hooks/useToast";
 import { ShowMovie } from "~/interfaces/Movie";
 
 import { MovieDetail } from "../MovieDetail";
@@ -22,6 +22,8 @@ export function PersonalListModal({
   movieList,
 }: PersonalListModalProps) {
   const { user } = useContext(AuthContext);
+
+  const toast = useToast();
 
   async function handleGenerateCSVFile() {
     try {
@@ -43,7 +45,7 @@ export function PersonalListModal({
       link.click();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      showToast("error", err.message);
+      toast("error", err.message);
     }
   }
 

@@ -22,7 +22,7 @@ import { useRouter } from "next/router";
 import { CustomButton } from "~/components/CustomButton";
 import AuthContext from "~/contexts/AuthContext";
 import { LoadingContext } from "~/contexts/LoadingContext";
-import { showToast } from "~/helpers/showToast";
+import { useToast } from "~/hooks/useToast";
 import { User } from "~/models/User";
 
 export default function singnIn() {
@@ -30,6 +30,7 @@ export default function singnIn() {
   const { user: loggedUser } = useContext(AuthContext);
 
   const router = useRouter();
+  const toast = useToast();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -42,7 +43,7 @@ export default function singnIn() {
     if (!isSignInWithEmailLink(auth, window.location.href)) {
       setCanSignIn(false);
       router.push("/");
-      showToast("warn", "Link de registro inválido");
+      toast("warn", "Link de registro inválido");
     }
 
     if (auth.currentUser) {
@@ -68,7 +69,7 @@ export default function singnIn() {
       router.push("/profile");
     } catch (err) {
       clearLoading();
-      showToast("error", err.message);
+      toast("error", err.message);
     }
   }
 

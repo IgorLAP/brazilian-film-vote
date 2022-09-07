@@ -11,7 +11,7 @@ import { useRouter } from "next/router";
 import { destroyCookie, parseCookies, setCookie } from "nookies";
 
 import { getUserByEmail } from "~/helpers/get-user-by-email";
-import { showToast } from "~/helpers/showToast";
+import { useToast } from "~/hooks/useToast";
 
 import { LoadingContext } from "./LoadingContext";
 
@@ -40,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const auth = getAuth();
 
   const router = useRouter();
+  const toast = useToast();
 
   const [user, setUser] = useState<LoggedUser>(null);
 
@@ -62,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       });
     } catch (err) {
-      showToast("error", err.message);
+      toast("error", err.message);
     }
   }, []);
 
@@ -135,15 +136,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       const newInfos = { ...user, name, photoURL };
       setUser(newInfos);
-      showToast("success", "Atualizado com sucesso");
+      toast("success", "Atualizado com sucesso");
     } catch (err) {
-      showToast("error", err.message);
+      toast("error", err.message);
     }
   }
 
   function authError(err) {
     clearLoading();
-    showToast("error", err.message);
+    toast("error", err.message);
   }
 
   return (

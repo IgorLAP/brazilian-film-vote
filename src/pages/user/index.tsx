@@ -20,11 +20,11 @@ import { Table } from "~/components/Table";
 import { PersonalListModal } from "~/components/User/PersonalListModal";
 import AuthContext from "~/contexts/AuthContext";
 import { LoadingContext } from "~/contexts/LoadingContext";
-import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
+import { useToast } from "~/hooks/useToast";
 import { Movie, ShowMovie } from "~/interfaces/Movie";
 import { TmdbMovie, TmdbMovieCredit } from "~/interfaces/Tmdb";
-import { db as adminDb, auth } from "~/lib/firebase-admin";
+import { adminDb, auth } from "~/lib/firebase-admin";
 import { tmdbApi } from "~/lib/tmdb";
 
 interface MyListsProps {
@@ -45,6 +45,7 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
   const { user } = useContext(AuthContext);
   const { handleLoading, clearLoading } = useContext(LoadingContext);
 
+  const toast = useToast();
   const { isOpen, onClose, onOpen } = useDisclosure();
 
   const [userList, setUserList] = useState(lists);
@@ -58,7 +59,7 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
     const { redirect } = router.query;
     if (redirect) {
       clearLoading();
-      showToast("warn", "Sua votação já foi finalizada");
+      toast("warn", "Sua votação já foi finalizada");
     }
   }, []);
 
@@ -118,7 +119,7 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
       onOpen();
     } catch (err) {
       clearLoading();
-      showToast("error", err.message);
+      toast("error", err.message);
     }
   }
 
@@ -135,7 +136,7 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
       setUserList(data.page as typeof lists);
       setActualPage((prev) => prev + 1);
     } catch (err) {
-      showToast("error", "Erro no carregamento");
+      toast("error", "Erro no carregamento");
     }
     setLoading(false);
   }
@@ -159,7 +160,7 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
       );
       setActualPage((prev) => prev - 1);
     } catch (err) {
-      showToast("error", "Erro no carregamento");
+      toast("error", "Erro no carregamento");
     }
     setLoading(false);
   }

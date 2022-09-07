@@ -13,7 +13,7 @@ import { collection, getDocs } from "firebase/firestore";
 import { MdLocalMovies } from "react-icons/md";
 import { RiArrowDownSLine, RiArrowRightSLine } from "react-icons/ri";
 
-import { db as webDb } from "~/lib/firebase";
+import { webDb } from "~/lib/firebase";
 import { Decades } from "~/models/Decades";
 
 import { CustomLink } from "../CustomLink";

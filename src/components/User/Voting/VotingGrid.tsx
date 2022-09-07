@@ -17,11 +17,10 @@ import {
   Stack,
   Text,
   UnorderedList,
-  useBreakpointValue,
 } from "@chakra-ui/react";
 
-import { showToast } from "~/helpers/showToast";
 import useDebounce from "~/hooks/useDebounce";
+import { useToast } from "~/hooks/useToast";
 import { Movie } from "~/interfaces/Movie";
 import { tmdbApi } from "~/lib/tmdb";
 
@@ -51,11 +50,6 @@ export function VotingGrid({
   setMovieList,
   handleNotFoundMovie,
 }: VotingGridProps) {
-  const responsiveToast = useBreakpointValue({
-    base: true,
-    sm: false,
-  });
-
   const inputArrayRef = useRef<HTMLInputElement[]>();
   const checkboxArrayRef = useRef<HTMLInputElement>();
 
@@ -65,6 +59,7 @@ export function VotingGrid({
   const [tmdbList, setTmdbList] = useState<TmdbList[]>([]);
 
   const debouncedSearch = useDebounce(search, 500);
+  const toast = useToast();
 
   useEffect(() => {
     if (search) tmdbSearch(debouncedSearch);
@@ -83,7 +78,7 @@ export function VotingGrid({
       setTmdbList(filterByDecade);
       setHasResults(true);
     } else {
-      showToast("error", "Nenhum resultado encontrado", responsiveToast);
+      toast("error", "Nenhum resultado encontrado");
       setHasResults(false);
       setTmdbList([]);
     }
@@ -123,7 +118,7 @@ export function VotingGrid({
       (item) => item.name === movie && item.id === id
     );
     if (alreadyHasMovie.length > 0) {
-      showToast("warn", "Filme já adicionado");
+      toast("warn", "Filme já adicionado");
       setMovieList(() => {
         tmp[index].name = "";
         tmp[index].id = 0;

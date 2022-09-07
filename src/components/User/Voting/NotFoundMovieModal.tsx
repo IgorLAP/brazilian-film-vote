@@ -2,10 +2,9 @@ import React from "react";
 
 import { Box, Flex, FormControl, FormLabel, Input } from "@chakra-ui/react";
 
+import { CustomButton } from "~/components/CustomButton";
 import { Modal } from "~/components/Modal";
 import { Movie } from "~/interfaces/Movie";
-
-import { CustomButton } from "../CustomButton";
 
 interface CompleteNotFoundMovie extends Movie {
   index: number;

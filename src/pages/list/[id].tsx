@@ -1,29 +1,18 @@
 import React, { useContext, useEffect, useState } from "react";
 
-import {
-  Flex,
-  Grid,
-  Text,
-  Heading,
-  Image,
-  Spinner,
-  Stack,
-  Button,
-  Tooltip,
-} from "@chakra-ui/react";
+import { Flex, Heading, Spinner, Button, Tooltip } from "@chakra-ui/react";
 import axios from "axios";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 
-import { MovieDetail } from "~/components/MovieDetail";
-import { NumericPagination } from "~/components/NumericPagination";
+import { GeneralMovieList } from "~/components/List/GeneralMovieList";
 import { LoadingContext } from "~/contexts/LoadingContext";
-import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
+import { useToast } from "~/hooks/useToast";
 import { ExhibitGeneralListI } from "~/interfaces/GeneralList";
 import { GLMovie } from "~/interfaces/Movie";
 import { TmdbMovie, TmdbMovieCredit } from "~/interfaces/Tmdb";
-import { db } from "~/lib/firebase-admin";
+import { adminDb } from "~/lib/firebase-admin";
 import { tmdbApi } from "~/lib/tmdb";
 
 interface ListProps {
@@ -43,6 +32,8 @@ interface GeneralMovieList extends GLMovie {
 
 export default function List({ generalList, listType }: ListProps) {
   const { clearLoading } = useContext(LoadingContext);
+
+  const toast = useToast();
 
   const [movieList, setMovieList] = useState<GeneralMovieList[]>([]);
   const [paginationList, setPaginationList] = useState<GeneralMovieList[]>([]);
@@ -109,7 +100,7 @@ export default function List({ generalList, listType }: ListProps) {
         setLoading(false);
       } catch (err) {
         setLoading(false);
-        showToast("error", "Erro na exibição, recarregue a página");
+        toast("error", "Erro na exibição, recarregue a página");
       }
     }
     loadList();
@@ -136,11 +127,10 @@ export default function List({ generalList, listType }: ListProps) {
       link.click();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      showToast("error", err.message);
+      toast("error", err.message);
     }
   }
 
-  const posterPathBase = "https://image.tmdb.org/t/p/w185";
   const title = `${listType.name} - Brazilian Film Vote`;
 
   return (
@@ -174,89 +164,12 @@ export default function List({ generalList, listType }: ListProps) {
           </Button>
         </Tooltip>
         {!loading && paginationList.length >= 0 ? (
-          <>
-            <Grid
-              my="6"
-              mx={{ base: "4", lg: "0" }}
-              rowGap={{ base: "6", lg: "4" }}
-              columnGap="4"
-              gridTemplateColumns={{ base: "1fr", md: "repeat(2,1fr)" }}
-            >
-              {paginationList.map((movie) => (
-                <Flex
-                  justify="center"
-                  align="center"
-                  key={movie.original_title}
-                >
-                  <Image
-                    h={{ base: "160px", sm: "240px", md: "280px" }}
-                    w={{ base: "110px", sm: "150px", md: "190px" }}
-                    src={
-                      movie.id === "No ID"
-                        ? movie.poster_path
-                        : posterPathBase + movie.poster_path
-                    }
-                    objectFit="cover"
-                    objectPosition="center"
-                    borderRadius={6}
-                    border="2px"
-                    borderColor="blue.500"
-                    mr="2"
-                  />
-                  <Flex
-                    flex="1"
-                    flexDir="column"
-                    justify="center"
-                    align="flex-start"
-                    overflowY="scroll"
-                    h={{ base: "220", md: "320" }}
-                    css={{
-                      "&::-webkit-scrollbar": {
-                        width: "3px",
-                      },
-                      "&::-webkit-scrollbar-track": {
-                        background: "transparent",
-                      },
-                      "&::-webkit-scrollbar-thumb": {
-                        backgroundColor: "rgba(48, 130, 206, .7)",
-                        borderRadius: "12px",
-                      },
-                    }}
-                  >
-                    <Stack display="flex" alignItems="flex-start" spacing="2">
-                      <MovieDetail field="Título" value={movie.name} />
-                      <MovieDetail field="Pontos" value={movie.points} />
-                      <MovieDetail field="Diretor" value={movie.director} />
-                      <MovieDetail
-                        field="Ano"
-                        value={movie.year ?? movie.release_date.split("-")[0]}
-                      />
-                      {movie.voters
-                        .sort(
-                          (a, b) =>
-                            Number(a.place.at(-1)) - Number(b.place.at(-1))
-                        )
-                        .map((voter, i) => (
-                          <Text
-                            fontSize="md"
-                            letterSpacing="wide"
-                            // eslint-disable-next-line react/no-array-index-key
-                            key={`${i}${voter.name[0]}`}
-                          >
-                            {voter.place}: {voter.name.join(", ")}
-                          </Text>
-                        ))}
-                    </Stack>
-                  </Flex>
-                </Flex>
-              ))}
-            </Grid>
-            <NumericPagination
-              movieList={movieList}
-              allPages={allPages}
-              setPaginationList={setPaginationList}
-            />
-          </>
+          <GeneralMovieList
+            paginationList={paginationList}
+            movieList={movieList}
+            allPages={allPages}
+            setPaginationList={setPaginationList}
+          />
         ) : (
           <Spinner alignSelf="center" mt="12" size="lg" color="blue.500" />
         )}
@@ -269,7 +182,7 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
   async ({ params }) => {
     const { id } = params;
 
-    const generalListSnap = await db
+    const generalListSnap = await adminDb
       .collection("general_list")
       .doc(id as string)
       .get();
@@ -295,7 +208,7 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
     }
 
     const listType = (
-      await db
+      await adminDb
         .collection("list_type")
         .doc(generalList.id_list_type.path.split("/")[1])
         .get()

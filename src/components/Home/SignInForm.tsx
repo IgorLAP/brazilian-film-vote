@@ -12,12 +12,14 @@ import { IoIosMail } from "react-icons/io";
 import { RiLock2Fill } from "react-icons/ri";
 
 import AuthContext from "~/contexts/AuthContext";
-import { showToast } from "~/helpers/showToast";
+import { useToast } from "~/hooks/useToast";
 
 import { CustomButton } from "../CustomButton";
 
 export function SignInForm(props: HTMLChakraProps<"div">) {
   const { signIn } = useContext(AuthContext);
+
+  const toast = useToast();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,7 +35,7 @@ export function SignInForm(props: HTMLChakraProps<"div">) {
       setLoading(true);
       await signIn(email, password);
     } catch (err) {
-      showToast("error", err.message);
+      toast("error", err.message);
       setLoading(false);
     }
   }

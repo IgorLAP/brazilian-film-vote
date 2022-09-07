@@ -19,13 +19,14 @@ import { HiPencilAlt } from "react-icons/hi";
 import { CustomButton } from "~/components/CustomButton";
 import { Modal } from "~/components/Modal";
 import AuthContext from "~/contexts/AuthContext";
-import { showToast } from "~/helpers/showToast";
 import { verifySSRAuth } from "~/helpers/veritySSRAuth";
-import { db as webDb } from "~/lib/firebase";
+import { useToast } from "~/hooks/useToast";
+import { webDb } from "~/lib/firebase";
 
 export default function Profile() {
   const { user: loggedUser, onUpdate } = useContext(AuthContext);
 
+  const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const [name, setName] = useState("");
@@ -52,7 +53,7 @@ export default function Profile() {
   async function handleUpdate() {
     if (photoURL) {
       if (!(await doesImageExist(photoURL))) {
-        showToast("error", "Imagem inválida");
+        toast("error", "Imagem inválida");
         return;
       }
     }
@@ -66,7 +67,7 @@ export default function Profile() {
       onUpdate(name, photoURL);
       onClose();
     } catch (err) {
-      showToast("error", err.message);
+      toast("error", err.message);
     }
   }
 
