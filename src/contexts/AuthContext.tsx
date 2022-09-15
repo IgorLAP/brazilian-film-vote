@@ -65,10 +65,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       toast("error", err.message);
     }
+
+    if (user && !auth.currentUser) setUser(null);
   }, []);
 
   useEffect(() => {
-    if (user && router.pathname === "/") {
+    if (!!auth.currentUser && router.pathname === "/") {
       if (user.role === "USER") router.push("/user");
       if (user.role === "ADMIN") router.push("/admin");
     }
@@ -117,7 +119,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       handleLoading(60, 500);
       await firebaseSignOut(auth);
-      setUser(null);
       destroyCookie(undefined, "token");
       const token = parseCookies();
       if (token)
