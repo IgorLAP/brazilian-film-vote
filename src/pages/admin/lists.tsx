@@ -111,7 +111,7 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
   async () => {
     const generalList = await adminDb
       .collection("general_list")
-      .limit(20)
+      .limit(21)
       .get();
     const allPages = (await adminDb.collection("general_list").get()).docs
       .length;
@@ -135,7 +135,7 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
         })),
         validDecades: validDecades.availables,
         pagination: {
-          allPages: Math.ceil(allPages / 20),
+          allPages: Math.ceil(allPages / 21),
         },
       },
     };

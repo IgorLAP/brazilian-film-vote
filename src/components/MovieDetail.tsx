@@ -13,13 +13,13 @@ export function MovieDetail({ field, value }: MovieDetailProps) {
       <HStack spacing="1">
         <Text
           fontWeight="medium"
-          fontSize={{ base: "sm", sm: "md", md: "medium" }}
+          fontSize={{ base: "sm", md: "md", lg: "medium" }}
         >
           {field}:
         </Text>
         <Text
           fontWeight="light"
-          fontSize={{ base: "small", sm: "sm", md: "md" }}
+          fontSize={{ base: "small", md: "sm", lg: "md" }}
         >
           {value}
         </Text>

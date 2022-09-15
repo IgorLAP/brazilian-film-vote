@@ -55,7 +55,7 @@ export function ProfileMenu({ loggedUser, signOut }: ProfileMenuProps) {
                 icon={<IoMdMenu size="36" />}
               />
               {user && (
-                <MenuList>
+                <MenuList minW="0" w="fit-content">
                   {user?.role === "USER" ? (
                     <>
                       <MenuItem onClick={onClose}>
@@ -129,7 +129,7 @@ export function ProfileMenu({ loggedUser, signOut }: ProfileMenuProps) {
             }
           />
         </MenuButton>
-        <MenuList>
+        <MenuList minW="0" w="fit-content">
           <MenuItem>
             <CustomLink href="/profile" icon={BsFillPersonFill} text="Perfil" />
           </MenuItem>

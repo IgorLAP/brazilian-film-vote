@@ -1,6 +1,8 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useContext, useEffect, useState } from "react";
 
-import { Flex } from "@chakra-ui/react";
+import { Flex, Link } from "@chakra-ui/react";
+import NextLink from "next/link";
 
 import AuthContext from "~/contexts/AuthContext";
 
@@ -30,7 +32,11 @@ export function Header() {
       justify="space-between"
       align="center"
     >
-      <Logo />
+      <NextLink href="/" passHref>
+        <Link _hover={{ textDecoration: "none" }}>
+          <Logo />
+        </Link>
+      </NextLink>
       {loggedUser && <ProfileMenu loggedUser={loggedUser} signOut={signOut} />}
     </Flex>
   );

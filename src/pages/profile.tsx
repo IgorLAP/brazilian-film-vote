@@ -41,7 +41,7 @@ export default function Profile() {
     }
   }, [loggedUser]);
 
-  const doesImageExist = (url: string) =>
+  const doesImageExist = (url: string): Promise<boolean> =>
     new Promise((resolve) => {
       const img = new Image();
 
@@ -53,6 +53,7 @@ export default function Profile() {
   async function handleUpdate() {
     if (photoURL) {
       if (!(await doesImageExist(photoURL))) {
+        setPhotoURL("");
         toast("error", "Imagem inválida");
         return;
       }
