@@ -14,12 +14,14 @@ interface GeneralMovieList extends GLMovie {
 
 interface NumericPaginationProps {
   allPages: number;
+  itemsOnPage: number;
   movieList: GeneralMovieList[];
   setPaginationList: React.Dispatch<React.SetStateAction<GeneralMovieList[]>>;
 }
 
 export function NumericPagination({
   allPages,
+  itemsOnPage,
   movieList,
   setPaginationList,
 }: NumericPaginationProps) {
@@ -27,12 +29,16 @@ export function NumericPagination({
 
   function handlePrevPage(page: number) {
     setActualPage(page);
-    setPaginationList(movieList.slice(page * 24 - 24, page * 24));
+    setPaginationList(
+      movieList.slice(page * itemsOnPage - itemsOnPage, page * itemsOnPage)
+    );
   }
 
   function handleNextPage(page: number) {
     setActualPage(page);
-    setPaginationList(movieList.slice(page * 24 - 24, page * 24));
+    setPaginationList(
+      movieList.slice(page * itemsOnPage - itemsOnPage, page * itemsOnPage)
+    );
   }
 
   return (

@@ -20,7 +20,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         .collection(collection)
         .orderBy(FieldPath.documentId())
         .startAfter(startAfter)
-        .limit(20)
+        .limit(21)
         .get();
 
       res.json({
@@ -38,7 +38,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         .orderBy(FieldPath.documentId())
         .startAt(startAt)
         .endAt(endAt)
-        .limit(20)
+        .limit(21)
         .get();
 
       res.json({

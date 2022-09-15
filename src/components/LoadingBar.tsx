@@ -14,7 +14,7 @@ export function LoadingBar({ status }: LoadingBarProps) {
       as={motion.div}
       height="1"
       w={`${status}%`}
-      position="absolute"
+      position="fixed"
       left={0}
       top={0}
       transition="0.1s linear"

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useMemo } from "react";
 
 import { Flex, Heading, Spinner, Button, Tooltip } from "@chakra-ui/react";
 import axios from "axios";
@@ -6,8 +6,8 @@ import { GetServerSideProps } from "next";
 import Head from "next/head";
 
 import { GeneralMovieList } from "~/components/List/GeneralMovieList";
+import AuthContext from "~/contexts/AuthContext";
 import { LoadingContext } from "~/contexts/LoadingContext";
-import { verifySSRAuth } from "~/helpers/veritySSRAuth";
 import { useToast } from "~/hooks/useToast";
 import { ExhibitGeneralListI } from "~/interfaces/GeneralList";
 import { GLMovie } from "~/interfaces/Movie";
@@ -32,6 +32,7 @@ interface GeneralMovieList extends GLMovie {
 
 export default function List({ generalList, listType }: ListProps) {
   const { clearLoading } = useContext(LoadingContext);
+  const { user } = useContext(AuthContext);
 
   const toast = useToast();
 
@@ -39,6 +40,10 @@ export default function List({ generalList, listType }: ListProps) {
   const [paginationList, setPaginationList] = useState<GeneralMovieList[]>([]);
   const [allPages, setAllPages] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const itemsOnPage = useMemo(() => {
+    return !user ? 21 : 20;
+  }, []);
 
   useEffect(() => {
     async function loadList() {
@@ -94,9 +99,9 @@ export default function List({ generalList, listType }: ListProps) {
           voters: generalList.movies[index].voters,
         }));
         setMovieList(moviesWithDirectors);
-        const pages = Math.ceil(moviesWithDirectors.length / 24);
+        const pages = Math.ceil(moviesWithDirectors.length / itemsOnPage);
         setAllPages(pages);
-        setPaginationList(moviesWithDirectors.slice(0, 24));
+        setPaginationList(moviesWithDirectors.slice(0, itemsOnPage));
         setLoading(false);
       } catch (err) {
         setLoading(false);
@@ -155,7 +160,7 @@ export default function List({ generalList, listType }: ListProps) {
           <Button
             size={{ base: "sm", md: "md" }}
             mt={{ base: "10", sm: "0" }}
-            mb={{ base: "-10", sm: "0" }}
+            mb={{ base: "-5", sm: "0" }}
             alignSelf="flex-end"
             variant="ghost"
             onClick={handleGenerateCSVFile}
@@ -167,6 +172,7 @@ export default function List({ generalList, listType }: ListProps) {
           <GeneralMovieList
             paginationList={paginationList}
             movieList={movieList}
+            itemsOnPage={itemsOnPage}
             allPages={allPages}
             setPaginationList={setPaginationList}
           />
@@ -178,54 +184,52 @@ export default function List({ generalList, listType }: ListProps) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps = verifySSRAuth(
-  async ({ params }) => {
-    const { id } = params;
+export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+  const { id } = params;
 
-    const generalListSnap = await adminDb
-      .collection("general_list")
-      .doc(id as string)
-      .get();
+  const generalListSnap = await adminDb
+    .collection("general_list")
+    .doc(id as string)
+    .get();
 
-    if (!generalListSnap.exists) {
-      return {
-        redirect: {
-          destination: "/",
-          permanent: false,
-        },
-      };
-    }
-
-    const generalList = generalListSnap.data();
-
-    if (generalList.status || generalList.movies.length <= 0) {
-      return {
-        redirect: {
-          destination: "/",
-          permanent: false,
-        },
-      };
-    }
-
-    const listType = (
-      await adminDb
-        .collection("list_type")
-        .doc(generalList.id_list_type.path.split("/")[1])
-        .get()
-    ).data();
-
+  if (!generalListSnap.exists) {
     return {
-      props: {
-        generalList: {
-          idListType: generalList.id_list_type.path,
-          movies: generalList.movies,
-          status: generalList.status,
-        },
-        listType: {
-          decade: listType.decade,
-          name: listType.name,
-        },
+      redirect: {
+        destination: "/",
+        permanent: false,
       },
     };
   }
-);
+
+  const generalList = generalListSnap.data();
+
+  if (generalList.status || generalList.movies.length <= 0) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  const listType = (
+    await adminDb
+      .collection("list_type")
+      .doc(generalList.id_list_type.path.split("/")[1])
+      .get()
+  ).data();
+
+  return {
+    props: {
+      generalList: {
+        idListType: generalList.id_list_type.path,
+        movies: generalList.movies,
+        status: generalList.status,
+      },
+      listType: {
+        decade: listType.decade,
+        name: listType.name,
+      },
+    },
+  };
+};

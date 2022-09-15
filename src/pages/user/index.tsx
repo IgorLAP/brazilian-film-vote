@@ -234,7 +234,7 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
       .collection("users")
       .doc(uid)
       .collection("lists")
-      .limit(20)
+      .limit(21)
       .get();
     const allLists = (
       await adminDb.collection("users").doc(uid).collection("lists").get()
@@ -259,7 +259,7 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
         props: {
           lists: formattedData,
           pagination: {
-            allPages: Math.ceil(allLists / 20),
+            allPages: Math.ceil(allLists / 21),
           },
         },
       };

@@ -17,6 +17,7 @@ interface GeneralMovieListProps {
   paginationList: GeneralMovieList[];
   movieList: GeneralMovieList[];
   allPages: number;
+  itemsOnPage: number;
   setPaginationList: React.Dispatch<React.SetStateAction<GeneralMovieList[]>>;
 }
 
@@ -24,6 +25,7 @@ export function GeneralMovieList({
   paginationList,
   allPages,
   movieList,
+  itemsOnPage,
   setPaginationList,
 }: GeneralMovieListProps) {
   const posterPathBase = "https://image.tmdb.org/t/p/w185";
@@ -32,16 +34,20 @@ export function GeneralMovieList({
     <>
       <Grid
         my="6"
-        mx={{ base: "4", lg: "0" }}
+        mx={{ base: "4", xl: "0" }}
         rowGap={{ base: "6", lg: "4" }}
         columnGap="4"
-        gridTemplateColumns={{ base: "1fr", md: "repeat(2,1fr)" }}
+        gridTemplateColumns={{
+          base: "1fr",
+          md: "repeat(2, 1fr)",
+          xl: itemsOnPage === 21 ? "repeat(3,1fr)" : "",
+        }}
       >
         {paginationList.map((movie) => (
-          <Flex justify="center" align="center" key={movie.original_title}>
+          <Flex justify="center" align="flex-start" key={movie.original_title}>
             <Image
-              h={{ base: "160px", sm: "240px", md: "280px" }}
-              w={{ base: "110px", sm: "150px", md: "190px" }}
+              h={{ base: "180px", md: "200px", lg: "210px" }}
+              w={{ base: "120px", lg: "140px" }}
               src={
                 movie.id === "No ID"
                   ? movie.poster_path
@@ -54,27 +60,29 @@ export function GeneralMovieList({
               borderColor="blue.500"
               mr="2"
             />
-            <Flex
-              flex="1"
-              flexDir="column"
-              justify="center"
-              align="flex-start"
-              overflowY="scroll"
-              h={{ base: "220", md: "320" }}
-              css={{
-                "&::-webkit-scrollbar": {
-                  width: "3px",
-                },
-                "&::-webkit-scrollbar-track": {
-                  background: "transparent",
-                },
-                "&::-webkit-scrollbar-thumb": {
-                  backgroundColor: "rgba(48, 130, 206, .7)",
-                  borderRadius: "12px",
-                },
-              }}
-            >
-              <Stack display="flex" alignItems="flex-start" spacing="2">
+            <Flex flex="1" flexDir="column" justify="center" align="flex-start">
+              <Stack
+                h={{ base: "220", md: "320" }}
+                overflowY="scroll"
+                css={{
+                  "&::-webkit-scrollbar": {
+                    width: "3px",
+                  },
+                  "&::-webkit-scrollbar-track": {
+                    background: "transparent",
+                  },
+                  "&::-webkit-scrollbar-thumb": {
+                    backgroundColor: "rgba(48, 130, 206, .4)",
+                    borderRadius: "12px",
+                  },
+                  "&::-webkit-scrollbar-thumb:hover": {
+                    backgroundColor: "rgba(48, 130, 206, .7)",
+                  },
+                }}
+                display="flex"
+                alignItems="flex-start"
+                spacing="2"
+              >
                 <MovieDetail field="Título" value={movie.name} />
                 <MovieDetail field="Pontos" value={movie.points} />
                 <MovieDetail field="Diretor" value={movie.director} />
@@ -88,7 +96,7 @@ export function GeneralMovieList({
                   )
                   .map((voter) => (
                     <Text
-                      fontSize="md"
+                      fontSize={{ base: "small", md: "sm", lg: "md" }}
                       letterSpacing="wide"
                       key={`${voter.name[0]}`}
                     >
@@ -101,6 +109,7 @@ export function GeneralMovieList({
         ))}
       </Grid>
       <NumericPagination
+        itemsOnPage={itemsOnPage}
         movieList={movieList}
         allPages={allPages}
         setPaginationList={setPaginationList}

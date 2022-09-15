@@ -10,6 +10,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { collection, getDocs } from "firebase/firestore";
+import { useRouter } from "next/router";
 import { MdLocalMovies } from "react-icons/md";
 import { RiArrowDownSLine, RiArrowRightSLine } from "react-icons/ri";
 
@@ -24,6 +25,7 @@ interface DropdownProps {
 
 export function Dropdown({ onResponsiveMenuClose }: DropdownProps) {
   const { onToggle, isOpen } = useDisclosure();
+  const router = useRouter();
 
   const hasOnCloseResponsiveMenu = useBreakpointValue({
     base: true,
@@ -47,6 +49,10 @@ export function Dropdown({ onResponsiveMenuClose }: DropdownProps) {
     };
     handle();
   }, []);
+
+  useEffect(() => {
+    if (isOpen) resetDropdown();
+  }, [router.pathname]);
 
   useEffect(() => {
     if (dropdown.length > 0) {
@@ -86,8 +92,12 @@ export function Dropdown({ onResponsiveMenuClose }: DropdownProps) {
 
   function resetDropdown() {
     const tmp = [...decades];
+    const hasToggled = [];
     tmp.forEach((item) => {
-      if (item.show) item.show = false;
+      if (item.show) {
+        item.show = false;
+        hasToggled.push(true);
+      }
     });
     setDecades(tmp);
     onToggle();
@@ -98,56 +108,59 @@ export function Dropdown({ onResponsiveMenuClose }: DropdownProps) {
   return (
     <Flex flexDir="column">
       <Flex
+        ml="-1"
         color={isOpen ? "blue.500" : ""}
         _hover={{ color: "blue.600", cursor: "pointer" }}
-        onClick={onToggle}
+        onClick={resetDropdown}
       >
-        <Icon w={5} h={6} as={changeIcon} />
+        <Icon w={6} h={6} as={changeIcon} />
         <Text as="span">Listas</Text>
       </Flex>
-      <Fade style={{ marginTop: 6 }} in={isOpen}>
-        {decades.length > 0 &&
-          decades.map((dec) => {
-            const showIcon = dec.show ? RiArrowDownSLine : RiArrowRightSLine;
-            return (
-              <Box key={dec.name} ml="1.5">
-                <Flex
-                  mb="2"
-                  color={dec.show ? "blue.500" : ""}
-                  _hover={{ color: "blue.600", cursor: "pointer" }}
-                  onClick={() => handleToggle(dec.name)}
-                >
-                  <Icon w={5} h={6} as={showIcon} />
-                  <Text as="span">{dec.name}</Text>
-                </Flex>
-                <Fade in={dec.show}>
-                  {dec.show &&
-                    dropdown
-                      .filter((drop: string) => drop.includes(dec.name))
-                      .map((slug) => (
-                        <Box
-                          key={slug}
-                          ml="2"
-                          my="2"
-                          onClick={() => {
-                            if (hasOnCloseResponsiveMenu)
-                              onResponsiveMenuClose();
-                            resetDropdown();
-                          }}
-                        >
-                          <CustomLink
+      {isOpen && (
+        <Fade style={{ marginTop: 6 }} in={isOpen}>
+          {decades.length > 0 &&
+            decades.map((dec) => {
+              const showIcon = dec.show ? RiArrowDownSLine : RiArrowRightSLine;
+              return (
+                <Box key={dec.name} ml="1.5">
+                  <Flex
+                    mb="2"
+                    color={dec.show ? "blue.500" : ""}
+                    _hover={{ color: "blue.600", cursor: "pointer" }}
+                    onClick={() => handleToggle(dec.name)}
+                  >
+                    <Icon w={5} h={6} as={showIcon} />
+                    <Text as="span">{dec.name}</Text>
+                  </Flex>
+                  <Fade in={dec.show}>
+                    {dec.show &&
+                      dropdown
+                        .filter((drop: string) => drop.includes(dec.name))
+                        .map((slug) => (
+                          <Box
                             key={slug}
-                            href={`/list/${slug}`}
-                            text={slug}
-                            icon={MdLocalMovies}
-                          />
-                        </Box>
-                      ))}
-                </Fade>
-              </Box>
-            );
-          })}
-      </Fade>
+                            ml="2"
+                            my="2"
+                            onClick={() => {
+                              if (hasOnCloseResponsiveMenu)
+                                onResponsiveMenuClose();
+                              resetDropdown();
+                            }}
+                          >
+                            <CustomLink
+                              key={slug}
+                              href={`/list/${slug}`}
+                              text={slug}
+                              icon={MdLocalMovies}
+                            />
+                          </Box>
+                        ))}
+                  </Fade>
+                </Box>
+              );
+            })}
+        </Fade>
+      )}
     </Flex>
   );
 }
