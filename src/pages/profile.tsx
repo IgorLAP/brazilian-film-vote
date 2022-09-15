@@ -30,13 +30,11 @@ export default function Profile() {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [photoURL, setPhotoURL] = useState("");
 
   useEffect(() => {
     if (loggedUser) {
       setName(loggedUser?.name);
-      setEmail(loggedUser?.email);
       setPhotoURL(loggedUser?.photoURL);
     }
   }, [loggedUser]);
@@ -53,7 +51,6 @@ export default function Profile() {
   async function handleUpdate() {
     if (photoURL) {
       if (!(await doesImageExist(photoURL))) {
-        setPhotoURL("");
         toast("error", "Imagem inválida");
         return;
       }
@@ -97,15 +94,19 @@ export default function Profile() {
           >
             <Box>
               <FormLabel>Nome</FormLabel>
-              <Input bg="gray.900" readOnly value={name} />
+              <Input bg="gray.900" readOnly value={loggedUser?.name} />
             </Box>
             <Box>
               <FormLabel>Email</FormLabel>
-              <Input bg="gray.900" readOnly value={email} />
+              <Input bg="gray.900" readOnly value={loggedUser?.email} />
             </Box>
             <Box>
               <FormLabel>Avatar</FormLabel>
-              <Input bg="gray.900" readOnly value={photoURL ?? "Sem avatar"} />
+              <Input
+                bg="gray.900"
+                readOnly
+                value={loggedUser?.photoURL ?? "Sem avatar"}
+              />
             </Box>
             <CustomButton
               size={{ base: "sm", sm: "md" }}
@@ -149,6 +150,7 @@ export default function Profile() {
         footerChildren={
           <CustomButton
             disabled={
+              photoURL === "" ||
               name?.length <= 5 ||
               (photoURL === loggedUser?.photoURL && name === loggedUser?.name)
             }
