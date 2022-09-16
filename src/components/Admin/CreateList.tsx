@@ -35,6 +35,7 @@ export function CreateList({ validDecades, gList, setGList }: CreateListProps) {
   const decadeSelectRef = useRef<HTMLSelectElement>();
 
   async function handleNewListType() {
+    handleLoading(20, 1000);
     const isRequiredFieldsInvalid =
       listName === "" || !decadeSelectRef.current.value;
     const decadeCurrentlyVoting = gList.filter((list) => {
@@ -46,31 +47,34 @@ export function CreateList({ validDecades, gList, setGList }: CreateListProps) {
     });
     try {
       if (isRequiredFieldsInvalid) {
-        toast("error", "Preencha o nome e a década");
-        return;
+        throw new Error("Preencha o nome e a década");
       }
 
       if (!isRequiredFieldsInvalid && decadeCurrentlyVoting.length > 0) {
-        toast(
-          "error",
-          `Votação dos anos ${decadeSelectRef.current.value} indisponível`
+        throw new Error(
+          `Votação dos anos ${decadeSelectRef.current.value} ainda em curso`
         );
-        decadeSelectRef.current.value = "";
-        return;
       }
-      handleLoading(20, 1000);
+      const activeQuery = query(
+        collection(webDb, "general_list"),
+        where("status", "==", true)
+      );
+      const activeSnap = await getDocs(activeQuery);
+      if (!activeSnap.empty) {
+        throw new Error("Finalize a votação atual para iniciar outra");
+      }
       const decade = Number(decadeSelectRef.current.value);
       const newListType = new ListType({ name: listName, decade });
       const listTypeDocRef = doc(webDb, "list_type", `${decade}-0`);
 
       const listTypeExists = (await getDoc(listTypeDocRef)).exists();
       if (listTypeExists) {
-        const q = query(
+        const decadeQuery = query(
           collection(webDb, "list_type"),
           where("decade", "==", decade)
         );
-        const querySnap = await getDocs(q);
-        const thisDecadeListTypesIds = querySnap.docs.map((item) => item.id);
+        const decadeSnap = await getDocs(decadeQuery);
+        const thisDecadeListTypesIds = decadeSnap.docs.map((item) => item.id);
         const lastUsedIndex = (thisDecadeListTypesIds.at(-1) as string).split(
           "-"
         )[1];
@@ -120,6 +124,7 @@ export function CreateList({ validDecades, gList, setGList }: CreateListProps) {
       clearLoading();
       toast("error", err.message);
     }
+    clearLoading();
   }
 
   return (

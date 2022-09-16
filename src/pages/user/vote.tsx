@@ -109,7 +109,7 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
     if (userActualList.exists) {
       return {
         redirect: {
-          destination: "/user?redirect=s",
+          destination: "/user?redirect=y",
           permanent: false,
         },
       };

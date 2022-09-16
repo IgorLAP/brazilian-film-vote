@@ -6,6 +6,7 @@ import {
   Link as ChakraLink,
   LinkProps,
   Text,
+  Tooltip,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
@@ -34,7 +35,19 @@ export function CustomLink({ href, icon, text, ...rest }: CustomLinkProps) {
     router.push(link);
   }
 
-  return (
+  return href === "" ? (
+    <Tooltip
+      bg="black"
+      color="white"
+      placement="top"
+      label="Aguarde nova votação"
+    >
+      <Flex color="rgba(255, 255, 255, 0.3)" _hover={{ cursor: "not-allowed" }}>
+        <Icon fontSize="20" mr="2" as={icon} />
+        <Text>{text}</Text>
+      </Flex>
+    </Tooltip>
+  ) : (
     <Flex
       color={
         router.pathname === href ||
