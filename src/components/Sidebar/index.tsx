@@ -1,6 +1,7 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import { Box, Stack } from "@chakra-ui/react";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { AiOutlineUsergroupDelete } from "react-icons/ai";
 import { BsList } from "react-icons/bs";
 import { MdOutlineHowToVote } from "react-icons/md";
@@ -8,11 +9,46 @@ import { RiListSettingsLine } from "react-icons/ri";
 
 import { CustomLink } from "~/components/CustomLink";
 import AuthContext from "~/contexts/AuthContext";
+import { webDb } from "~/lib/firebase";
 
 import { Dropdown } from "./Dropdown";
 
 export function Sidebar() {
   const { user } = useContext(AuthContext);
+
+  const [disable, setDisable] = useState(true);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(true);
+    if (user?.role === "ADMIN") return;
+    async function handle() {
+      const usersListQuery = query(
+        collection(webDb, `users/${user?.uid}/lists`)
+      );
+      const { docs: listDocs } = await getDocs(usersListQuery);
+      const userLists = listDocs.map((list) => list.id);
+      const generalQuery = query(
+        collection(webDb, "general_list"),
+        where("status", "==", true)
+      );
+      const { empty, docs: activeListsDocs } = await getDocs(generalQuery);
+      const activeListId = activeListsDocs.map((list) => list.id);
+      if (empty) return;
+      for (const activeList of activeListId) {
+        for (const userList of userLists) {
+          if (activeList === userList) {
+            setDisable(true);
+            return;
+          }
+        }
+        setDisable(false);
+      }
+    }
+    handle();
+  }, []);
+
+  if (!hydrated) return null;
 
   return (
     <Box
@@ -41,7 +77,7 @@ export function Sidebar() {
           {user?.role === "USER" && (
             <>
               <CustomLink
-                href="/user/vote"
+                href={disable ? "" : "/user/vote"}
                 text="Votar"
                 icon={MdOutlineHowToVote}
               />

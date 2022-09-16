@@ -59,7 +59,7 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
     const { redirect } = router.query;
     if (redirect) {
       clearLoading();
-      toast("warn", "Sua votação já foi finalizada");
+      toast("warn", "Aguarde nova votação");
     }
   }, []);
 

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState, useEffect } from "react";
 
 import {
   Box,
@@ -13,6 +13,7 @@ import {
   MenuList,
   Text,
 } from "@chakra-ui/react";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { AiOutlineUsergroupDelete } from "react-icons/ai";
 import { BsFillPersonFill, BsList } from "react-icons/bs";
 import { GoSignOut } from "react-icons/go";
@@ -21,6 +22,7 @@ import { MdOutlineHowToVote } from "react-icons/md";
 import { RiListSettingsLine } from "react-icons/ri";
 
 import AuthContext from "~/contexts/AuthContext";
+import { webDb } from "~/lib/firebase";
 
 import { CustomLink } from "../CustomLink";
 import { Dropdown } from "../Sidebar/Dropdown";
@@ -36,6 +38,34 @@ interface ProfileMenuProps {
 
 export function ProfileMenu({ loggedUser, signOut }: ProfileMenuProps) {
   const { user } = useContext(AuthContext);
+  const [disable, setDisable] = useState(false);
+
+  useEffect(() => {
+    async function handle() {
+      const usersListQuery = query(
+        collection(webDb, `users/${user?.uid}/lists`)
+      );
+      const { docs: listDocs } = await getDocs(usersListQuery);
+      const userLists = listDocs.map((list) => list.id);
+      const generalQuery = query(
+        collection(webDb, "general_list"),
+        where("status", "==", true)
+      );
+      const { empty, docs: activeListsDocs } = await getDocs(generalQuery);
+      const activeListId = activeListsDocs.map((list) => list.id);
+      if (empty) return;
+      for (const activeList of activeListId) {
+        for (const userList of userLists) {
+          if (activeList === userList) {
+            setDisable(true);
+            return;
+          }
+        }
+        setDisable(false);
+      }
+    }
+    handle();
+  }, []);
 
   return (
     <Flex
@@ -60,7 +90,7 @@ export function ProfileMenu({ loggedUser, signOut }: ProfileMenuProps) {
                     <>
                       <MenuItem onClick={onClose}>
                         <CustomLink
-                          href="/user/vote"
+                          href={disable ? "" : "/user/vote"}
                           text="Votar"
                           icon={MdOutlineHowToVote}
                         />
