@@ -31,7 +31,7 @@ export function ProfileMenu({ loggedUser, signOut }: ProfileMenuProps) {
       justify={{ base: "space-between", lg: "center" }}
       w={{ lg: "auto" }}
       maxW={{ base: "340px", lg: "inherit" }}
-      px={{ base: '4', xl: '0' }}
+      px={{ base: "4", xl: "0" }}
     >
       <Flex
         display={{ base: "none", lg: "block" }}

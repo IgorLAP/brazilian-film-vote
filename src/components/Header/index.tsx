@@ -1,22 +1,31 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useContext, useEffect, useState } from "react";
 
-import { Box, Flex, IconButton, Link, Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  IconButton,
+  Link,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+} from "@chakra-ui/react";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import NextLink from "next/link";
+import { AiOutlineUsergroupDelete } from "react-icons/ai";
+import { BsList } from "react-icons/bs";
+import { IoMdMenu } from "react-icons/io";
+import { MdOutlineHowToVote } from "react-icons/md";
+import { RiListSettingsLine } from "react-icons/ri";
 
 import AuthContext from "~/contexts/AuthContext";
+import { webDb } from "~/lib/firebase";
 
+import { CustomLink } from "../CustomLink";
+import { Dropdown } from "../Sidebar/Dropdown";
 import { Logo } from "./Logo";
 import { ProfileMenu } from "./ProfileMenu";
-import { CustomLink } from "../CustomLink";
-import { IoMdMenu } from "react-icons/io";
-import { AiOutlineUsergroupDelete } from "react-icons/ai";
-import { RiListSettingsLine } from "react-icons/ri";
-import { MdOutlineHowToVote } from "react-icons/md";
-import { BsList } from "react-icons/bs";
-import { Dropdown } from "../Sidebar/Dropdown";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { webDb } from "~/lib/firebase";
 
 export function Header() {
   const { user, signOut } = useContext(AuthContext);
@@ -27,7 +36,6 @@ export function Header() {
   useEffect(() => {
     setLoggedUser(user);
   }, [user]);
-
 
   useEffect(() => {
     async function handle() {
@@ -61,16 +69,13 @@ export function Header() {
       as="header"
       w="100%"
       maxW="1180"
-      mx='auto'
+      mx="auto"
       h="100px"
       display="flex"
       justify="space-between"
       align="center"
     >
-      <Flex
-        px={{ base: '2', xl: '0' }}
-        align="center"
-      >
+      <Flex px={{ base: "2", xl: "0" }} align="center">
         <Box display={{ base: "block", lg: "none" }}>
           <Menu>
             {({ onClose }) => (
@@ -132,7 +137,6 @@ export function Header() {
             <Logo />
           </Link>
         </NextLink>
-
       </Flex>
       {loggedUser && <ProfileMenu loggedUser={loggedUser} signOut={signOut} />}
     </Flex>
