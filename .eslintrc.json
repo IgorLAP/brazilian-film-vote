@@ -26,12 +26,19 @@
     "prettier"
   ],
   "rules": {
-    "prettier/prettier": ["error", {
-      "endOfLine": "auto"
-    }],
-    "no-param-reassign": ["error", { 
-      "props": false
-    }],
+    "prettier/prettier": [
+      "error",
+      {
+        "endOfLine": "auto"
+      }
+    ],
+    "react/react-in-jsx-scope": "off",
+    "no-param-reassign": [
+      "error",
+      {
+        "props": false
+      }
+    ],
     "no-restricted-syntax": [
       "off"
     ],

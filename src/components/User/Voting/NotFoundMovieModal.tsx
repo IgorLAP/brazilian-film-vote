@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Box, Flex, FormControl, FormLabel, Input } from "@chakra-ui/react";
+import { Box, Flex, Field, Input } from "@chakra-ui/react";
 
 import { CustomButton } from "~/components/CustomButton";
 import { Modal } from "~/components/Modal";
@@ -49,8 +49,8 @@ export function NotFoundMovieModal({
       headerOptions={{ title: "Completar Informações" }}
       bodyChildren={
         <Box mx={{ base: "2", sm: "0" }}>
-          <FormControl>
-            <FormLabel ml="2">Nome</FormLabel>
+          <Field.Root>
+            <Field.Label ml="2">Nome</Field.Label>
             <Input
               type="text"
               bg="gray.900"
@@ -72,14 +72,14 @@ export function NotFoundMovieModal({
                 setMovieList(clone);
               }}
             />
-          </FormControl>
+          </Field.Root>
           <Flex
             justify="center"
             align="center"
             flexDir={{ base: "column", md: "row" }}
           >
-            <FormControl mb={{ base: "4", md: "0" }}>
-              <FormLabel ml="2">Ano</FormLabel>
+            <Field.Root mb={{ base: "4", md: "0" }}>
+              <Field.Label ml="2">Ano</Field.Label>
               <Input
                 w={{ base: "100%", md: "150" }}
                 type="text"
@@ -95,9 +95,9 @@ export function NotFoundMovieModal({
                     }));
                 }}
               />
-            </FormControl>
-            <FormControl>
-              <FormLabel ml="2">Diretor</FormLabel>
+            </Field.Root>
+            <Field.Root>
+              <Field.Label ml="2">Diretor</Field.Label>
               <Input
                 type="text"
                 bg="gray.900"
@@ -110,7 +110,7 @@ export function NotFoundMovieModal({
                   }))
                 }
               />
-            </FormControl>
+            </Field.Root>
           </Flex>
         </Box>
       }

@@ -70,13 +70,20 @@ export function ManageMovieLists({ gList, setGList }: ManageMovieListsProps) {
       >
         {gList.map((list) => (
           <ChakraTable.Row key={list.idListType}>
-            <ChakraTable.ColumnHeader>{list.idListType.split("/")[1]}</ChakraTable.ColumnHeader>
             <ChakraTable.ColumnHeader>
-              <Button variant="ghost" onClick={() => handleSeeList(list.movies)}>
+              {list.idListType.split("/")[1]}
+            </ChakraTable.ColumnHeader>
+            <ChakraTable.ColumnHeader>
+              <Button
+                variant="ghost"
+                onClick={() => handleSeeList(list.movies)}
+              >
                 Top 10
               </Button>
             </ChakraTable.ColumnHeader>
-            <ChakraTable.ColumnHeader>{list.status ? "Ativo" : "Finalizado"}</ChakraTable.ColumnHeader>
+            <ChakraTable.ColumnHeader>
+              {list.status ? "Ativo" : "Finalizado"}
+            </ChakraTable.ColumnHeader>
             <ChakraTable.ColumnHeader>
               {list.status ? (
                 <CustomButton
@@ -107,8 +114,12 @@ export function ManageMovieLists({ gList, setGList }: ManageMovieListsProps) {
             {modalMovieList &&
               modalMovieList.slice(0, 10).map((movie) => (
                 <ChakraTable.Row key={movie.name}>
-                  <ChakraTable.ColumnHeader>{movie.name}</ChakraTable.ColumnHeader>
-                  <ChakraTable.ColumnHeader>{movie.points}</ChakraTable.ColumnHeader>
+                  <ChakraTable.ColumnHeader>
+                    {movie.name}
+                  </ChakraTable.ColumnHeader>
+                  <ChakraTable.ColumnHeader>
+                    {movie.points}
+                  </ChakraTable.ColumnHeader>
                 </ChakraTable.Row>
               ))}
           </Table>

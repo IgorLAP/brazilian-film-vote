@@ -46,7 +46,6 @@ export function UsersListsTable({
   const toast = useToast();
 
   async function handleSeeUsersList(email: string) {
-    console.log('oi')
     handleLoading(30, 1000);
     try {
       const q = query(collection(webDb, "users"), where("email", "==", email));

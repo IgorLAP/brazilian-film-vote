@@ -1,13 +1,6 @@
 import React from "react";
 
-import {
-  Button,
-  Flex,
-  Icon,
-  IconButton,
-  Image,
-  Text,
-} from "@chakra-ui/react";
+import { Button, Flex, Icon, IconButton, Image, Text } from "@chakra-ui/react";
 import { BsFillPersonFill } from "react-icons/bs";
 import { GoSignOut } from "react-icons/go";
 
@@ -16,7 +9,7 @@ import {
   MenuItem,
   MenuRoot,
   MenuTrigger,
-} from "~/components/ui/menu"
+} from "~/components/ui/menu";
 
 import { CustomLink } from "../CustomLink";
 
@@ -51,20 +44,17 @@ export function ProfileMenu({ loggedUser, signOut }: ProfileMenuProps) {
       </Flex>
       <MenuRoot>
         <MenuTrigger>
-          <IconButton size={{ base: 'sm', md: "lg" }} aria-label="Menu">
+          <IconButton size={{ base: "sm", md: "lg" }} aria-label="Menu">
             <Image
-              h={{ base: "34px", md: '40px' }}
-              w={{ base: "34px", md: '40px' }}
+              h={{ base: "34px", md: "40px" }}
+              w={{ base: "34px", md: "40px" }}
               objectFit="cover"
               objectPosition="center"
               borderRadius={2}
               border="2px"
               bg="gray.100"
               borderColor="blue.400"
-              src={
-                loggedUser?.photoURL ||
-                "/images/profile_icon.jpg"
-              }
+              src={loggedUser?.photoURL || "/images/profile_icon.jpg"}
             />
           </IconButton>
         </MenuTrigger>
@@ -80,7 +70,7 @@ export function ProfileMenu({ loggedUser, signOut }: ProfileMenuProps) {
             fontWeight="normal"
             onClick={signOut}
             variant="unstyled"
-            _hover={{ color: "blue.400", cursor: 'pointer' }}
+            _hover={{ color: "blue.400", cursor: "pointer" }}
           >
             <Icon as={GoSignOut} />
             Sair

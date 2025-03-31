@@ -6,6 +6,7 @@ import { GetServerSideProps } from "next";
 import Head from "next/head";
 
 import { GeneralMovieList } from "~/components/List/GeneralMovieList";
+import { Tooltip } from "~/components/ui/tooltip";
 import AuthContext from "~/contexts/AuthContext";
 import { LoadingContext } from "~/contexts/LoadingContext";
 import { useToast } from "~/hooks/useToast";
@@ -14,7 +15,6 @@ import { GLMovie } from "~/interfaces/Movie";
 import { TmdbMovie, TmdbMovieCredit } from "~/interfaces/Tmdb";
 import { adminDb } from "~/lib/firebase-admin";
 import { tmdbApi } from "~/lib/tmdb";
-import { Tooltip } from "~/components/ui/tooltip";
 
 interface ListProps {
   generalList: ExhibitGeneralListI;

@@ -42,7 +42,7 @@ export function CreateList({ validDecades, gList, setGList }: CreateListProps) {
       return (
         list.status &&
         list.idListType.split("/")[1].split("-")[0] ===
-        decadeSelectRef.current.value
+          decadeSelectRef.current.value
       );
     });
     try {
@@ -158,13 +158,8 @@ export function CreateList({ validDecades, gList, setGList }: CreateListProps) {
         </Field.Root>
         <Field.Root mx="4" py={{ base: "4", md: "0" }}>
           <Field.Label fontSize={{ base: "sm", md: "md" }}>Década</Field.Label>
-          <NativeSelect.Root
-            size={{ base: "sm", md: "md" }}
-          >
-            <NativeSelect.Field
-              bg="gray.900"
-              ref={decadeSelectRef}
-            >
+          <NativeSelect.Root size={{ base: "sm", md: "md" }}>
+            <NativeSelect.Field bg="gray.900" ref={decadeSelectRef}>
               <option value="">Selecione</option>
               {validDecades.map((decadeOpt) => (
                 <option value={decadeOpt} key={decadeOpt}>

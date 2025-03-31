@@ -179,14 +179,15 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
             Minhas Listas
           </Heading>
           {!loading && (
-            <Table
-              my="8"
-              tableHeaders={["Década", "Nome", "Filmes"]}
-            >
+            <Table my="8" tableHeaders={["Década", "Nome", "Filmes"]}>
               {userList.map((list) => (
                 <ChakraTable.Row key={list.idListType}>
-                  <ChakraTable.ColumnHeader>{list.idListType.split("/")[1].split("-")[0]}</ChakraTable.ColumnHeader>
-                  <ChakraTable.ColumnHeader>{list.name}</ChakraTable.ColumnHeader>
+                  <ChakraTable.ColumnHeader>
+                    {list.idListType.split("/")[1].split("-")[0]}
+                  </ChakraTable.ColumnHeader>
+                  <ChakraTable.ColumnHeader>
+                    {list.name}
+                  </ChakraTable.ColumnHeader>
                   <ChakraTable.ColumnHeader>
                     <CustomButton
                       size={{ base: "sm", md: "md" }}

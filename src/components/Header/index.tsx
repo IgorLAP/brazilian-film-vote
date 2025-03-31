@@ -1,16 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 
-import {
-  Box,
-  Flex,
-  IconButton,
-} from "@chakra-ui/react";
-import {
-  MenuContent,
-  MenuItem,
-  MenuRoot,
-  MenuTrigger,
-} from "~/components/ui/menu"
+import { Box, Flex, IconButton } from "@chakra-ui/react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import Link from "next/link";
 import { AiOutlineUsergroupDelete } from "react-icons/ai";
@@ -19,13 +9,19 @@ import { IoMdMenu } from "react-icons/io";
 import { MdOutlineHowToVote } from "react-icons/md";
 import { RiListSettingsLine } from "react-icons/ri";
 
+import {
+  MenuContent,
+  MenuItem,
+  MenuRoot,
+  MenuTrigger,
+} from "~/components/ui/menu";
 import AuthContext from "~/contexts/AuthContext";
 import { webDb } from "~/lib/firebase";
 
 import { CustomLink } from "../CustomLink";
+import { Dropdown } from "../Sidebar/Dropdown";
 import { Logo } from "./Logo";
 import { ProfileMenu } from "./ProfileMenu";
-import { Dropdown } from "../Sidebar/Dropdown";
 
 export function Header() {
   const { user, signOut } = useContext(AuthContext);
@@ -79,10 +75,7 @@ export function Header() {
         <Box display={{ base: "block", lg: "none" }}>
           <MenuRoot>
             <MenuTrigger asChild>
-              <IconButton
-                aria-label="Menu"
-                variant="ghost"
-              >
+              <IconButton aria-label="Menu" variant="ghost">
                 <IoMdMenu size="32" />
               </IconButton>
             </MenuTrigger>

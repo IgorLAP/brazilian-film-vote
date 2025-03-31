@@ -22,7 +22,7 @@ export function App({ children }: { children: React.ReactNode }) {
       <AuthProvider>
         <Box maxWidth="1180px" marginInline="auto">
           {!isIndex && <Header />}
-          <Flex >
+          <Flex>
             {!!token && <Sidebar />}
             <Box as="main" width="100%">
               {children}

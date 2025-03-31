@@ -101,7 +101,6 @@ export default function Admin({ users, pagination }: AdminProps) {
     setLoading(false);
   }
 
-
   return (
     <>
       <Head>

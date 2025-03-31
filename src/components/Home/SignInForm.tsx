@@ -1,13 +1,6 @@
 import React, { useState, useContext, FormEvent } from "react";
 
-import {
-  Button,
-  Flex,
-  HTMLChakraProps,
-  Icon,
-  Input,
-  Stack,
-} from "@chakra-ui/react";
+import { Button, Flex, FlexProps, Icon, Input, Stack } from "@chakra-ui/react";
 import { IoIosMail } from "react-icons/io";
 import { RiLock2Fill } from "react-icons/ri";
 
@@ -16,7 +9,7 @@ import { useToast } from "~/hooks/useToast";
 
 import { CustomButton } from "../CustomButton";
 
-export function SignInForm(props: HTMLChakraProps<"div">) {
+export function SignInForm(props: FlexProps) {
   const { signIn } = useContext(AuthContext);
 
   const toast = useToast();
@@ -52,7 +45,7 @@ export function SignInForm(props: HTMLChakraProps<"div">) {
       py={{ base: "4", md: "8" }}
       px={{ base: "6", md: "8" }}
       borderRadius={8}
-      gridArea={props.gridArea}
+      {...props}
     >
       <Flex
         w={{ base: "100%", md: "inherit" }}

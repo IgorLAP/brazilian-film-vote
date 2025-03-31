@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 
 import {
   Box,
-  Button,
   Flex,
   Icon,
   Text,
@@ -18,7 +17,6 @@ import { webDb } from "~/lib/firebase";
 import { Decades } from "~/models/Decades";
 
 import { CustomLink } from "../CustomLink";
-import { keyframes } from "@emotion/react";
 
 interface DropdownProps {
   onResponsiveMenuClose?: () => void;

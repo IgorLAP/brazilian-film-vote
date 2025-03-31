@@ -1,8 +1,8 @@
 import React from "react";
 
-import { Flex, Heading, HTMLChakraProps, Text } from "@chakra-ui/react";
+import { Flex, FlexProps, Heading, Text } from "@chakra-ui/react";
 
-export function MainLogo(props: HTMLChakraProps<"div">) {
+export function MainLogo(props: FlexProps) {
   return (
     <Flex
       flexDir="column"
@@ -10,10 +10,12 @@ export function MainLogo(props: HTMLChakraProps<"div">) {
       justify="center"
       h={{ base: "100%", md: "inherit" }}
       mr={{ base: "0", md: "4" }}
-      gridArea={props.gridArea}
+      {...props}
     >
       <Heading textAlign="center" fontSize={["2.2rem", "5xl"]} as="h1">
-        <Text as="span" fontSize="4xl">🎬</Text>
+        <Text as="span" fontSize="4xl">
+          🎬
+        </Text>
         <Text color="green.500" as="span">
           b
         </Text>

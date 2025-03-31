@@ -1,12 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 
-import {
-  Flex,
-  Field,
-  Heading,
-  Input,
-  Stack,
-} from "@chakra-ui/react";
+import { Flex, Field, Heading, Input, Stack } from "@chakra-ui/react";
 import axios from "axios";
 import {
   getAuth,

@@ -1,12 +1,6 @@
 import React, { useContext } from "react";
 
-import {
-  Flex,
-  Icon,
-  Link,
-  LinkProps,
-  Text,
-} from "@chakra-ui/react";
+import { Flex, Icon, Link, LinkProps, Text } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { IconType } from "react-icons/lib";
 
@@ -25,10 +19,11 @@ export function CustomLink({ href, icon, text, ...rest }: CustomLinkProps) {
 
   const router = useRouter();
 
-  const IS_ACTIVE_COLOR = router.pathname === href ||
+  const IS_ACTIVE_COLOR =
+    router.pathname === href ||
     (router.pathname === "/list/[id]" && router.asPath.includes(href))
-    ? "blue.500"
-    : "";
+      ? "blue.500"
+      : "";
 
   function handleClick(link: string) {
     if (link === "/user/vote") {
@@ -65,9 +60,7 @@ export function CustomLink({ href, icon, text, ...rest }: CustomLinkProps) {
         onClick={() => handleClick(href)}
         {...rest}
       >
-        <Text
-          color={IS_ACTIVE_COLOR}
-        >{text}</Text>
+        <Text color={IS_ACTIVE_COLOR}>{text}</Text>
       </Link>
     </Flex>
   );

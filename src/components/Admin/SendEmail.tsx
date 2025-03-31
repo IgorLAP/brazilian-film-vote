@@ -1,11 +1,6 @@
 import React, { useState, useContext } from "react";
 
-import {
-  Box,
-  Input,
-  Stack,
-  useBreakpointValue,
-} from "@chakra-ui/react";
+import { Box, Input, Stack, useBreakpointValue } from "@chakra-ui/react";
 import { getAuth, sendSignInLinkToEmail } from "firebase/auth";
 import { collection, getDocs, query, where } from "firebase/firestore";
 

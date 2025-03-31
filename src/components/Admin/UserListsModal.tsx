@@ -101,8 +101,6 @@ export function UserListModal({
 
   const posterPathBase = "https://image.tmdb.org/t/p/w185";
 
-  console.log('isOpen on MOdal', isOpen)
-
   return (
     <Modal
       size={
@@ -113,10 +111,12 @@ export function UserListModal({
       bodyChildren={
         <>
           {selectedList.length <= 0 && !loading && (
-            <Table variant='line' tableHeaders={["ID", "Visualizar"]}>
+            <Table variant="line" tableHeaders={["ID", "Visualizar"]}>
               {modalList.map((list) => (
                 <ChakraTable.Row key={list.idListType?.path.split("/")[1]}>
-                  <ChakraTable.ColumnHeader>{list.idListType.path.split("/")[1]}</ChakraTable.ColumnHeader>
+                  <ChakraTable.ColumnHeader>
+                    {list.idListType.path.split("/")[1]}
+                  </ChakraTable.ColumnHeader>
                   <ChakraTable.ColumnHeader>
                     <Button
                       onClick={() => handleDisplayList(list.movies)}
