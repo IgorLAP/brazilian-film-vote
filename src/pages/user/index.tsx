@@ -5,8 +5,7 @@ import {
   Flex,
   Heading,
   Spinner,
-  Td,
-  Tr,
+  Table as ChakraTable,
   useDisclosure,
 } from "@chakra-ui/react";
 import axios from "axios";
@@ -46,7 +45,7 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
   const { handleLoading, clearLoading } = useContext(LoadingContext);
 
   const toast = useToast();
-  const { isOpen, onClose, onOpen } = useDisclosure();
+  const { open: isOpen, onClose, onOpen } = useDisclosure();
 
   const [userList, setUserList] = useState(lists);
   const [selectedMovieList, setSelectedMovieList] = useState<ShowMovie[]>([]);
@@ -182,14 +181,13 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
           {!loading && (
             <Table
               my="8"
-              variant="striped"
               tableHeaders={["Década", "Nome", "Filmes"]}
             >
               {userList.map((list) => (
-                <Tr key={list.idListType}>
-                  <Td>{list.idListType.split("/")[1].split("-")[0]}</Td>
-                  <Td>{list.name}</Td>
-                  <Td>
+                <ChakraTable.Row key={list.idListType}>
+                  <ChakraTable.ColumnHeader>{list.idListType.split("/")[1].split("-")[0]}</ChakraTable.ColumnHeader>
+                  <ChakraTable.ColumnHeader>{list.name}</ChakraTable.ColumnHeader>
+                  <ChakraTable.ColumnHeader>
                     <CustomButton
                       size={{ base: "sm", md: "md" }}
                       buttonType="primary"
@@ -197,8 +195,8 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
                     >
                       Ver Lista
                     </CustomButton>
-                  </Td>
-                </Tr>
+                  </ChakraTable.ColumnHeader>
+                </ChakraTable.Row>
               ))}
             </Table>
           )}

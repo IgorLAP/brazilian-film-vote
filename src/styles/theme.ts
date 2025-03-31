@@ -1,22 +1,18 @@
-import { ChakraTheme, extendTheme } from "@chakra-ui/react";
+import { createSystem, defaultConfig } from "@chakra-ui/react"
 
-const customTheme: Partial<ChakraTheme> = {
-  config: {
-    initialColorMode: "dark",
-    useSystemColorMode: false,
+export const system = createSystem(defaultConfig, {
+  globalCss: {
+    body: {
+      bg: 'gray.950',
+      color: 'white',
+    },
   },
-  fonts: {
-    heading: "Roboto",
-    body: "Roboto",
-  },
-  styles: {
-    global: {
-      body: {
-        bg: "gray.900",
-        color: "gray.50",
+  theme: {
+    tokens: {
+      fonts: {
+        heading: { value: `'Roboto', sans-serif` },
+        body: { value: `'Roboto', sans-serif` },
       },
     },
   },
-};
-
-export const theme = extendTheme(customTheme);
+})

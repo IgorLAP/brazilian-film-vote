@@ -1,18 +1,18 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useContext, useEffect, useState } from "react";
 
 import {
   Box,
   Flex,
   IconButton,
-  Link,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
 } from "@chakra-ui/react";
+import {
+  MenuContent,
+  MenuItem,
+  MenuRoot,
+  MenuTrigger,
+} from "~/components/ui/menu"
 import { collection, getDocs, query, where } from "firebase/firestore";
-import NextLink from "next/link";
+import Link from "next/link";
 import { AiOutlineUsergroupDelete } from "react-icons/ai";
 import { BsList } from "react-icons/bs";
 import { IoMdMenu } from "react-icons/io";
@@ -23,9 +23,9 @@ import AuthContext from "~/contexts/AuthContext";
 import { webDb } from "~/lib/firebase";
 
 import { CustomLink } from "../CustomLink";
-import { Dropdown } from "../Sidebar/Dropdown";
 import { Logo } from "./Logo";
 import { ProfileMenu } from "./ProfileMenu";
+import { Dropdown } from "../Sidebar/Dropdown";
 
 export function Header() {
   const { user, signOut } = useContext(AuthContext);
@@ -77,66 +77,65 @@ export function Header() {
     >
       <Flex px={{ base: "2", xl: "0" }} align="center">
         <Box display={{ base: "block", lg: "none" }}>
-          <Menu>
-            {({ onClose }) => (
-              <>
-                <MenuButton
-                  as={IconButton}
-                  aria-label="Menu"
-                  variant="ghost"
-                  icon={<IoMdMenu size="32" />}
-                />
-                {user && (
-                  <MenuList minW="0" w="fit-content">
-                    {user?.role === "USER" ? (
-                      <>
-                        <MenuItem onClick={onClose}>
-                          <CustomLink
-                            href={disable ? "" : "/user/vote"}
-                            text="Votar"
-                            icon={MdOutlineHowToVote}
-                          />
-                        </MenuItem>
-                        <MenuItem>
-                          <CustomLink
-                            href="/user"
-                            text="Minhas Listas"
-                            icon={RiListSettingsLine}
-                          />
-                        </MenuItem>
-                      </>
-                    ) : (
-                      <>
-                        <MenuItem>
-                          <CustomLink
-                            href="/admin"
-                            text="Usuários"
-                            icon={AiOutlineUsergroupDelete}
-                          />
-                        </MenuItem>
-                        <MenuItem>
-                          <CustomLink
-                            href="/admin/lists"
-                            text="Gerenciar Listas"
-                            icon={BsList}
-                          />
-                        </MenuItem>
-                      </>
-                    )}
-                    <MenuItem closeOnSelect={false}>
-                      <Dropdown onResponsiveMenuClose={onClose} />
-                    </MenuItem>
-                  </MenuList>
-                )}
-              </>
-            )}
-          </Menu>
+          <MenuRoot>
+            <MenuTrigger asChild>
+              <IconButton
+                aria-label="Menu"
+                variant="ghost"
+              >
+                <IoMdMenu size="32" />
+              </IconButton>
+            </MenuTrigger>
+            <MenuContent>
+              {user && (
+                <>
+                  {user?.role === "USER" ? (
+                    <>
+                      <MenuItem onClick={onclose}>
+                        <CustomLink
+                          href={disable ? "" : "/user/vote"}
+                          text="Votar"
+                          icon={MdOutlineHowToVote}
+                        />
+                      </MenuItem>
+                      <MenuItem>
+                        <CustomLink
+                          href="/user"
+                          text="Minhas Listas"
+                          icon={RiListSettingsLine}
+                        />
+                      </MenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <MenuItem>
+                        <CustomLink
+                          href="/admin"
+                          text="Usuários"
+                          icon={AiOutlineUsergroupDelete}
+                        />
+                      </MenuItem>
+                      <MenuItem>
+                        <CustomLink
+                          href="/admin/lists"
+                          text="Gerenciar Listas"
+                          icon={BsList}
+                        />
+                      </MenuItem>
+                    </>
+                  )}
+                  <MenuItem closeOnSelect={false}>
+                    <Dropdown />
+                    {/* FIXME: onResponsiveMenuClose={onclose} */}
+                  </MenuItem>
+                </>
+              )}
+            </MenuContent>
+          </MenuRoot>
         </Box>
-        <NextLink href="/" passHref>
-          <Link _hover={{ textDecoration: "none" }}>
-            <Logo />
-          </Link>
-        </NextLink>
+        <Link href="/">
+          <Logo />
+        </Link>
       </Flex>
       {loggedUser && <ProfileMenu loggedUser={loggedUser} signOut={signOut} />}
     </Flex>

@@ -2,9 +2,8 @@ import React, { useContext, useEffect, useState } from "react";
 
 import {
   Box,
+  Field,
   Flex,
-  FormControl,
-  FormLabel,
   Heading,
   Icon,
   Input,
@@ -27,7 +26,7 @@ export default function Profile() {
   const { user: loggedUser, onUpdate } = useContext(AuthContext);
 
   const toast = useToast();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
 
   const [name, setName] = useState("");
   const [photoURL, setPhotoURL] = useState("");
@@ -90,24 +89,23 @@ export default function Profile() {
             py="4"
             px="6"
             borderRadius={6}
-            spacing="4"
           >
-            <Box>
-              <FormLabel>Nome</FormLabel>
+            <Field.Root>
+              <Field.Label>Nome</Field.Label>
               <Input bg="gray.900" readOnly value={loggedUser?.name} />
-            </Box>
-            <Box>
-              <FormLabel>Email</FormLabel>
+            </Field.Root>
+            <Field.Root>
+              <Field.Label>Email</Field.Label>
               <Input bg="gray.900" readOnly value={loggedUser?.email} />
-            </Box>
-            <Box>
-              <FormLabel>Avatar</FormLabel>
+            </Field.Root>
+            <Field.Root>
+              <Field.Label>Avatar</Field.Label>
               <Input
                 bg="gray.900"
                 readOnly
                 value={loggedUser?.photoURL ?? "Sem avatar"}
               />
-            </Box>
+            </Field.Root>
             <CustomButton
               size={{ base: "sm", sm: "md" }}
               buttonType="warn"
@@ -125,18 +123,18 @@ export default function Profile() {
         onClose={onClose}
         headerOptions={{ fontSize: "larger", title: "Editar" }}
         bodyChildren={
-          <Stack mx="4" spacing="2">
-            <FormControl>
-              <FormLabel>Nome</FormLabel>
+          <Stack mx="4">
+            <Field.Root>
+              <Field.Label>Nome</Field.Label>
               <Input
                 type="text"
                 bg="gray.900"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
-            </FormControl>
-            <FormControl>
-              <FormLabel>Avatar</FormLabel>
+            </Field.Root>
+            <Field.Root>
+              <Field.Label>Avatar</Field.Label>
               <Input
                 type="text"
                 bg="gray.900"
@@ -144,7 +142,7 @@ export default function Profile() {
                 value={photoURL}
                 onChange={(e) => setPhotoURL(e.target.value)}
               />
-            </FormControl>
+            </Field.Root>
           </Stack>
         }
         footerChildren={

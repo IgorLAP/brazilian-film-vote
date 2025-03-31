@@ -5,15 +5,15 @@ import { Flex, Heading, HTMLChakraProps, Text } from "@chakra-ui/react";
 export function MainLogo(props: HTMLChakraProps<"div">) {
   return (
     <Flex
-      {...props}
       flexDir="column"
       align={{ base: "center", md: "flex-end" }}
       justify="center"
       h={{ base: "100%", md: "inherit" }}
       mr={{ base: "0", md: "4" }}
+      gridArea={props.gridArea}
     >
       <Heading textAlign="center" fontSize={["2.2rem", "5xl"]} as="h1">
-        🎬
+        <Text as="span" fontSize="4xl">🎬</Text>
         <Text color="green.500" as="span">
           b
         </Text>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { Button, Td, Tr, useDisclosure } from "@chakra-ui/react";
+import { Button, Table as ChakraTable, useDisclosure } from "@chakra-ui/react";
 import { doc, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
 
@@ -22,7 +22,7 @@ interface ManageMovieListsProps {
 export function ManageMovieLists({ gList, setGList }: ManageMovieListsProps) {
   const router = useRouter();
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
   const [modalMovieList, setModalMovieList] = useState<Movie[]>();
@@ -65,19 +65,19 @@ export function ManageMovieLists({ gList, setGList }: ManageMovieListsProps) {
     <>
       <Table
         my="8"
-        variant="striped"
+        striped
         tableHeaders={["ID", "Filmes", "Status", "Visualizar"]}
       >
         {gList.map((list) => (
-          <Tr key={list.idListType}>
-            <Td>{list.idListType.split("/")[1]}</Td>
-            <Td>
-              <Button variant="link" onClick={() => handleSeeList(list.movies)}>
+          <ChakraTable.Row key={list.idListType}>
+            <ChakraTable.ColumnHeader>{list.idListType.split("/")[1]}</ChakraTable.ColumnHeader>
+            <ChakraTable.ColumnHeader>
+              <Button variant="ghost" onClick={() => handleSeeList(list.movies)}>
                 Top 10
               </Button>
-            </Td>
-            <Td>{list.status ? "Ativo" : "Finalizado"}</Td>
-            <Td>
+            </ChakraTable.ColumnHeader>
+            <ChakraTable.ColumnHeader>{list.status ? "Ativo" : "Finalizado"}</ChakraTable.ColumnHeader>
+            <ChakraTable.ColumnHeader>
               {list.status ? (
                 <CustomButton
                   buttonType="danger"
@@ -95,21 +95,21 @@ export function ManageMovieLists({ gList, setGList }: ManageMovieListsProps) {
                   Lista
                 </CustomButton>
               )}
-            </Td>
-          </Tr>
+            </ChakraTable.ColumnHeader>
+          </ChakraTable.Row>
         ))}
       </Table>
       <Modal
         isOpen={isOpen}
         onClose={onClose}
         bodyChildren={
-          <Table variant="striped" tableHeaders={["Nome", "Pontos"]}>
+          <Table striped tableHeaders={["Nome", "Pontos"]}>
             {modalMovieList &&
               modalMovieList.slice(0, 10).map((movie) => (
-                <Tr key={movie.name}>
-                  <Td>{movie.name}</Td>
-                  <Td>{movie.points}</Td>
-                </Tr>
+                <ChakraTable.Row key={movie.name}>
+                  <ChakraTable.ColumnHeader>{movie.name}</ChakraTable.ColumnHeader>
+                  <ChakraTable.ColumnHeader>{movie.points}</ChakraTable.ColumnHeader>
+                </ChakraTable.Row>
               ))}
           </Table>
         }

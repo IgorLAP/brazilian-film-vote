@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import {
   Box,
-  Fade,
+  Button,
   Flex,
   Icon,
   Text,
@@ -18,13 +18,14 @@ import { webDb } from "~/lib/firebase";
 import { Decades } from "~/models/Decades";
 
 import { CustomLink } from "../CustomLink";
+import { keyframes } from "@emotion/react";
 
 interface DropdownProps {
   onResponsiveMenuClose?: () => void;
 }
 
 export function Dropdown({ onResponsiveMenuClose }: DropdownProps) {
-  const { onToggle, isOpen } = useDisclosure();
+  const { onToggle, open: isOpen } = useDisclosure();
   const router = useRouter();
 
   const hasOnCloseResponsiveMenu = useBreakpointValue({
@@ -117,7 +118,7 @@ export function Dropdown({ onResponsiveMenuClose }: DropdownProps) {
         <Text as="span">Listas</Text>
       </Flex>
       {isOpen && (
-        <Fade style={{ marginTop: 6 }} in={isOpen}>
+        <Box transition="ease-in-out" style={{ marginTop: 6 }}>
           {decades.length > 0 &&
             decades.map((dec) => {
               const showIcon = dec.show ? RiArrowDownSLine : RiArrowRightSLine;
@@ -132,7 +133,7 @@ export function Dropdown({ onResponsiveMenuClose }: DropdownProps) {
                     <Icon w={5} h={6} as={showIcon} />
                     <Text as="span">{dec.name}</Text>
                   </Flex>
-                  <Fade in={dec.show}>
+                  <Box>
                     {dec.show &&
                       dropdown
                         .filter((drop: string) => drop.includes(dec.name))
@@ -144,7 +145,6 @@ export function Dropdown({ onResponsiveMenuClose }: DropdownProps) {
                             onClick={() => {
                               if (hasOnCloseResponsiveMenu)
                                 onResponsiveMenuClose();
-                              resetDropdown();
                             }}
                           >
                             <CustomLink
@@ -155,11 +155,11 @@ export function Dropdown({ onResponsiveMenuClose }: DropdownProps) {
                             />
                           </Box>
                         ))}
-                  </Fade>
+                  </Box>
                 </Box>
               );
             })}
-        </Fade>
+        </Box>
       )}
     </Flex>
   );

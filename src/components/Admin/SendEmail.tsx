@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 
 import {
-  FormControl,
+  Box,
   Input,
   Stack,
   useBreakpointValue,
@@ -58,19 +58,20 @@ export function SendEmail() {
   const validEmail = newUserEmail.match(emailRegex);
 
   return (
-    <Stack ml={{ base: "4", xl: "0" }} spacing="4" borderRadius="4">
+    <Stack ml={{ base: "4", xl: "0" }} borderRadius="4">
       <CustomButton
         size={{ base: "sm", md: "md" }}
         w="fit-content"
         buttonType="primary"
         alignSelf="flex-start"
+        color="white"
         disabled={!validEmail}
         onClick={handleNewUser}
       >
         Enviar email {responsiveText ? "" : "de cadastro"}
       </CustomButton>
 
-      <FormControl w={{ base: "160px", sm: "240px", md: "420px" }}>
+      <Box w={{ base: "160px", sm: "240px", md: "420px" }}>
         <Input
           size={{ base: "sm", sm: "md" }}
           bg="white"
@@ -81,7 +82,7 @@ export function SendEmail() {
           value={newUserEmail}
           onChange={(e) => setNewUserEmail(e.target.value)}
         />
-      </FormControl>
+      </Box>
     </Stack>
   );
 }

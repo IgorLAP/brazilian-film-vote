@@ -1,6 +1,6 @@
 import React, { useState, useContext, useRef } from "react";
 
-import { Flex, FormControl, FormLabel, Input, Select } from "@chakra-ui/react";
+import { Flex, Field, Input, NativeSelect } from "@chakra-ui/react";
 import {
   collection,
   doc,
@@ -42,7 +42,7 @@ export function CreateList({ validDecades, gList, setGList }: CreateListProps) {
       return (
         list.status &&
         list.idListType.split("/")[1].split("-")[0] ===
-          decadeSelectRef.current.value
+        decadeSelectRef.current.value
       );
     });
     try {
@@ -144,10 +144,10 @@ export function CreateList({ validDecades, gList, setGList }: CreateListProps) {
         align="center"
         flexDir={{ base: "column", sm: "row" }}
       >
-        <FormControl>
-          <FormLabel fontSize={{ base: "sm", md: "md" }}>
+        <Field.Root>
+          <Field.Label fontSize={{ base: "sm", md: "md" }}>
             Nome da lista
-          </FormLabel>
+          </Field.Label>
           <Input
             size={{ base: "sm", md: "md" }}
             bg="gray.900"
@@ -155,22 +155,26 @@ export function CreateList({ validDecades, gList, setGList }: CreateListProps) {
             value={listName}
             onChange={(e) => setListName(e.target.value)}
           />
-        </FormControl>
-        <FormControl mx="4" py={{ base: "4", md: "0" }}>
-          <FormLabel fontSize={{ base: "sm", md: "md" }}>Década</FormLabel>
-          <Select
+        </Field.Root>
+        <Field.Root mx="4" py={{ base: "4", md: "0" }}>
+          <Field.Label fontSize={{ base: "sm", md: "md" }}>Década</Field.Label>
+          <NativeSelect.Root
             size={{ base: "sm", md: "md" }}
-            ref={decadeSelectRef}
-            bg="gray.900"
           >
-            <option value="">Selecione</option>
-            {validDecades.map((decadeOpt) => (
-              <option value={decadeOpt} key={decadeOpt}>
-                {decadeOpt}
-              </option>
-            ))}
-          </Select>
-        </FormControl>
+            <NativeSelect.Field
+              bg="gray.900"
+              ref={decadeSelectRef}
+            >
+              <option value="">Selecione</option>
+              {validDecades.map((decadeOpt) => (
+                <option value={decadeOpt} key={decadeOpt}>
+                  {decadeOpt}
+                </option>
+              ))}
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
+        </Field.Root>
         <CustomButton
           alignSelf="flex-end"
           buttonType="primary"

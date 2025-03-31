@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 
-import { Button, Flex, Grid, Image, Text, Tooltip } from "@chakra-ui/react";
+import { Button, Flex, Grid, Image, Text } from "@chakra-ui/react";
 import axios from "axios";
 
 import { Modal } from "~/components/Modal";
@@ -9,6 +9,7 @@ import { useToast } from "~/hooks/useToast";
 import { ShowMovie } from "~/interfaces/Movie";
 
 import { MovieDetail } from "../MovieDetail";
+import { Tooltip } from "../ui/tooltip";
 
 interface PersonalListModalProps {
   isOpen: boolean;

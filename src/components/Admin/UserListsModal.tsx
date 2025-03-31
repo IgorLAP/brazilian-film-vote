@@ -7,9 +7,8 @@ import {
   Icon,
   Image,
   Spinner,
-  Td,
+  Table as ChakraTable,
   Text,
-  Tr,
 } from "@chakra-ui/react";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 
@@ -102,6 +101,8 @@ export function UserListModal({
 
   const posterPathBase = "https://image.tmdb.org/t/p/w185";
 
+  console.log('isOpen on MOdal', isOpen)
+
   return (
     <Modal
       size={
@@ -112,19 +113,19 @@ export function UserListModal({
       bodyChildren={
         <>
           {selectedList.length <= 0 && !loading && (
-            <Table variant="simple" tableHeaders={["ID", "Visualizar"]}>
+            <Table variant='line' tableHeaders={["ID", "Visualizar"]}>
               {modalList.map((list) => (
-                <Tr key={list.idListType?.path.split("/")[1]}>
-                  <Td>{list.idListType.path.split("/")[1]}</Td>
-                  <Td>
+                <ChakraTable.Row key={list.idListType?.path.split("/")[1]}>
+                  <ChakraTable.ColumnHeader>{list.idListType.path.split("/")[1]}</ChakraTable.ColumnHeader>
+                  <ChakraTable.ColumnHeader>
                     <Button
                       onClick={() => handleDisplayList(list.movies)}
                       variant="ghost"
                     >
                       <Icon w={5} h={5} as={IoIosArrowForward} />
                     </Button>
-                  </Td>
-                </Tr>
+                  </ChakraTable.ColumnHeader>
+                </ChakraTable.Row>
               ))}
             </Table>
           )}

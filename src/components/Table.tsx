@@ -1,18 +1,10 @@
 import React from "react";
 
 import {
-  Table as ChakraTable,
-  TableContainer,
-  TableContainerProps,
-  Tbody,
-  Th,
-  Thead,
-  ThemingProps,
-  Tr,
+  Table as ChakraTable, TableRootProps,
 } from "@chakra-ui/react";
 
-interface TableProps extends TableContainerProps {
-  variant: ThemingProps<"Table">["variant"];
+interface TableProps extends TableRootProps {
   children: React.ReactNode;
   tableHeaders: string[];
 }
@@ -23,18 +15,17 @@ export function Table({
   tableHeaders,
   ...rest
 }: TableProps) {
+  console.log('oi', rest)
   return (
-    <TableContainer {...rest}>
-      <ChakraTable size={{ base: "sm", md: "md" }} variant={variant}>
-        <Thead>
-          <Tr>
-            {tableHeaders.map((th) => (
-              <Th key={th}>{th}</Th>
-            ))}
-          </Tr>
-        </Thead>
-        <Tbody>{children}</Tbody>
-      </ChakraTable>
-    </TableContainer>
+    <ChakraTable.Root size={{ base: "sm", md: "md" }} {...rest} >
+      <ChakraTable.Header>
+        <ChakraTable.Row>
+          {tableHeaders.map((th) => (
+            <ChakraTable.ColumnHeader key={th}>{th}</ChakraTable.ColumnHeader>
+          ))}
+        </ChakraTable.Row>
+      </ChakraTable.Header>
+      <ChakraTable.Body>{children}</ChakraTable.Body>
+    </ChakraTable.Root>
   );
 }

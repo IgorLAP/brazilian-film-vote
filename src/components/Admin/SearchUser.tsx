@@ -65,9 +65,11 @@ export function SearchUser({ setLoading, setResultList }: SearchUserProps) {
         type="submit"
         ml="0.5"
         bg="blue.500"
+        color="white"
         _hover={{ bg: "blue.600" }}
-        icon={<AiOutlineSearch />}
-      />
+      >
+        <AiOutlineSearch />
+      </IconButton>
     </Flex>
   );
 }

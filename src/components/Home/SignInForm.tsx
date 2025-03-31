@@ -52,7 +52,7 @@ export function SignInForm(props: HTMLChakraProps<"div">) {
       py={{ base: "4", md: "8" }}
       px={{ base: "6", md: "8" }}
       borderRadius={8}
-      {...props}
+      gridArea={props.gridArea}
     >
       <Flex
         w={{ base: "100%", md: "inherit" }}
@@ -61,7 +61,7 @@ export function SignInForm(props: HTMLChakraProps<"div">) {
         flexDir="column"
         onSubmit={handleLogin}
       >
-        <Stack spacing="4">
+        <Stack>
           <Flex justify="center" align="center">
             <Icon
               as={IoIosMail}
@@ -96,24 +96,26 @@ export function SignInForm(props: HTMLChakraProps<"div">) {
               onChange={(e) => setPassword(e.target.value)}
             />
           </Flex>
-          <Button
-            variant="unstyled"
-            textAlign="start"
-            size="xs"
-            fontWeight="bold"
-            color="blue.500"
-            _hover={{ color: "blue.600" }}
-          >
-            Esqueci minha senha
-          </Button>
           <CustomButton
             w="100%"
             type="submit"
             buttonType="primary"
+            color="white"
             disabled={!(!!validEmail && passRequiredMinimunLength) || loading}
           >
             Entrar
           </CustomButton>
+          <Button
+            variant="ghost"
+            textAlign="start"
+            size="xs"
+            fontWeight="bold"
+            color="blue.500"
+            h="fit-content"
+            _hover={{ color: "blue.600", background: "transparent" }}
+          >
+            Esqueci minha senha
+          </Button>
         </Stack>
       </Flex>
     </Flex>

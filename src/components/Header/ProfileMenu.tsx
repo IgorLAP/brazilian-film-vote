@@ -4,15 +4,19 @@ import {
   Button,
   Flex,
   Icon,
+  IconButton,
   Image,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
   Text,
 } from "@chakra-ui/react";
 import { BsFillPersonFill } from "react-icons/bs";
 import { GoSignOut } from "react-icons/go";
+
+import {
+  MenuContent,
+  MenuItem,
+  MenuRoot,
+  MenuTrigger,
+} from "~/components/ui/menu"
 
 import { CustomLink } from "../CustomLink";
 
@@ -45,24 +49,26 @@ export function ProfileMenu({ loggedUser, signOut }: ProfileMenuProps) {
         <Text>{loggedUser?.name || ""}</Text>
         <Text>{loggedUser?.email}</Text>
       </Flex>
-      <Menu>
-        <MenuButton aria-label="Menu">
-          <Image
-            h={{ base: "36px", md: "48px" }}
-            w={{ base: "36px", md: "48px" }}
-            objectFit="cover"
-            objectPosition="center"
-            borderRadius={10}
-            border="2px"
-            bg="gray.100"
-            borderColor="blue.400"
-            src={
-              loggedUser?.photoURL ||
-              "https://icon-library.com/images/white-profile-icon/white-profile-icon-24.jpg"
-            }
-          />
-        </MenuButton>
-        <MenuList bgColor="gray.900" minW="0" w="fit-content">
+      <MenuRoot>
+        <MenuTrigger>
+          <IconButton size={{ base: 'sm', md: "lg" }} aria-label="Menu">
+            <Image
+              h={{ base: "34px", md: '40px' }}
+              w={{ base: "34px", md: '40px' }}
+              objectFit="cover"
+              objectPosition="center"
+              borderRadius={2}
+              border="2px"
+              bg="gray.100"
+              borderColor="blue.400"
+              src={
+                loggedUser?.photoURL ||
+                "/images/profile_icon.jpg"
+              }
+            />
+          </IconButton>
+        </MenuTrigger>
+        <MenuContent minW="0" w="fit-content">
           <MenuItem>
             <CustomLink href="/profile" icon={BsFillPersonFill} text="Perfil" />
           </MenuItem>
@@ -74,13 +80,13 @@ export function ProfileMenu({ loggedUser, signOut }: ProfileMenuProps) {
             fontWeight="normal"
             onClick={signOut}
             variant="unstyled"
-            _hover={{ color: "blue.400" }}
+            _hover={{ color: "blue.400", cursor: 'pointer' }}
           >
-            <Icon mr="2" as={GoSignOut} />
+            <Icon as={GoSignOut} />
             Sair
           </MenuItem>
-        </MenuList>
-      </Menu>
+        </MenuContent>
+      </MenuRoot>
     </Flex>
   );
 }

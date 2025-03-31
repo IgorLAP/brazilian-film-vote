@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState, useMemo } from "react";
 
-import { Flex, Heading, Spinner, Button, Tooltip } from "@chakra-ui/react";
+import { Flex, Heading, Spinner, Button } from "@chakra-ui/react";
 import axios from "axios";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
@@ -14,6 +14,7 @@ import { GLMovie } from "~/interfaces/Movie";
 import { TmdbMovie, TmdbMovieCredit } from "~/interfaces/Tmdb";
 import { adminDb } from "~/lib/firebase-admin";
 import { tmdbApi } from "~/lib/tmdb";
+import { Tooltip } from "~/components/ui/tooltip";
 
 interface ListProps {
   generalList: ExhibitGeneralListI;

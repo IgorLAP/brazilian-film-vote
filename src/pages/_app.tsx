@@ -2,21 +2,20 @@ import "react-toastify/dist/ReactToastify.css";
 
 import React from "react";
 
-import { ChakraProvider } from "@chakra-ui/react";
 import { AppProps } from "next/app";
 import { ToastContainer } from "react-toastify";
 
 import { App } from "~/components/App";
-import { theme } from "~/styles/theme";
+import { Provider } from "~/components/ui/provider";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <ChakraProvider theme={theme}>
+    <Provider>
       <App>
         <Component {...pageProps} />
       </App>
       <ToastContainer newestOnTop />
-    </ChakraProvider>
+    </Provider>
   );
 }
 

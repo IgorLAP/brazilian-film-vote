@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 
-import { Icon, Td, Tr } from "@chakra-ui/react";
+import { Icon, Table as ChakraTable } from "@chakra-ui/react";
 import axios from "axios";
 import {
   collection,
@@ -46,6 +46,7 @@ export function UsersListsTable({
   const toast = useToast();
 
   async function handleSeeUsersList(email: string) {
+    console.log('oi')
     handleLoading(30, 1000);
     try {
       const q = query(collection(webDb, "users"), where("email", "==", email));
@@ -102,13 +103,13 @@ export function UsersListsTable({
       my="8"
       mx={{ base: "4", xl: "0" }}
       tableHeaders={["Nome", "Email", "Listas", "Excluir"]}
-      variant="striped"
+      striped
     >
       {usersList.map((user) => (
-        <Tr key={user.email}>
-          <Td>{user?.name}</Td>
-          <Td>{user.email}</Td>
-          <Td>
+        <ChakraTable.Row key={user.email}>
+          <ChakraTable.ColumnHeader>{user?.name}</ChakraTable.ColumnHeader>
+          <ChakraTable.ColumnHeader>{user.email}</ChakraTable.ColumnHeader>
+          <ChakraTable.ColumnHeader>
             <CustomButton
               w="fit-content"
               buttonType="warn"
@@ -116,8 +117,8 @@ export function UsersListsTable({
             >
               <Icon as={RiFileUserFill} />
             </CustomButton>
-          </Td>
-          <Td>
+          </ChakraTable.ColumnHeader>
+          <ChakraTable.ColumnHeader>
             <CustomButton
               w="fit-content"
               buttonType="danger"
@@ -125,8 +126,8 @@ export function UsersListsTable({
             >
               <Icon as={FiTrash2} />
             </CustomButton>
-          </Td>
-        </Tr>
+          </ChakraTable.ColumnHeader>
+        </ChakraTable.Row>
       ))}
     </Table>
   );

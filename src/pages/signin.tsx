@@ -2,8 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 
 import {
   Flex,
-  FormControl,
-  FormLabel,
+  Field,
   Heading,
   Input,
   Stack,
@@ -99,9 +98,9 @@ export default function singnIn() {
           mt="2"
           borderRadius={8}
         >
-          <Stack spacing="3">
-            <FormControl borderRadius={4}>
-              <FormLabel>Nome</FormLabel>
+          <Stack gap="3">
+            <Field.Root borderRadius={4}>
+              <Field.Label>Nome</Field.Label>
               <Input
                 size={{ base: "sm", md: "md" }}
                 px={{ base: "0", md: "4" }}
@@ -110,9 +109,9 @@ export default function singnIn() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
-            </FormControl>
-            <FormControl>
-              <FormLabel>Email</FormLabel>
+            </Field.Root>
+            <Field.Root>
+              <Field.Label>Email</Field.Label>
               <Input
                 size={{ base: "sm", md: "md" }}
                 px={{ base: "0", md: "4" }}
@@ -121,9 +120,9 @@ export default function singnIn() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-            </FormControl>
-            <FormControl>
-              <FormLabel>Senha</FormLabel>
+            </Field.Root>
+            <Field.Root>
+              <Field.Label>Senha</Field.Label>
               <Input
                 size={{ base: "sm", md: "md" }}
                 px={{ base: "0", md: "4" }}
@@ -132,9 +131,9 @@ export default function singnIn() {
                 bg="gray.900"
                 onChange={(e) => setPassword(e.target.value)}
               />
-            </FormControl>
-            <FormControl>
-              <FormLabel>Confirmar senha</FormLabel>
+            </Field.Root>
+            <Field.Root>
+              <Field.Label>Confirmar senha</Field.Label>
               <Input
                 size={{ base: "sm", md: "md" }}
                 px={{ base: "0", md: "4" }}
@@ -143,7 +142,7 @@ export default function singnIn() {
                 bg="gray.900"
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
-            </FormControl>
+            </Field.Root>
             <CustomButton
               size={{ base: "sm", md: "md" }}
               buttonType="primary"

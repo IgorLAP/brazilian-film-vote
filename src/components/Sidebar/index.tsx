@@ -59,7 +59,7 @@ export function Sidebar() {
       mr="6"
     >
       {user && (
-        <Stack spacing="4">
+        <Stack>
           {user?.role === "ADMIN" && (
             <>
               <CustomLink

@@ -3,16 +3,16 @@ import React, { useContext } from "react";
 import {
   Flex,
   Icon,
-  Link as ChakraLink,
+  Link,
   LinkProps,
   Text,
-  Tooltip,
 } from "@chakra-ui/react";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { IconType } from "react-icons/lib";
 
 import { LoadingContext } from "~/contexts/LoadingContext";
+
+import { Tooltip } from "./ui/tooltip";
 
 interface CustomLinkProps extends LinkProps {
   href: string;
@@ -24,6 +24,11 @@ export function CustomLink({ href, icon, text, ...rest }: CustomLinkProps) {
   const { handleLoading } = useContext(LoadingContext);
 
   const router = useRouter();
+
+  const IS_ACTIVE_COLOR = router.pathname === href ||
+    (router.pathname === "/list/[id]" && router.asPath.includes(href))
+    ? "blue.500"
+    : "";
 
   function handleClick(link: string) {
     if (link === "/user/vote") {
@@ -49,25 +54,21 @@ export function CustomLink({ href, icon, text, ...rest }: CustomLinkProps) {
     </Tooltip>
   ) : (
     <Flex
-      color={
-        router.pathname === href ||
-        (router.pathname === "/list/[id]" && router.asPath.includes(href))
-          ? "blue.500"
-          : ""
-      }
+      color={IS_ACTIVE_COLOR}
       _hover={{ color: "blue.500", cursor: "pointer" }}
       justify="flex-start"
+      align="center"
     >
       <Icon fontSize="20" mr="2" as={icon} />
-      <NextLink href="#">
-        <ChakraLink
-          _hover={{ textDecoration: "none" }}
-          onClick={() => handleClick(href)}
-          {...rest}
-        >
-          <Text>{text}</Text>
-        </ChakraLink>
-      </NextLink>
+      <Link
+        _hover={{ textDecoration: "none" }}
+        onClick={() => handleClick(href)}
+        {...rest}
+      >
+        <Text
+          color={IS_ACTIVE_COLOR}
+        >{text}</Text>
+      </Link>
     </Flex>
   );
 }

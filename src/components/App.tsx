@@ -20,11 +20,11 @@ export function App({ children }: { children: React.ReactNode }) {
   return (
     <LoadingProvider>
       <AuthProvider>
-        <Box>
+        <Box maxWidth="1180px" marginInline="auto">
           {!isIndex && <Header />}
-          <Flex maxW="1180" my="0" mx="auto" py={!isIndex ? "4" : ""}>
+          <Flex >
             {!!token && <Sidebar />}
-            <Box as="main" style={{ width: "100%" }}>
+            <Box as="main" width="100%">
               {children}
             </Box>
           </Flex>

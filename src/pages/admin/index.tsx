@@ -39,7 +39,7 @@ interface AdminProps {
 }
 
 export default function Admin({ users, pagination }: AdminProps) {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { onClose, onOpen, open: isOpen } = useDisclosure();
 
   const toast = useToast();
 
@@ -100,6 +100,7 @@ export default function Admin({ users, pagination }: AdminProps) {
     }
     setLoading(false);
   }
+
 
   return (
     <>
