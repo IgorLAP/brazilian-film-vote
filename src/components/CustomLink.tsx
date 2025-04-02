@@ -60,7 +60,9 @@ export function CustomLink({ href, icon, text, ...rest }: CustomLinkProps) {
         onClick={() => handleClick(href)}
         {...rest}
       >
-        <Text color={IS_ACTIVE_COLOR}>{text}</Text>
+        <Text _hover={{ color: "blue.500" }} color={IS_ACTIVE_COLOR}>
+          {text}
+        </Text>
       </Link>
     </Flex>
   );

@@ -31,34 +31,32 @@ export function Header() {
 
   useEffect(() => {
     setLoggedUser(user);
+    if (user?.uid) {
+      manageVotingDisponibility();
+    }
   }, [user]);
 
-  useEffect(() => {
-    async function handle() {
-      const usersListQuery = query(
-        collection(webDb, `users/${user?.uid}/lists`)
-      );
-      const { docs: listDocs } = await getDocs(usersListQuery);
-      const userLists = listDocs.map((list) => list.id);
-      const generalQuery = query(
-        collection(webDb, "general_list"),
-        where("status", "==", true)
-      );
-      const { empty, docs: activeListsDocs } = await getDocs(generalQuery);
-      const activeListId = activeListsDocs.map((list) => list.id);
-      if (empty) return;
-      for (const activeList of activeListId) {
-        for (const userList of userLists) {
-          if (activeList === userList) {
-            setDisable(true);
-            return;
-          }
+  async function manageVotingDisponibility() {
+    const usersListQuery = query(collection(webDb, `users/${user?.uid}/lists`));
+    const { docs: listDocs } = await getDocs(usersListQuery);
+    const userLists = listDocs.map((list) => list.id);
+    const generalQuery = query(
+      collection(webDb, "general_list"),
+      where("status", "==", true)
+    );
+    const { empty, docs: activeListsDocs } = await getDocs(generalQuery);
+    const activeListId = activeListsDocs.map((list) => list.id);
+    if (empty) return;
+    for (const activeList of activeListId) {
+      for (const userList of userLists) {
+        if (activeList === userList) {
+          setDisable(true);
+          return;
         }
-        setDisable(false);
       }
+      setDisable(false);
     }
-    handle();
-  }, []);
+  }
 
   return (
     <Flex

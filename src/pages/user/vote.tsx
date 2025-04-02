@@ -35,7 +35,7 @@ export default function Vote({ generalList }: VoteProps) {
         <Heading as="h1" size={{ base: "lg", sm: "xl" }}>
           Votação dos anos {votingDecade}
         </Heading>
-        <Stack my="2" spacing="2">
+        <Stack my="2" gap="2">
           <Text
             color="red.600"
             fontSize={{ base: "xs", sm: "sm" }}

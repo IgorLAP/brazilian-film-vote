@@ -8,15 +8,11 @@ import {
   Grid,
   Image,
   Input,
-  ListItem,
   Popover,
-  PopoverAnchor,
-  PopoverBody,
-  PopoverContent,
   Spinner,
   Stack,
-  Text,
-  UnorderedList,
+  List,
+  Portal,
 } from "@chakra-ui/react";
 
 import useDebounce from "~/hooks/useDebounce";
@@ -51,19 +47,21 @@ export function VotingGrid({
   handleNotFoundMovie,
 }: VotingGridProps) {
   const inputArrayRef = useRef<HTMLInputElement[]>();
-  const checkboxArrayRef = useRef<HTMLInputElement>();
 
   const [search, setSearch] = useState("");
-  const [hasResults, setHasResults] = useState(false);
+  const [inputOnSearch, setInputOnSearch] = useState<number>();
   const [loading, setLoading] = useState(false);
   const [tmdbList, setTmdbList] = useState<TmdbList[]>([]);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(
+    Object.fromEntries(Array.from({ length: 20 }, (_, i) => [i, false]))
+  );
 
-  const debouncedSearch = useDebounce(search, 500);
+  const DEBOUNCED_SEARCH = useDebounce(search, 500);
   const toast = useToast();
 
   useEffect(() => {
-    if (search) tmdbSearch(debouncedSearch);
-  }, [debouncedSearch]);
+    if (search) tmdbSearch(DEBOUNCED_SEARCH);
+  }, [DEBOUNCED_SEARCH]);
 
   async function tmdbSearch(query: string) {
     const { data } = await tmdbApi.get<TmdbSearch>("search/movie", {
@@ -76,10 +74,12 @@ export function VotingGrid({
     );
     if (filterByDecade.length > 0) {
       setTmdbList(filterByDecade);
-      setHasResults(true);
+      setIsPopoverOpen({
+        ...isPopoverOpen,
+        [inputOnSearch]: true,
+      });
     } else {
       toast("error", "Nenhum resultado encontrado");
-      setHasResults(false);
       setTmdbList([]);
     }
     setLoading(false);
@@ -88,7 +88,6 @@ export function VotingGrid({
   async function handleSearch(inputValue: string, index: number) {
     setLoading(true);
     if (!inputValue || !inputValue.trim()) {
-      setHasResults(false);
       setTmdbList([]);
       setMovieList((prevState) => {
         const tmp = [...prevState];
@@ -110,6 +109,20 @@ export function VotingGrid({
       return tmp;
     });
     setSearch(inputValue);
+    managePopoverCloseDebounce();
+    setInputOnSearch(index);
+  }
+
+  function managePopoverCloseDebounce() {
+    const otherPopoverOpen = Object.keys(isPopoverOpen).find(
+      (key) => !!isPopoverOpen[key]
+    );
+    if (otherPopoverOpen) {
+      setIsPopoverOpen({
+        ...isPopoverOpen,
+        [Number(otherPopoverOpen)]: false,
+      });
+    }
   }
 
   function handleMovieChange(movie: string, id: number, index: number) {
@@ -132,11 +145,19 @@ export function VotingGrid({
       });
     }
     setSearch("");
-    setHasResults(false);
     setTmdbList([]);
+    setIsPopoverOpen({
+      ...isPopoverOpen,
+      [index]: false,
+    });
   }
 
-  const posterPathBase = "https://image.tmdb.org/t/p/w92";
+  const POSTER_BASE_PATH = "https://image.tmdb.org/t/p/w92";
+  const WAIT_RESET_DEBOUNCE = DEBOUNCED_SEARCH !== "" && search === "";
+
+  if (WAIT_RESET_DEBOUNCE) {
+    managePopoverCloseDebounce();
+  }
 
   return (
     <Grid
@@ -155,14 +176,23 @@ export function VotingGrid({
         const hasName = !!movieList[index].name;
         const isDefaultId = movieList[index].id === 0;
         const isNotFoundMovie = movieList[index].id === "No ID";
-        const waitResetDebounce = debouncedSearch !== "" && search === "";
+        const isMovieFoundBySearch = hasName && isDefaultId;
         return (
-          <Popover
-            isOpen={hasName && isDefaultId}
+          <Popover.Root
+            open={isPopoverOpen[index]}
+            onOpenChange={(e) => {
+              if (!isMovieFoundBySearch) return;
+
+              if (isMovieFoundBySearch) {
+                setIsPopoverOpen({
+                  ...isPopoverOpen,
+                  [index]: e.open,
+                });
+              }
+            }}
             key={movie.points}
-            initialFocusRef={inputArrayRef[index]}
           >
-            <PopoverAnchor>
+            <Popover.Trigger asChild>
               <Box>
                 <Flex align="center">
                   <Input
@@ -174,14 +204,13 @@ export function VotingGrid({
                     placeholder={`${index + 1}º`}
                     ref={inputArrayRef[index]}
                     value={movieList[index].name}
-                    disabled={waitResetDebounce}
+                    disabled={WAIT_RESET_DEBOUNCE}
                     borderColor={hasId && hasName ? "green.500" : "inherit"}
                     _hover={{
                       borderColor: hasId && hasName ? "green.400" : "gray.600",
                     }}
                     onChange={(e) => handleSearch(e.target.value, index)}
                     onFocus={() => {
-                      if (hasResults) setHasResults(false);
                       let hadClean = false;
                       movieList.forEach((item, i) => {
                         if (
@@ -203,7 +232,7 @@ export function VotingGrid({
                     display={loading && !hasId && hasName ? "block" : "none"}
                   />
                 </Flex>
-                <Checkbox
+                <Checkbox.Root
                   size="sm"
                   mt="2"
                   disabled={!isDefaultId && !isNotFoundMovie}
@@ -212,81 +241,92 @@ export function VotingGrid({
                     if (hasName)
                       handleNotFoundMovie(movieList[index].name, index);
                   }}
-                  ref={checkboxArrayRef}
                 >
-                  <Text fontSize="smaller">Filme não encontrado</Text>
-                </Checkbox>
+                  <Checkbox.HiddenInput />
+                  <Checkbox.Control bg="white">
+                    <Checkbox.Indicator />
+                  </Checkbox.Control>
+                  <Checkbox.Label>Filme não encontrado</Checkbox.Label>
+                </Checkbox.Root>
               </Box>
-            </PopoverAnchor>
-            {hasResults && (
-              <PopoverContent ml={{ sm: "2" }} h="fit-content" w="fit-content">
-                <PopoverBody w={{ base: "280px", sm: "-webkit-fit-content" }}>
-                  <UnorderedList
-                    display="flex"
-                    flexDir="column"
-                    listStyleType="none"
-                  >
-                    <Stack
-                      spacing="4"
-                      h="150px"
-                      overflowY="scroll"
-                      overflowX="scroll"
-                      scrollBehavior="smooth"
-                      pb={{ base: ".5rem", sm: "0" }}
-                      css={{
-                        "&::-webkit-scrollbar": {
-                          width: "3px",
-                          height: "3px",
-                        },
-                        "&::-webkit-scrollbar-track": {
-                          background: "transparent",
-                        },
-                        "&::-webkit-scrollbar-thumb": {
-                          backgroundColor: "rgb(48, 130, 206)",
-                          borderRadius: "12px",
-                        },
-                      }}
+            </Popover.Trigger>
+            <Portal>
+              <Popover.Positioner>
+                <Popover.Content>
+                  <Popover.CloseTrigger />
+                  <Popover.Arrow />
+                  <Popover.Body>
+                    <List.Root
+                      display="flex"
+                      flexDir="column"
+                      listStyleType="none"
                     >
-                      {tmdbList.map((result) => (
-                        <ListItem
-                          display="flex"
-                          justifyContent="center"
-                          alignItems="center"
-                          key={result.id}
-                          _hover={{ bg: "gray.600" }}
-                        >
-                          <Button
-                            w="100%"
-                            h="100%"
-                            mr="2"
-                            variant="unstyled"
+                      <Stack
+                        gap="4"
+                        h="150px"
+                        overflowY="scroll"
+                        overflowX="scroll"
+                        scrollBehavior="smooth"
+                        pb={{ base: ".5rem", sm: "0" }}
+                        css={{
+                          "&::-webkit-scrollbar": {
+                            width: "3px",
+                            height: "3px",
+                          },
+                          "&::-webkit-scrollbar-track": {
+                            background: "transparent",
+                          },
+                          "&::-webkit-scrollbar-thumb": {
+                            backgroundColor: "rgb(48, 130, 206)",
+                            borderRadius: "12px",
+                          },
+                        }}
+                      >
+                        {tmdbList.map((result) => (
+                          <List.Item
                             display="flex"
-                            justifyContent="flex-start"
-                            onClick={() =>
-                              handleMovieChange(result.title, result.id, index)
-                            }
+                            justifyContent="center"
+                            alignItems="center"
+                            key={result.id}
+                            _hover={{ bg: "gray.600" }}
                           >
-                            <Image
-                              h="45px"
-                              w="45px"
+                            <Button
+                              w="100%"
+                              h="100%"
                               mr="2"
-                              objectFit="cover"
-                              objectPosition="center"
-                              src={posterPathBase + result.poster_path}
-                            />
-                            {result.title.length >= 40
-                              ? `${result.title.substring(0, 25)}... `
-                              : result.title}{" "}
-                            - {result.release_date.split("-")[0]}
-                          </Button>
-                        </ListItem>
-                      ))}
-                    </Stack>
-                  </UnorderedList>
-                </PopoverBody>
-              </PopoverContent>
-            )}
-          </Popover>
+                              variant="ghost"
+                              display="flex"
+                              justifyContent="flex-start"
+                              onClick={() =>
+                                handleMovieChange(
+                                  result.title,
+                                  result.id,
+                                  index
+                                )
+                              }
+                            >
+                              <Image
+                                h="45px"
+                                w="45px"
+                                mr="2"
+                                objectFit="cover"
+                                objectPosition="center"
+                                src={POSTER_BASE_PATH + result.poster_path}
+                              />
+                              {result.title.length >= 40
+                                ? `${result.title.substring(0, 25)}... `
+                                : result.title}{" "}
+                              - {result.release_date.split("-")[0]}
+                            </Button>
+                          </List.Item>
+                        ))}
+                      </Stack>
+                    </List.Root>
+                  </Popover.Body>
+                </Popover.Content>
+              </Popover.Positioner>
+            </Portal>
+          </Popover.Root>
         );
       })}
     </Grid>

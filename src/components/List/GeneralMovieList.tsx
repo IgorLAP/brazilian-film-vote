@@ -81,7 +81,7 @@ export function GeneralMovieList({
                 }}
                 display="flex"
                 alignItems="flex-start"
-                spacing="2"
+                gap="2"
               >
                 <MovieDetail field="Título" value={movie.name} />
                 <MovieDetail field="Pontos" value={movie.points} />

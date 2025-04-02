@@ -50,7 +50,7 @@ const movieListPlaceholder: Movie[] = [
 export function Voting({ votingDecade, idListType }: VotingProps) {
   const router = useRouter();
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
   const { user } = useContext(AuthContext);
   const { handleLoading, clearLoading } = useContext(LoadingContext);
 

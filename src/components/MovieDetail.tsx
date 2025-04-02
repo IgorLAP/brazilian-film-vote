@@ -10,7 +10,7 @@ interface MovieDetailProps {
 export function MovieDetail({ field, value }: MovieDetailProps) {
   return (
     <Flex justify="center" align="center">
-      <HStack spacing="1">
+      <HStack gap="1">
         <Text
           fontWeight="medium"
           fontSize={{ base: "sm", md: "md", lg: "medium" }}

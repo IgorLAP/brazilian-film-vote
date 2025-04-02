@@ -7,7 +7,7 @@ interface ModalProps extends Omit<DialogRootProps, "children"> {
   footerChildren?: React.ReactNode;
   headerOptions?: {
     title?: string;
-    fontSize?: any;
+    fontSize?: string;
   };
 }
 
