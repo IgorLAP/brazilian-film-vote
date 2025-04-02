@@ -48,7 +48,7 @@ export function NumericPagination({
           <Button variant="ghost" onClick={() => handlePrevPage(1)}>
             1
           </Button>
-          {actualPage - 2 > 1 && <Button variant="unstyled">...</Button>}
+          {actualPage - 2 > 1 && <Button variant="ghost">...</Button>}
         </>
       )}
 
@@ -68,7 +68,7 @@ export function NumericPagination({
 
       {actualPage + 2 <= allPages && (
         <>
-          {actualPage + 2 < allPages && <Button variant="unstyled">...</Button>}
+          {actualPage + 2 < allPages && <Button variant="ghost">...</Button>}
           <Button variant="ghost" onClick={() => handleNextPage(allPages)}>
             {allPages}
           </Button>

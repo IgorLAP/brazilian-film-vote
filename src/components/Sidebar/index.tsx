@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 
-import { Box, Stack } from "@chakra-ui/react";
+import { Box, Skeleton, Stack } from "@chakra-ui/react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { AiOutlineUsergroupDelete } from "react-icons/ai";
 import { BsList } from "react-icons/bs";
@@ -16,7 +16,7 @@ import { Dropdown } from "./Dropdown";
 export function Sidebar() {
   const { user } = useContext(AuthContext);
 
-  const [disable, setDisable] = useState(true);
+  const [isVoteAvailable, setIsVoteAvailable] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -43,11 +43,11 @@ export function Sidebar() {
     for (const activeList of activeListId) {
       for (const userList of userLists) {
         if (activeList === userList) {
-          setDisable(true);
+          setIsVoteAvailable(false);
           return;
         }
       }
-      setDisable(false);
+      setIsVoteAvailable(true);
     }
   }
 
@@ -80,7 +80,7 @@ export function Sidebar() {
           {user?.role === "USER" && (
             <>
               <CustomLink
-                href={disable ? "" : "/user/vote"}
+                href={isVoteAvailable ? "/user/vote" : ""}
                 text="Votar"
                 icon={MdOutlineHowToVote}
               />
@@ -92,6 +92,13 @@ export function Sidebar() {
             </>
           )}
           <Dropdown />
+        </Stack>
+      )}
+      {!user && (
+        <Stack gap="4">
+          <Skeleton height="25px" />
+          <Skeleton height="25px" />
+          <Skeleton height="25px" />
         </Stack>
       )}
     </Box>

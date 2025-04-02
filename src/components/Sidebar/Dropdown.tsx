@@ -19,7 +19,7 @@ import { Decades } from "~/models/Decades";
 import { CustomLink } from "../CustomLink";
 
 interface DropdownProps {
-  onResponsiveMenuClose?: () => void;
+  onResponsiveMenuClose?: (e: boolean) => void;
 }
 
 export function Dropdown({ onResponsiveMenuClose }: DropdownProps) {
@@ -142,7 +142,7 @@ export function Dropdown({ onResponsiveMenuClose }: DropdownProps) {
                             my="2"
                             onClick={() => {
                               if (hasOnCloseResponsiveMenu)
-                                onResponsiveMenuClose();
+                                onResponsiveMenuClose(false);
                             }}
                           >
                             <CustomLink

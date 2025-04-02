@@ -26,8 +26,9 @@ import { ProfileMenu } from "./ProfileMenu";
 export function Header() {
   const { user, signOut } = useContext(AuthContext);
 
-  const [disable, setDisable] = useState(false);
+  const [isVoteAvailable, setIsVoteAvailable] = useState(false);
   const [loggedUser, setLoggedUser] = useState<typeof user>();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     setLoggedUser(user);
@@ -50,11 +51,11 @@ export function Header() {
     for (const activeList of activeListId) {
       for (const userList of userLists) {
         if (activeList === userList) {
-          setDisable(true);
+          setIsVoteAvailable(false);
           return;
         }
       }
-      setDisable(false);
+      setIsVoteAvailable(true);
     }
   }
 
@@ -71,7 +72,10 @@ export function Header() {
     >
       <Flex px={{ base: "2", xl: "0" }} align="center">
         <Box display={{ base: "block", lg: "none" }}>
-          <MenuRoot>
+          <MenuRoot
+            open={isMenuOpen}
+            onOpenChange={(e) => setIsMenuOpen(e.open)}
+          >
             <MenuTrigger asChild>
               <IconButton aria-label="Menu" variant="ghost">
                 <IoMdMenu size="32" />
@@ -84,7 +88,7 @@ export function Header() {
                     <>
                       <MenuItem onClick={onclose}>
                         <CustomLink
-                          href={disable ? "" : "/user/vote"}
+                          href={isVoteAvailable ? "/user/vote" : ""}
                           text="Votar"
                           icon={MdOutlineHowToVote}
                         />
@@ -116,8 +120,7 @@ export function Header() {
                     </>
                   )}
                   <MenuItem closeOnSelect={false}>
-                    <Dropdown />
-                    {/* FIXME: onResponsiveMenuClose={onclose} */}
+                    <Dropdown onResponsiveMenuClose={setIsMenuOpen} />
                   </MenuItem>
                 </>
               )}
