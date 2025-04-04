@@ -1,6 +1,6 @@
 import { NextApiResponse, NextApiRequest } from "next";
 
-import { adminDb, auth } from "~/lib/firebase-admin";
+import { adminDb, auth } from "~/presentation/lib/firebase-admin";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== "POST") {

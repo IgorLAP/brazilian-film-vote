@@ -5,8 +5,8 @@ import React from "react";
 import { AppProps } from "next/app";
 import { ToastContainer } from "react-toastify";
 
-import { App } from "~/components/App";
-import { Provider } from "~/components/ui/provider";
+import { App } from "~/presentation/components/App";
+import { Provider } from "~/presentation/components/ui/provider";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (

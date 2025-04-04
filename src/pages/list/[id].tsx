@@ -5,16 +5,16 @@ import axios from "axios";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 
-import { GeneralMovieList } from "~/components/List/GeneralMovieList";
-import { Tooltip } from "~/components/ui/tooltip";
-import AuthContext from "~/contexts/AuthContext";
-import { LoadingContext } from "~/contexts/LoadingContext";
-import { useToast } from "~/hooks/useToast";
-import { ExhibitGeneralListI } from "~/interfaces/GeneralList";
-import { GLMovie } from "~/interfaces/Movie";
-import { TmdbMovie, TmdbMovieCredit } from "~/interfaces/Tmdb";
-import { adminDb } from "~/lib/firebase-admin";
-import { tmdbApi } from "~/lib/tmdb";
+import { GeneralMovieList } from "~/presentation/components/List/GeneralMovieList";
+import { Tooltip } from "~/presentation/components/ui/tooltip";
+import { AuthContext } from "~/presentation/contexts";
+import { LoadingContext } from "~/presentation/contexts/LoadingContext";
+import { useToast } from "~/presentation/hooks/useToast";
+import { ExhibitGeneralListI } from "~/presentation/interfaces/GeneralList";
+import { GLMovie } from "~/presentation/interfaces/Movie";
+import { TmdbMovie, TmdbMovieCredit } from "~/presentation/interfaces/Tmdb";
+import { adminDb } from "~/presentation/lib/firebase-admin";
+import { tmdbApi } from "~/presentation/lib/tmdb";
 
 interface ListProps {
   generalList: ExhibitGeneralListI;
@@ -62,7 +62,7 @@ export default function List({ generalList, listType }: ListProps) {
             .then((results) =>
               results.data.crew
                 .filter((member) => member.job === "Director")
-                .pop()
+                .pop(),
             );
         });
         const posterYearsPromises = generalList.movies.map((movie) => {
@@ -84,10 +84,10 @@ export default function List({ generalList, listType }: ListProps) {
             }));
         });
         const directors = await Promise.all(dirPromises).then(
-          (results) => results
+          (results) => results,
         );
         const posterYears = await Promise.all(posterYearsPromises).then(
-          (results) => results
+          (results) => results,
         );
         const moviesWithDirectors = directors.map((item, index) => ({
           director: item?.name,
@@ -127,7 +127,7 @@ export default function List({ generalList, listType }: ListProps) {
       link.href = url;
       link.setAttribute(
         "download",
-        `${listType.decade}_${listType.name.trim().replaceAll(" ", "_")}.csv`
+        `${listType.decade}_${listType.name.trim().replaceAll(" ", "_")}.csv`,
       );
       document.body.appendChild(link);
       link.click();

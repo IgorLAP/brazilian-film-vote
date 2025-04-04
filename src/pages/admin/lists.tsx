@@ -5,14 +5,14 @@ import axios from "axios";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 
-import { CreateList } from "~/components/Admin/CreateList";
-import { ManageMovieLists } from "~/components/Admin/ManageMovieLists";
-import { NextPrevPagination } from "~/components/NextPrevPagination";
-import { verifySSRAuth } from "~/helpers/veritySSRAuth";
-import { useToast } from "~/hooks/useToast";
-import { ExhibitGeneralListI } from "~/interfaces/GeneralList";
-import { adminDb } from "~/lib/firebase-admin";
-import { Decades } from "~/models/Decades";
+import { CreateList } from "~/presentation/components/Admin/CreateList";
+import { ManageMovieLists } from "~/presentation/components/Admin/ManageMovieLists";
+import { NextPrevPagination } from "~/presentation/components/NextPrevPagination";
+import { verifySSRAuth } from "~/presentation/helpers/veritySSRAuth";
+import { useToast } from "~/presentation/hooks/useToast";
+import { ExhibitGeneralListI } from "~/presentation/interfaces/GeneralList";
+import { adminDb } from "~/presentation/lib/firebase-admin";
+import { Decades } from "~/presentation/models/Decades";
 
 interface ListsProps {
   generalList: ExhibitGeneralListI[];
@@ -65,10 +65,10 @@ export default function Lists({
       });
       setGList(data.page as ExhibitGeneralListI[]);
       setLastPageItem((prev) =>
-        prev.filter((item) => item.idListType.split("/")[1] !== lastPageLast)
+        prev.filter((item) => item.idListType.split("/")[1] !== lastPageLast),
       );
       setFirstPageItem((prev) =>
-        prev.filter((item) => item.idListType.split("/")[1] !== firstPageLast)
+        prev.filter((item) => item.idListType.split("/")[1] !== firstPageLast),
       );
       setActualPage((prev) => prev - 1);
     } catch (err) {
@@ -139,5 +139,5 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
         },
       },
     };
-  }
+  },
 );

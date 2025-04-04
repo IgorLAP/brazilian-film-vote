@@ -14,12 +14,12 @@ import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { HiPencilAlt } from "react-icons/hi";
 
-import { CustomButton } from "~/components/CustomButton";
-import { Modal } from "~/components/Modal";
-import AuthContext from "~/contexts/AuthContext";
-import { verifySSRAuth } from "~/helpers/veritySSRAuth";
-import { useToast } from "~/hooks/useToast";
-import { webDb } from "~/lib/firebase";
+import { CustomButton } from "~/presentation/components/CustomButton";
+import { Modal } from "~/presentation/components/Modal";
+import { AuthContext } from "~/presentation/contexts";
+import { verifySSRAuth } from "~/presentation/helpers/veritySSRAuth";
+import { useToast } from "~/presentation/hooks/useToast";
+import { webDb } from "~/presentation/lib/firebase";
 
 export default function Profile() {
   const { user: loggedUser, onUpdate } = useContext(AuthContext);
@@ -168,5 +168,5 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
     return {
       props: {},
     };
-  }
+  },
 );

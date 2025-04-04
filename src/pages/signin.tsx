@@ -12,11 +12,11 @@ import {
 import Head from "next/head";
 import { useRouter } from "next/router";
 
-import { CustomButton } from "~/components/CustomButton";
-import AuthContext from "~/contexts/AuthContext";
-import { LoadingContext } from "~/contexts/LoadingContext";
-import { useToast } from "~/hooks/useToast";
-import { User } from "~/models/User";
+import { CustomButton } from "~/presentation/components/CustomButton";
+import { AuthContext } from "~/presentation/contexts";
+import { LoadingContext } from "~/presentation/contexts/LoadingContext";
+import { useToast } from "~/presentation/hooks/useToast";
+import { User } from "~/presentation/models/User";
 
 export default function singnIn() {
   const { handleLoading, clearLoading } = useContext(LoadingContext);
@@ -53,7 +53,7 @@ export default function singnIn() {
       const { user } = await signInWithEmailLink(
         auth,
         email,
-        window.location.href
+        window.location.href,
       );
       await updatePassword(user, password);
       await updateProfile(user, { displayName: name });

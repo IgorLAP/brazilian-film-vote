@@ -13,18 +13,18 @@ import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
 
-import { CustomButton } from "~/components/CustomButton";
-import { NextPrevPagination } from "~/components/NextPrevPagination";
-import { Table } from "~/components/Table";
-import { PersonalListModal } from "~/components/User/PersonalListModal";
-import AuthContext from "~/contexts/AuthContext";
-import { LoadingContext } from "~/contexts/LoadingContext";
-import { verifySSRAuth } from "~/helpers/veritySSRAuth";
-import { useToast } from "~/hooks/useToast";
-import { Movie, ShowMovie } from "~/interfaces/Movie";
-import { TmdbMovie, TmdbMovieCredit } from "~/interfaces/Tmdb";
-import { adminDb, auth } from "~/lib/firebase-admin";
-import { tmdbApi } from "~/lib/tmdb";
+import { CustomButton } from "~/presentation/components/CustomButton";
+import { NextPrevPagination } from "~/presentation/components/NextPrevPagination";
+import { Table } from "~/presentation/components/Table";
+import { PersonalListModal } from "~/presentation/components/User/PersonalListModal";
+import { AuthContext } from "~/presentation/contexts";
+import { LoadingContext } from "~/presentation/contexts/LoadingContext";
+import { verifySSRAuth } from "~/presentation/helpers/veritySSRAuth";
+import { useToast } from "~/presentation/hooks/useToast";
+import { Movie, ShowMovie } from "~/presentation/interfaces/Movie";
+import { TmdbMovie, TmdbMovieCredit } from "~/presentation/interfaces/Tmdb";
+import { adminDb, auth } from "~/presentation/lib/firebase-admin";
+import { tmdbApi } from "~/presentation/lib/tmdb";
 
 interface MyListsProps {
   lists?: {
@@ -78,7 +78,7 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
           .then((results) =>
             results.data.crew
               .filter((member) => member.job === "Director")
-              .pop()
+              .pop(),
           );
       });
       const posterYearsPromises = movieList.map((movie) => {
@@ -99,10 +99,10 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
         }));
       });
       const directors = await Promise.all(dirPromises).then(
-        (results) => results
+        (results) => results,
       );
       const posterYears = await Promise.all(posterYearsPromises).then(
-        (results) => results
+        (results) => results,
       );
       const moviesWithDirectors = directors.map((item, index) => ({
         director: item?.name,
@@ -152,10 +152,10 @@ export default function MyLists({ lists, pagination }: MyListsProps) {
       });
       setUserList(data.page as typeof lists);
       setLastPageItem((prev) =>
-        prev.filter((item) => item.idListType.split("/")[1] !== lastPageLast)
+        prev.filter((item) => item.idListType.split("/")[1] !== lastPageLast),
       );
       setFirstPageItem((prev) =>
-        prev.filter((item) => item.idListType.split("/")[1] !== firstPageLast)
+        prev.filter((item) => item.idListType.split("/")[1] !== firstPageLast),
       );
       setActualPage((prev) => prev - 1);
     } catch (err) {
@@ -267,5 +267,5 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
     return {
       props: {},
     };
-  }
+  },
 );

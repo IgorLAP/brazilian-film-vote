@@ -8,7 +8,6 @@
     "plugin:react/recommended",
     "airbnb",
     "plugin:@typescript-eslint/recommended",
-    "prettier",
     "plugin:prettier/recommended"
   ],
   "parser": "@typescript-eslint/parser",
@@ -29,7 +28,12 @@
     "prettier/prettier": [
       "error",
       {
-        "endOfLine": "auto"
+        "endOfLine": "auto",
+        "singleQuote": false,
+        "semi": true,
+        "printWidth": 80,
+        "tabWidth": 2,
+        "trailingComma": "all"
       }
     ],
     "react/react-in-jsx-scope": "off",
@@ -39,9 +43,7 @@
         "props": false
       }
     ],
-    "no-restricted-syntax": [
-      "off"
-    ],
+    "no-restricted-syntax": ["off"],
     "no-use-before-define": [
       "error",
       {
@@ -49,17 +51,12 @@
       }
     ],
     "react/require-default-props": "off",
-    "react/jsx-no-bind": [
-      0
-    ],
+    "react/jsx-no-bind": [0],
     "react/jsx-no-constructed-context-values": "off",
     "react/jsx-filename-extension": [
       1,
       {
-        "extensions": [
-          ".ts",
-          ".tsx"
-        ]
+        "extensions": [".ts", ".tsx"]
       }
     ],
     "react/jsx-props-no-spreading": [
@@ -85,18 +82,15 @@
           "/^react(?!-)/",
           "module",
           "/^~//",
-          [
-            "parent",
-            "sibling",
-            "index"
-          ]
+          ["parent", "sibling", "index"]
         ],
         "alphabetize": {
           "order": "asc",
           "ignoreCase": true
         }
       }
-    ]
+    ],
+    "no-useless-constructor": 0
   },
   "settings": {
     "import/resolver": {
@@ -104,3 +98,4 @@
     }
   }
 }
+

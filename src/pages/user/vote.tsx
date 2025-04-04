@@ -4,10 +4,10 @@ import { Box, Flex, Heading, Stack, Text } from "@chakra-ui/react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 
-import { Voting } from "~/components/User/Voting";
-import AuthContext from "~/contexts/AuthContext";
-import { verifySSRAuth } from "~/helpers/veritySSRAuth";
-import { adminDb, auth } from "~/lib/firebase-admin";
+import { Voting } from "~/presentation/components/User/Voting";
+import { AuthContext } from "~/presentation/contexts";
+import { verifySSRAuth } from "~/presentation/helpers/veritySSRAuth";
+import { adminDb, auth } from "~/presentation/lib/firebase-admin";
 
 interface VoteProps {
   generalList: {
@@ -20,7 +20,7 @@ export default function Vote({ generalList }: VoteProps) {
   const { user } = useContext(AuthContext);
 
   const votingDecade = Number(
-    generalList.idListType.split("/")[1].split("-")[0]
+    generalList.idListType.split("/")[1].split("-")[0],
   );
   const title = `Votação dos anos ${votingDecade} - ${
     user?.name.split(" ")[0]
@@ -125,5 +125,5 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
         generalList: actualGeneralList,
       },
     };
-  }
+  },
 );

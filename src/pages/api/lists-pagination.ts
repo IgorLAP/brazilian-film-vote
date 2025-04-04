@@ -1,7 +1,7 @@
 import { FieldPath } from "firebase-admin/firestore";
 import { NextApiResponse, NextApiRequest } from "next";
 
-import { adminDb } from "~/lib/firebase-admin";
+import { adminDb } from "~/presentation/lib/firebase-admin";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== "POST") {

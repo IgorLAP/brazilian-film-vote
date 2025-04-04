@@ -4,9 +4,9 @@ import { Grid } from "@chakra-ui/react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 
-import { MainLogo } from "~/components/Home/MainLogo";
-import { SignInForm } from "~/components/Home/SignInForm";
-import { verifySSRAuth } from "~/helpers/veritySSRAuth";
+import { MainLogo } from "~/presentation/components/Home/MainLogo";
+import { SignInForm } from "~/presentation/components/Home/SignInForm";
+import { verifySSRAuth } from "~/presentation/helpers/veritySSRAuth";
 
 export default function Home() {
   return (
@@ -42,5 +42,5 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
     return {
       props: {},
     };
-  }
+  },
 );

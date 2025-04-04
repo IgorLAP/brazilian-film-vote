@@ -14,18 +14,18 @@ import {
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 
-import { SearchUser } from "~/components/Admin/SearchUser";
-import { SendEmail } from "~/components/Admin/SendEmail";
-import { UserListModal } from "~/components/Admin/UserListsModal";
-import { UsersListsTable } from "~/components/Admin/UsersListsTable";
-import { NextPrevPagination } from "~/components/NextPrevPagination";
-import { verifySSRAuth } from "~/helpers/veritySSRAuth";
-import { useToast } from "~/hooks/useToast";
-import { GeneralListI } from "~/interfaces/GeneralList";
-import { Movie } from "~/interfaces/Movie";
-import { User } from "~/interfaces/User";
-import { webDb } from "~/lib/firebase";
-import { adminDb } from "~/lib/firebase-admin";
+import { SearchUser } from "~/presentation/components/Admin/SearchUser";
+import { SendEmail } from "~/presentation/components/Admin/SendEmail";
+import { UserListModal } from "~/presentation/components/Admin/UserListsModal";
+import { UsersListsTable } from "~/presentation/components/Admin/UsersListsTable";
+import { NextPrevPagination } from "~/presentation/components/NextPrevPagination";
+import { verifySSRAuth } from "~/presentation/helpers/veritySSRAuth";
+import { useToast } from "~/presentation/hooks/useToast";
+import { GeneralListI } from "~/presentation/interfaces/GeneralList";
+import { Movie } from "~/presentation/interfaces/Movie";
+import { User } from "~/presentation/interfaces/User";
+import { webDb } from "~/presentation/lib/firebase";
+import { adminDb } from "~/presentation/lib/firebase-admin";
 
 interface UserList extends Omit<GeneralListI, "movies"> {
   movies?: Movie[];
@@ -59,7 +59,7 @@ export default function Admin({ users, pagination }: AdminProps) {
         collection(webDb, "users"),
         orderBy("createdAt"),
         startAfter(last.createdAt),
-        limit(21)
+        limit(21),
       );
       const { docs } = await getDocs(q);
       const newList = docs.map((i) => i.data());
@@ -83,16 +83,16 @@ export default function Admin({ users, pagination }: AdminProps) {
         orderBy("createdAt"),
         startAt(firstPageLast),
         endAt(lastPageLast),
-        limit(21)
+        limit(21),
       );
       const { docs } = await getDocs(q);
       const newList = docs.map((i) => i.data());
       setUsersList(newList as User[]);
       setLastPageItem((prev) =>
-        prev.filter((item) => item.createdAt !== lastPageLast)
+        prev.filter((item) => item.createdAt !== lastPageLast),
       );
       setFirstPageItem((prev) =>
-        prev.filter((item) => item.createdAt !== firstPageLast)
+        prev.filter((item) => item.createdAt !== firstPageLast),
       );
       setActualPage((prev) => prev - 1);
     } catch (err) {
@@ -145,7 +145,7 @@ export default function Admin({ users, pagination }: AdminProps) {
 export const getServerSideProps: GetServerSideProps = verifySSRAuth(
   async () => {
     const allItems = (await adminDb.collection("users").get()).docs.filter(
-      (user) => user.data().role !== "ADMIN"
+      (user) => user.data().role !== "ADMIN",
     ).length;
     const usersRef = adminDb.collection("users").orderBy("createdAt").limit(21);
     const users = await usersRef.get();
@@ -158,5 +158,5 @@ export const getServerSideProps: GetServerSideProps = verifySSRAuth(
         },
       },
     };
-  }
+  },
 );
