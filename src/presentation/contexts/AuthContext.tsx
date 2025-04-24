@@ -1,14 +1,9 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 
-import {
-  getAuth,
-  signOut as firebaseSignOut,
-  updateProfile,
-} from "firebase/auth";
+import { getAuth, updateProfile } from "firebase/auth";
 import { useRouter } from "next/router";
-import { destroyCookie, parseCookies, setCookie } from "nookies";
+import { setCookie } from "nookies";
 
-import { LoadingContext } from "~/presentation/contexts/LoadingContext";
 import { useToast } from "~/presentation/hooks/useToast";
 
 interface LoggedUser {
@@ -22,7 +17,6 @@ interface LoggedUser {
 export interface AuthContextInitial {
   user: LoggedUser;
   setUser: (user: LoggedUser) => void;
-  signOut: () => Promise<void>;
   onUpdate: (name?: string, photoURL?: string) => Promise<void>;
 }
 
@@ -35,8 +29,6 @@ export const AuthContext = createContext<AuthContextInitial>(initialValue);
 // Ideia é ele prover apenas o user, sendo um context de usuário e assim criar um fluxo próprio para signin, signout e update, com um desacoplamento maior da lógica em si do firebase
 // dependendo de uma abstração do mesmo
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { handleLoading, clearLoading } = useContext(LoadingContext);
-
   const auth = getAuth();
 
   const router = useRouter();
@@ -76,20 +68,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  async function signOut() {
-    try {
-      handleLoading(60, 500);
-      await firebaseSignOut(auth);
-      destroyCookie(undefined, "token");
-      const token = parseCookies();
-      if (token)
-        document.cookie = `token=; Max-Age=0; path=/; domain=${window.location.hostname}`;
-      router.push("/");
-    } catch (err) {
-      authError(err);
-    }
-  }
-
   async function onUpdate(name?: string, photoURL?: string) {
     try {
       await updateProfile(auth.currentUser, {
@@ -104,14 +82,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  function authError(err) {
-    clearLoading();
-    toast("error", err.message);
-  }
-
   return (
-    <AuthContext.Provider value={{ user, setUser, signOut, onUpdate }}>
+    <AuthContext.Provider value={{ user, setUser, onUpdate }}>
       {children}
     </AuthContext.Provider>
   );
 }
+

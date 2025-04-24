@@ -22,9 +22,11 @@ import { CustomLink } from "../CustomLink";
 import { Dropdown } from "../Sidebar/Dropdown";
 import { Logo } from "./Logo";
 import { ProfileMenu } from "./ProfileMenu";
+import { makeUserSignOut } from "~/factories/user";
 
 export function Header() {
-  const { user, signOut } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
+  const { signOut } = makeUserSignOut();
 
   const [isVoteAvailable, setIsVoteAvailable] = useState(false);
   const [loggedUser, setLoggedUser] = useState<typeof user>();
@@ -43,7 +45,7 @@ export function Header() {
     const userLists = listDocs.map((list) => list.id);
     const generalQuery = query(
       collection(webDb, "general_list"),
-      where("status", "==", true),
+      where("status", "==", true)
     );
     const { empty, docs: activeListsDocs } = await getDocs(generalQuery);
     const activeListId = activeListsDocs.map((list) => list.id);
@@ -135,3 +137,4 @@ export function Header() {
     </Flex>
   );
 }
+

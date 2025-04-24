@@ -1,4 +1,4 @@
-import React, { FormEvent, useContext } from "react";
+import React, { useContext } from "react";
 
 import { useRouter } from "next/router";
 
@@ -21,8 +21,7 @@ export const useSignIn = () => {
     form.password !== "" && form.password.length >= 6;
   const isFormInvalid = !isEmailValid || !isPasswordRequiredMinimunLength;
 
-  async function onSignIn(e: FormEvent) {
-    e.preventDefault();
+  async function onSignIn() {
     if (isFormInvalid) return;
     try {
       handleLoading(10, 1000);
@@ -63,3 +62,4 @@ export const useSignIn = () => {
     isPasswordValid: isPasswordRequiredMinimunLength,
   };
 };
+

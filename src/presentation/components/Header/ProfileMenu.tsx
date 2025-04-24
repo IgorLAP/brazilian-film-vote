@@ -80,3 +80,4 @@ export function ProfileMenu({ loggedUser, signOut }: ProfileMenuProps) {
     </Flex>
   );
 }
+

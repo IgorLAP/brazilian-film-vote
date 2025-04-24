@@ -36,7 +36,10 @@ export function SignInForm(props: FlexProps) {
         h="100%"
         as="form"
         flexDir="column"
-        onSubmit={onSignIn}
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSignIn();
+        }}
       >
         <Field.Root invalid={!isEmailValid}>
           <InputGroup
@@ -100,3 +103,4 @@ export function SignInForm(props: FlexProps) {
     </Flex>
   );
 }
+
