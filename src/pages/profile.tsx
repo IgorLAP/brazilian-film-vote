@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect } from "react";
 
 import {
   Field,
@@ -9,26 +9,26 @@ import {
   Stack,
   useDisclosure,
 } from "@chakra-ui/react";
-import { doc, updateDoc } from "firebase/firestore";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { HiPencilAlt } from "react-icons/hi";
 
+import { useUserUpdate } from "~/application/user/hooks";
 import { CustomButton } from "~/presentation/components/CustomButton";
 import { Modal } from "~/presentation/components/Modal";
 import { AuthContext } from "~/presentation/contexts";
 import { verifySSRAuth } from "~/presentation/helpers/veritySSRAuth";
-import { useToast } from "~/presentation/hooks/useToast";
-import { webDb } from "~/presentation/lib/firebase";
 
 export default function Profile() {
-  const { user: loggedUser, onUpdate } = useContext(AuthContext);
-
-  const toast = useToast();
+  const { user: loggedUser } = useContext(AuthContext);
   const { open: isOpen, onOpen, onClose } = useDisclosure();
-
-  const [name, setName] = useState("");
-  const [photoURL, setPhotoURL] = useState("");
+  const {
+    form: {
+      values: { name, photoURL },
+      setters: { setName, setPhotoURL },
+    },
+    onUpdate,
+  } = useUserUpdate(onClose);
 
   useEffect(() => {
     if (loggedUser) {
@@ -36,36 +36,6 @@ export default function Profile() {
       setPhotoURL(loggedUser?.photoURL);
     }
   }, [loggedUser]);
-
-  const doesImageExist = (url: string): Promise<boolean> =>
-    new Promise((resolve) => {
-      const img = new Image();
-
-      img.src = url;
-      img.onload = () => resolve(true);
-      img.onerror = () => resolve(false);
-    });
-
-  async function handleUpdate() {
-    if (photoURL) {
-      if (!(await doesImageExist(photoURL))) {
-        toast("error", "Imagem inválida");
-        return;
-      }
-    }
-
-    try {
-      const userDocRef = doc(webDb, "users", loggedUser.uid);
-      await updateDoc(userDocRef, {
-        name,
-        photoURL,
-      });
-      onUpdate(name, photoURL);
-      onClose();
-    } catch (err) {
-      toast("error", err.message);
-    }
-  }
 
   return (
     <>
@@ -153,7 +123,7 @@ export default function Profile() {
             }
             ml="2"
             buttonType="primary"
-            onClick={handleUpdate}
+            onClick={onUpdate}
           >
             Salvar
           </CustomButton>

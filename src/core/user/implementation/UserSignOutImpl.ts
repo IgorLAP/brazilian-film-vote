@@ -8,4 +8,3 @@ export class UserSignOutImpl implements UserSignOut {
     await this.userSignOutAdapter.signOut();
   };
 }
-

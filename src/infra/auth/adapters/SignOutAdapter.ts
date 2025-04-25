@@ -12,4 +12,3 @@ export class SignOutAdapter implements ISignOutAdapter {
     this.cookieService.clearToken();
   }
 }
-

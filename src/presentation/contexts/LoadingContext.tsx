@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { LoadingBar } from "~/presentation/components/LoadingBar";
 
 export interface LoadingContextInitial {
+  isLoading: boolean;
   handleLoading: (percentage: number, intervalTime: number) => void;
   clearLoading: () => void;
 }
@@ -53,8 +54,12 @@ export function LoadingProvider({ children }: loadingProviderProps) {
     setTimeout(() => setLoadingStatus(0), 250);
   }
 
+  console.log("loading", loadingStatus);
+
   return (
-    <LoadingContext.Provider value={{ clearLoading, handleLoading }}>
+    <LoadingContext.Provider
+      value={{ isLoading: loadingStatus !== 0, clearLoading, handleLoading }}
+    >
       <LoadingBar status={loadingStatus} />
       {children}
     </LoadingContext.Provider>

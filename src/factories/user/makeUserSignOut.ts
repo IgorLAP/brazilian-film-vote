@@ -9,4 +9,3 @@ export const makeUserSignOut = () => {
   const signOutAdapter = new SignOutAdapter(cookieService);
   return new UserSignOutImpl(signOutAdapter);
 };
-

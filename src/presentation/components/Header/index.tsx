@@ -3,12 +3,14 @@ import React, { useContext, useEffect, useState } from "react";
 import { Box, Flex, IconButton } from "@chakra-ui/react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { AiOutlineUsergroupDelete } from "react-icons/ai";
 import { BsList } from "react-icons/bs";
 import { IoMdMenu } from "react-icons/io";
 import { MdOutlineHowToVote } from "react-icons/md";
 import { RiListSettingsLine } from "react-icons/ri";
 
+import { makeUserSignOut } from "~/factories/user";
 import {
   MenuContent,
   MenuItem,
@@ -22,11 +24,11 @@ import { CustomLink } from "../CustomLink";
 import { Dropdown } from "../Sidebar/Dropdown";
 import { Logo } from "./Logo";
 import { ProfileMenu } from "./ProfileMenu";
-import { makeUserSignOut } from "~/factories/user";
 
 export function Header() {
   const { user } = useContext(AuthContext);
   const { signOut } = makeUserSignOut();
+  const router = useRouter();
 
   const [isVoteAvailable, setIsVoteAvailable] = useState(false);
   const [loggedUser, setLoggedUser] = useState<typeof user>();
@@ -45,7 +47,7 @@ export function Header() {
     const userLists = listDocs.map((list) => list.id);
     const generalQuery = query(
       collection(webDb, "general_list"),
-      where("status", "==", true)
+      where("status", "==", true),
     );
     const { empty, docs: activeListsDocs } = await getDocs(generalQuery);
     const activeListId = activeListsDocs.map((list) => list.id);
@@ -60,6 +62,11 @@ export function Header() {
       setIsVoteAvailable(true);
     }
   }
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push("/");
+  };
 
   return (
     <Flex
@@ -133,8 +140,9 @@ export function Header() {
           <Logo />
         </Link>
       </Flex>
-      {loggedUser && <ProfileMenu loggedUser={loggedUser} signOut={signOut} />}
+      {loggedUser && (
+        <ProfileMenu loggedUser={loggedUser} signOut={handleSignOut} />
+      )}
     </Flex>
   );
 }
-

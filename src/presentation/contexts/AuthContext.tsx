@@ -1,6 +1,6 @@
 import React, { createContext, useEffect, useState } from "react";
 
-import { getAuth, updateProfile } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import { useRouter } from "next/router";
 import { setCookie } from "nookies";
 
@@ -17,7 +17,6 @@ interface LoggedUser {
 export interface AuthContextInitial {
   user: LoggedUser;
   setUser: (user: LoggedUser) => void;
-  onUpdate: (name?: string, photoURL?: string) => Promise<void>;
 }
 
 const initialValue = {} as AuthContextInitial;
@@ -68,24 +67,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  async function onUpdate(name?: string, photoURL?: string) {
-    try {
-      await updateProfile(auth.currentUser, {
-        displayName: name,
-        photoURL,
-      });
-      const newInfos = { ...user, name, photoURL };
-      setUser(newInfos);
-      toast("success", "Atualizado com sucesso");
-    } catch (err) {
-      toast("error", err.message);
-    }
-  }
-
   return (
-    <AuthContext.Provider value={{ user, setUser, onUpdate }}>
+    <AuthContext.Provider value={{ user, setUser }}>
       {children}
     </AuthContext.Provider>
   );
 }
-

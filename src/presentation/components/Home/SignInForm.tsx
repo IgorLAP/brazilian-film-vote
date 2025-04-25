@@ -1,14 +1,18 @@
+import { useContext } from "react";
+
 import { Button, Field, Flex, FlexProps, Input, Stack } from "@chakra-ui/react";
 import { IoIosMail } from "react-icons/io";
 import { RiLock2Fill } from "react-icons/ri";
 
 import { useSignIn } from "~/application/user/hooks";
+import { LoadingContext } from "~/presentation/contexts";
 
 import { CustomButton } from "../CustomButton";
 import { InputGroup } from "../ui/input-group";
 
 // FIXME: Deixar o default dos inputs sem os erros e validar após digitação
 export function SignInForm(props: FlexProps) {
+  const { isLoading } = useContext(LoadingContext);
   const {
     isEmailValid,
     isPasswordValid,
@@ -85,7 +89,13 @@ export function SignInForm(props: FlexProps) {
             </Field.ErrorText>
           )}
         </Field.Root>
-        <CustomButton w="100%" type="submit" buttonType="primary" color="white">
+        <CustomButton
+          loading={isLoading}
+          w="100%"
+          type="submit"
+          buttonType="primary"
+          color="white"
+        >
           Entrar
         </CustomButton>
         <Button
@@ -103,4 +113,3 @@ export function SignInForm(props: FlexProps) {
     </Flex>
   );
 }
-
